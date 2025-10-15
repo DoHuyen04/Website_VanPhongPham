@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.SanPham;
 
@@ -55,10 +56,23 @@ public class TrangChuServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<SanPham> ds = sanPhamDAO.layTatCa();
-        req.setAttribute("danhSachSanPham", ds);
-        req.getRequestDispatcher("trang_chu.jsp").forward(req, resp);
+     protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Lấy danh sách sản phẩm từ DAO
+        SanPhamDAO spDAO = new SanPhamDAO();
+        List<SanPham> dsSanPham = spDAO.layTatCa();
+
+        // Gửi sang trang JSP
+        request.setAttribute("dsSanPham", dsSanPham);
+
+        // Lấy thông tin user từ session
+        HttpSession session = request.getSession();
+        String tenDangNhap = (String) session.getAttribute("tendangnhap");
+        request.setAttribute("tenDangNhap", tenDangNhap);
+
+        // Chuyển hướng
+        request.getRequestDispatcher("trang_chu.jsp").forward(request, response);
     }
 
     /**

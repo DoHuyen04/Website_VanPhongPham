@@ -28,6 +28,14 @@
                     <span class="toggle-password" onclick="togglePassword()">👁</span>
                 </div>
                 <div class="error"><%= request.getAttribute("loiMatKhau") != null ? request.getAttribute("loiMatKhau") : "" %></div>
+                
+        <% String error = (String) request.getAttribute("error");
+           String success = request.getParameter("dangky");
+           if (error != null) { %>
+            <div class="error-msg"><%= error %></div>
+        <% } else if ("thanhcong".equals(success)) { %>
+            <div class="success-msg">Đăng ký thành công! Vui lòng đăng nhập.</div>
+        <% } %>
 
                 <button type="submit">Đăng nhập</button>
             </form>

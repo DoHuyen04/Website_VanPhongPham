@@ -1,117 +1,132 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
-import dao.NguoiDungDAO;
+import dao.DBUtil;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.NguoiDung;
+import jakarta.servlet.http.HttpSession;
+import java.sql.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
 
-/**
- *
- * @author asus
- */
+@WebServlet("/nguoidung")
 public class NguoiDungServlet extends HttpServlet {
-private NguoiDungDAO nguoiDungDAO = new NguoiDungDAO();
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet NguoiDungServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet NguoiDungServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+    private static final long serialVersionUID = 1L;
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
-     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String hanhDong = req.getParameter("hanhDong");
-        if ("dangxuat".equals(hanhDong)) {
+        if ("dang_xuat".equals(hanhDong)) {
             req.getSession().invalidate();
-            resp.sendRedirect("trangchu");
+            resp.sendRedirect("trang_chu.jsp");
             return;
         }
         req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String hanhDong = req.getParameter("hanhDong");
-        if ("dangnhap".equals(hanhDong)) {
-            String ten = req.getParameter("tenDangNhap");
-            String matKhau = req.getParameter("matKhau");
-            NguoiDung nd = nguoiDungDAO.dangNhap(ten, matKhau);
-            if (nd != null) {
-                req.getSession().setAttribute("nguoiDung", nd);
-                resp.sendRedirect("trangchu");
-            } else {
-                req.setAttribute("loi", "Tên đăng nhập hoặc mật khẩu không đúng");
-                req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
-            }
-        } else if ("dangky".equals(hanhDong)) {
-            NguoiDung nd = new NguoiDung();
-            nd.setTenDangNhap(req.getParameter("tenDangNhap"));
-            nd.setMatKhau(req.getParameter("matKhau"));
-            nd.setHoTen(req.getParameter("hoTen"));
-            nd.setEmail(req.getParameter("email"));
-            nd.setSoDienThoai(req.getParameter("soDienThoai"));
-            boolean ok = nguoiDungDAO.dangKy(nd);
-            if (ok) {
-                resp.sendRedirect("dang_nhap.jsp");
-            } else {
-                req.setAttribute("loi", "Đăng ký thất bại");
-                req.getRequestDispatcher("dang_ky.jsp").forward(req, resp);
-            }
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String hanhDong = request.getParameter("hanhDong");
+
+        if ("dangky".equals(hanhDong)) {
+            dangKy(request, response);
+        } else if ("dangnhap".equals(hanhDong)) {
+            dangNhap(request, response);
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
+    // ✅ Hàm mã hóa mật khẩu SHA-256
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashedBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Lỗi mã hóa mật khẩu!", e);
+        }
+    }
+
+    // ✅ Xử lý đăng ký tài khoản
+    private void dangKy(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String tenDangNhap = request.getParameter("tenDangNhap");
+        String matKhau = request.getParameter("matKhau");
+        String hoTen = request.getParameter("hoTen");
+        String email = request.getParameter("email");
+        String soDienThoai = request.getParameter("soDienThoai");
+
+        // 👉 Mã hóa mật khẩu trước khi lưu
+        String matKhauMaHoa = hashPassword(matKhau);
+
+        try (Connection conn = DBUtil.getConnection()) {
+            String sql = "INSERT INTO nguoidung (tenDangNhap, matKhau, hoTen, email, soDienThoai) VALUES (?,?,?,?,?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, tenDangNhap);
+            ps.setString(2, matKhauMaHoa);
+            ps.setString(3, hoTen);
+            ps.setString(4, email);
+            ps.setString(5, soDienThoai);
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                response.sendRedirect("dang_nhap.jsp?dangky=thanhcong");
+            } else {
+                response.sendRedirect("dang_ky.jsp?error=thatbai");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("dang_ky.jsp?error=loi");
+        }
+    }
+
+    // ✅ Xử lý đăng nhập tài khoản
+    private void dangNhap(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String tenDangNhap = request.getParameter("tenDangNhap");
+        String matKhau = request.getParameter("matKhau");
+
+        // 👉 Mã hóa mật khẩu nhập vào để so sánh với DB
+        String matKhauMaHoa = hashPassword(matKhau);
+
+        try (Connection conn = DBUtil.getConnection()) {
+            String sql = "SELECT * FROM nguoidung WHERE tenDangNhap = ? AND matKhau = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, tenDangNhap);
+            ps.setString(2, matKhauMaHoa);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                HttpSession session = request.getSession();
+                session.setAttribute("tenDangNhap", rs.getString("tenDangNhap"));
+                session.setAttribute("hoTen", rs.getString("hoTen"));
+                request.getSession().setAttribute("thongBaoDangNhap", "Đăng nhập thành công!");
+                response.sendRedirect("trang_chu.jsp");
+            } else {
+                request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
+                request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Lỗi hệ thống. Vui lòng thử lại sau!");
+            request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
+        }
+    }
+
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Servlet xử lý đăng ký & đăng nhập người dùng có mã hóa mật khẩu";
+    }
 }

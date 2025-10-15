@@ -56,16 +56,6 @@ body {
   font-weight: bold;
 }
 
-.account, .cart {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.account:hover, .cart:hover {
-  text-decoration: underline;
-}
-
 /* ========== TOP MENU ========== */
 .top-menu {
   display: flex;
@@ -478,4 +468,46 @@ body {
 
 .btn-loc:active {
   transform: scale(0.97);
+}
+/*quản lý tài khoản*/
+.account-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.account-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.account-btn:hover {
+  color: #ffcc00;
+}
+
+.account-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #fff;
+  min-width: 180px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+.account-menu a {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #333;
+}
+
+.account-menu a:hover {
+  background-color: #f0f0f0;
 }

@@ -8,7 +8,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
-   <!-- 🟥 Banner -->
+   <%-- ✅ Lấy tên đăng nhập từ session --%>
+  <%
+      HttpSession ses = request.getSession(false);
+      String tenDangNhap = null;
+      if (ses != null) {
+          tenDangNhap = (String) ses.getAttribute("tenDangNhap");
+      }
+  %>
+
+  <!-- 🟥 Banner -->
   <header class="banner">
     <div class="banner-left">
       <img src="hinh_anh/logo.png" alt="Logo" class="logo-img">
@@ -19,10 +28,33 @@
     </div>
     <div class="banner-right">
       <div class="hotline">📞 0968.715.858</div>
-      <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
+<!-- 👤 Hiển thị tài khoản -->
+            <%
+                if (tenDangNhap != null) {
+            %>
+                <div class="account-dropdown">
+                    <button class="account-btn" onclick="toggleAccountMenu()">
+                        <span class="account-icon">👤</span>
+                        <%= tenDangNhap %>
+                    </button>
+                    <div class="account-menu" id="accountMenu">
+                        <a href="thong_tin_ca_nhan.jsp">Thông tin cá nhân</a>
+                        <a href="don_hang.jsp">Đơn hàng đã mua</a>
+                        <a href="nguoidung?hanhDong=dang_xuat">Đăng xuất</a>
+                    </div>
+                </div>
+            <%
+                } else {
+            %>
+                <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
+            <%
+                }
+            %>
+
       <a href="gio_hang.jsp" class="cart">🛒 Giỏ hàng (0)</a>
     </div>
   </header>
+
 
   <!-- 🟡 Menu ngang -->
   <nav class="top-menu">
@@ -31,7 +63,6 @@
     <a href="gioi_thieu.jsp">Giới thiệu</a>
     <a href="lien_he.jsp">Liên hệ</a>
   </nav>
-
   <!-- Main -->
   <main class="container main-grid">
    <!-- Left Menu -->
