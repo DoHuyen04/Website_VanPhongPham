@@ -3,34 +3,57 @@
     Created on : Oct 14, 2025, 9:59:18 AM
     Author     : asus
 --%>
+<%@page import="java.util.Map"%>
+<%@page import="java.util.List"%>
 <%@ page contentType="text/html; charset=UTF-8" %>
-<div class="banner">
-  <div class="container banner-inner">
-    <div class="logo">
-      <a href="trang_chu.jsp"><img src="hinh_anh/logo.png" alt="logo" class="logo-img"></a>
-      <div class="slogan">Văn phòng phẩm — Chất lượng & Giá tốt mỗi ngày</div>
-    </div>
-    <div class="banner-ad">
-      <img src="hinh_anh/banner.jpg" alt="banner" class="banner-img">
-    </div>
-  </div>
-</div>
+   <%-- ✅ Lấy tên đăng nhập từ session --%>
+  <%
+      HttpSession ses = request.getSession(false);
+      String tenDangNhap = null;
+      if (ses != null) {
+          tenDangNhap = (String) ses.getAttribute("tenDangNhap");
+      }
+  %>
 
-<nav class="top-menu">
-  <div class="container top-menu-inner">
-    <div class="left">
-      <a class="menu-item" href="trang_chu.jsp">Trang chủ</a>
-      <a class="menu-item" href="san_pham.jsp">Sản phẩm</a>
-      <a class="menu-item" href="gioi_thieu.jsp">Giới thiệu</a>
-      <a class="menu-item" href="lien_he.jsp">Liên hệ</a>
+  <!-- 🟥 Banner -->
+  <header class="banner">
+    <div class="banner-left">
+      <img src="hinh_anh/logo.png" alt="Logo" class="logo-img">
     </div>
-    <div class="right">
-      <form class="search-form" action="SanPhamServlet" method="get">
-        <input name="tuKhoa" type="search" placeholder="Tìm sản phẩm..." />
-        <button type="submit">Tìm</button>
-      </form>
-      <a class="menu-item" href="dang_nhap.jsp">Đăng nhập</a>
-      <a class="menu-item" href="gio_hang.jsp">Giỏ hàng (<span id="soLuongGio">0</span>)</a>
+    <div class="banner-center">
+      <input type="text" placeholder="Tìm theo thương hiệu..." class="search-box">
+      <button class="search-btn">🔍</button>
     </div>
-  </div>
-</nav>
+    <div class="banner-right">
+      <div class="hotline">📞 0968.715.858</div>
+<!-- 👤 Hiển thị tài khoản -->
+            <%
+                if (tenDangNhap != null) {
+            %>
+                <div class="account-dropdown">
+                    <button class="account-btn" onclick="toggleAccountMenu()">
+                        <span class="account-icon">👤</span>
+                        <%= tenDangNhap %>
+                    </button>
+                    <div class="account-menu" id="accountMenu">
+                        <a href="thong_tin_ca_nhan.jsp">Thông tin cá nhân</a>
+                        <a href="don_hang.jsp">Đơn hàng đã mua</a>
+                        <a href="nguoidung?hanhDong=dang_xuat">Đăng xuất</a>
+                    </div>
+                </div>
+            <%
+                } else {
+            %>
+                <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
+            <%
+                }
+            %>
+
+      <%
+    List<Map<String,Object>> gioHang = (List<Map<String,Object>>) session.getAttribute("gioHang");
+    int soLuongGH = (gioHang == null) ? 0 : gioHang.size();
+%>
+<a href="GioHangServlet">🛒 Giỏ hàng (<%= soLuongGH %>)</a>
+
+    </div>
+  </header>

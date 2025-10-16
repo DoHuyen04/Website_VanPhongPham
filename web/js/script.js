@@ -31,3 +31,36 @@ window.addEventListener('click', function (e) {
     menu.style.display = 'none';
   }
 });
+// ✅ GIỎ HÀNG LƯU TRONG LOCALSTORAGE
+let gioHang = [];
+
+function themGioHang(btn) {
+  const card = btn.closest('.card');
+  const id = card.dataset.id;
+  const ten = card.dataset.ten;
+  const gia = parseFloat(card.dataset.gia);
+  const anh = card.dataset.anh;
+
+  const sp = gioHang.find(x => x.id === id);
+  if (sp) {
+    sp.soLuong++;
+  } else {
+    gioHang.push({ id, ten, gia, anh, soLuong: 1 });
+  }
+
+  localStorage.setItem('gioHang', JSON.stringify(gioHang));
+  capNhatSoLuongGioHang();
+  alert('Đã thêm sản phẩm vào giỏ hàng!');
+}
+
+function capNhatSoLuongGioHang() {
+  const count = gioHang.reduce((t, sp) => t + sp.soLuong, 0);
+  const cartEl = document.querySelector('.cart');
+  if (cartEl) cartEl.textContent = `🛒 Giỏ hàng (${count})`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const saved = localStorage.getItem('gioHang');
+  if (saved) gioHang = JSON.parse(saved);
+  capNhatSoLuongGioHang();
+});

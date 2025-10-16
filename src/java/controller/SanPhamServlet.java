@@ -56,14 +56,22 @@ private static final long serialVersionUID = 1L;
      @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String tuKhoa = req.getParameter("tuKhoa");
+        String danhMuc = req.getParameter("danhmuc");
+        String sapXep = req.getParameter("sapXep");
+
         List<SanPham> ds;
+
+        // ✅ CHỈNH SỬA: xử lý lọc, tìm kiếm, sắp xếp
         if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
             ds = sanPhamDAO.timTheoTuKhoa(tuKhoa);
         } else {
-            ds = sanPhamDAO.layTatCa();
+            ds = sanPhamDAO.locVaSapXep(danhMuc, sapXep);
         }
+
         req.setAttribute("danhSachSanPham", ds);
-        req.getRequestDispatcher("san_pham.jsp").forward(req, resp);
+        req.setAttribute("danhMucHienTai", danhMuc);
+        RequestDispatcher rd = req.getRequestDispatcher("san_pham.jsp");
+        rd.forward(req, resp);
     }
 
     /**
@@ -77,7 +85,8 @@ private static final long serialVersionUID = 1L;
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        //processRequest(request, response);
+        doGet(request, response);
     }
 
     /**

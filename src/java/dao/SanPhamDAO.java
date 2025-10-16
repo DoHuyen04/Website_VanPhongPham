@@ -71,4 +71,36 @@ public class SanPhamDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return ds;
     }
+    public List<SanPham> locVaSapXep(String danhMuc, String sapXep) {
+        List<SanPham> ds = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT id, ten, moTa, gia, danhMuc, soLuong, hinhAnh FROM sanpham WHERE 1=1");
+
+        if (danhMuc != null && !danhMuc.isEmpty()) {
+            sql.append(" AND danhMuc = ?");
+        }
+
+        if ("tang".equals(sapXep)) sql.append(" ORDER BY gia ASC");
+        else if ("giam".equals(sapXep)) sql.append(" ORDER BY gia DESC");
+
+        try (Connection cn = DBUtil.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            if (danhMuc != null && !danhMuc.isEmpty()) {
+                ps.setString(idx++, danhMuc);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                SanPham sp = new SanPham();
+                sp.setId(rs.getInt("id"));
+                sp.setTen(rs.getString("ten"));
+                sp.setMoTa(rs.getString("moTa"));
+                sp.setGia(rs.getDouble("gia"));
+                sp.setDanhMuc(rs.getString("danhMuc"));
+                sp.setSoLuong(rs.getInt("soLuong"));
+                sp.setHinhAnh(rs.getString("hinhAnh"));
+                ds.add(sp);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return ds;
+    }
 }

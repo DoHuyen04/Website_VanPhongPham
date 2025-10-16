@@ -1,45 +1,46 @@
-<%-- 
-    Document   : san_pham
-    Created on : Oct 11, 2025, 1:54:38 PM
-    Author     : asus
---%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*" %>
 <%@ page import="model.SanPham" %>
 <jsp:include page="header.jsp" />
 
+<link rel="stylesheet" href="css/kieu.css">
+
 <div class="container main-grid">
+  <!-- ===== DANH MỤC BÊN TRÁI ===== -->
   <aside class="left-menu">
     <h4>Danh mục</h4>
     <ul>
-      <li><a href="san_pham.jsp?danhmuc=but">Bút các loại</a></li>
-      <li><a href="san_pham.jsp?danhmuc=sotay">Sổ tay, giấy vở</a></li>
-      <li><a href="san_pham.jsp?danhmuc=dungcu">Dụng cụ học tập</a></li>
-      <li><a href="san_pham.jsp?danhmuc=mucin">Mực in & Thiết bị</a></li>
+      <li><a href="SanPhamServlet?danhmuc=but">🖊️ Bút các loại</a></li>
+      <li><a href="SanPhamServlet?danhmuc=sotay">📒 Sổ tay - giấy vở</a></li>
+      <li><a href="SanPhamServlet?danhmuc=dungcu">📚 Dụng cụ học tập</a></li>
+      <li><a href="SanPhamServlet?danhmuc=mucin">🖨️ Mực in & Thiết bị</a></li>
     </ul>
   </aside>
 
+  <!-- ===== NỘI DUNG CHÍNH ===== -->
   <section class="content">
-    <h3>Sản phẩm <small>(<%= request.getAttribute("danhMucHienTai") == null ? "Tất cả" : request.getAttribute("danhMucHienTai") %>)</small></h3>
+    <h3>
+      Sản phẩm
+      <small>(<%= request.getAttribute("danhMucHienTai") == null ? "Tất cả" : request.getAttribute("danhMucHienTai") %>)</small>
+    </h3>
 
-    <!-- Filter / Sort -->
+    <!-- 🔍 THANH TÌM KIẾM + SẮP XẾP -->
     <form class="filter-form" action="SanPhamServlet" method="get">
-      <input type="hidden" name="danhmuc" value="<%= request.getParameter("danhmuc") != null ? request.getParameter("danhmuc") : "" %>" />
-      <input type="text" name="tuKhoa" placeholder="Từ khóa..." value="<%= request.getParameter("tuKhoa") != null ? request.getParameter("tuKhoa") : "" %>" />
-      <select name="sapXep">
-        <option value="">-- Sắp xếp --</option>
-        <option value="tang">Giá tăng dần</option>
-        <option value="giam">Giá giảm dần</option>
-      </select>
-      <select name="locThuongHieu">
-        <option value="">-- Nhà cung cấp --</option>
-        <option value="Thiên Long">Thiên Long</option>
-        <option value="HP">HP</option>
-      </select>
-      <button type="submit">Áp dụng</button>
+      <div class="sort-bar">
+        <input type="hidden" name="danhmuc" value="<%= request.getParameter("danhmuc") != null ? request.getParameter("danhmuc") : "" %>" />
+        <input type="text" name="tuKhoa" placeholder="🔎 Từ khóa..." 
+               value="<%= request.getParameter("tuKhoa") != null ? request.getParameter("tuKhoa") : "" %>"
+               style="padding: 6px 10px; border-radius: 5px; border: 1px solid #ccc; width: 250px;">
+        <select name="sapXep" style="margin-left: 10px;">
+          <option value="">-- Sắp xếp --</option>
+          <option value="tang">Giá tăng dần</option>
+          <option value="giam">Giá giảm dần</option>
+        </select>
+        <button type="submit" class="btn-loc" style="margin-left: 10px;">Áp dụng</button>
+      </div>
     </form>
 
-    <!-- Grid -->
+    <!-- 🛍️ LƯỚI SẢN PHẨM -->
     <div class="product-grid">
       <%
         List<SanPham> ds = (List<SanPham>) request.getAttribute("danhSachSanPham");
@@ -47,34 +48,17 @@
           for (SanPham sp : ds) {
       %>
       <div class="card">
-        <a href="chi_tiet_san_pham.jsp?id=<%= sp.getId() %>">
-          <img src="<%= sp.getHinhAnh() %>" alt="<%= sp.getTen() %>">
-        </a>
+        <img src="hinh_anh/<%= sp.getHinhAnh() %>" alt="<%= sp.getTen() %>">
         <h5><%= sp.getTen() %></h5>
-        <div class="sku">Mã: <%= sp.getId() %></div>
-        <div class="price"><%= String.format("%,.0f", sp.getGia()) %> đ</div>
-        <a class="btn" href="GioHangServlet?hanhDong=them&id=<%= sp.getId() %>">Thêm vào giỏ</a>
+        <p class="price"><%= String.format("%,.0f", sp.getGia()) %> đ</p>
+        <form action="GioHangServlet" method="post">
+          <input type="hidden" name="idSanPham" value="<%= sp.getId() %>">
+          <button class="add-cart" title="Thêm vào giỏ hàng">+</button>
+        </form>
       </div>
-      <%   }
-        } else { %>
+      <% } } else { %>
       <p>Không có sản phẩm phù hợp.</p>
       <% } %>
-    </div>
-
-    <!-- Pagination (nếu được set) -->
-    <div class="pagination">
-      <%
-        Integer trangHienTai = (Integer) request.getAttribute("trangHienTai");
-        Integer tongTrang = (Integer) request.getAttribute("tongTrang");
-        if (trangHienTai == null) trangHienTai = 1;
-        if (tongTrang == null) tongTrang = 1;
-        for (int i = 1; i <= tongTrang; i++) {
-          if (i == trangHienTai) {
-      %>
-        <span class="page current"><%= i %></span>
-      <% } else { %>
-        <a class="page" href="SanPhamServlet?page=<%= i %>&danhmuc=<%= request.getParameter("danhmuc") %>"><%= i %></a>
-      <% } } %>
     </div>
   </section>
 </div>

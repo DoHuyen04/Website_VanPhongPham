@@ -59,11 +59,11 @@ public class GioHangServlet extends HttpServlet {
 
     @SuppressWarnings("unchecked")
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession phien = req.getSession();
-        List<Map<String,Object>> gioHang = (List<Map<String,Object>>) phien.getAttribute("gioHang");
+        HttpSession session  = req.getSession();
+        List<Map<String,Object>> gioHang = (List<Map<String,Object>>) session .getAttribute("gioHang");
         if (gioHang == null) {
             gioHang = new ArrayList<>();
-            phien.setAttribute("gioHang", gioHang);
+            session.setAttribute("gioHang", gioHang);
         }
 
         String hanhDong = req.getParameter("hanhDong");
@@ -71,70 +71,131 @@ public class GioHangServlet extends HttpServlet {
 
         switch (hanhDong) {
             case "them":
-                them(req, gioHang);
+                themSanPham(req, gioHang);
                 break;
             case "xoa":
-                xoa(req, gioHang);
+                xoaSanPham(req, gioHang);
                 break;
             case "capnhat":
-                capNhat(req, gioHang);
+                capNhatSoLuong(req, gioHang);
                 break;
+            case "xem":
             default:
                 break;
         }
-        resp.sendRedirect("gio_hang.jsp");
+
+        // Cập nhật tổng số lượng trong session để hiển thị trên biểu tượng giỏ hàng
+        int tongSoLuong = tinhTongSoLuong(gioHang);
+        session.setAttribute("tongSoLuong", tongSoLuong);
+
+        // Nếu người dùng đang ở trang content.jsp hoặc thêm từ nút cộng → redirect hợp lý
+        String redirect = req.getParameter("redirect");
+        if (redirect != null && redirect.equals("content")) {
+            resp.sendRedirect("content.jsp");
+        } else {
+            resp.sendRedirect("gio_hang.jsp");
+        }
     }
 
-    private void them(HttpServletRequest req, List<Map<String,Object>> gioHang) {
+    
+    private void themSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             SanPham sp = sanPhamDAO.layTheoId(id);
             if (sp == null) return;
-            for (Map<String,Object> item : gioHang) {
+
+            for (Map<String, Object> item : gioHang) {
                 SanPham s = (SanPham) item.get("sanpham");
                 if (s.getId() == id) {
-                    int sl = (int) item.get("soluong");
-                    item.put("soluong", sl + 1);
+                    int soLuong = (int) item.get("soluong");
+                    item.put("soluong", soLuong + 1);
                     return;
                 }
             }
-            Map<String,Object> newItem = new HashMap<>();
+
+            Map<String, Object> newItem = new HashMap<>();
             newItem.put("sanpham", sp);
             newItem.put("soluong", 1);
             gioHang.add(newItem);
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void xoa(HttpServletRequest req, List<Map<String,Object>> gioHang) {
+    private void xoaSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
-            gioHang.removeIf(item -> ((SanPham)item.get("sanpham")).getId() == id);
-        } catch (Exception e) { e.printStackTrace(); }
+            gioHang.removeIf(item -> ((SanPham) item.get("sanpham")).getId() == id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private void capNhat(HttpServletRequest req, List<Map<String,Object>> gioHang) {
+    private void capNhatSoLuong(HttpServletRequest req, List<Map<String, Object>> gioHang) {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
-            int slMoi = Integer.parseInt(req.getParameter("soLuong"));
-            for (Map<String,Object> item : gioHang) {
+            int soLuongMoi = Integer.parseInt(req.getParameter("soLuong"));
+            for (Map<String, Object> item : gioHang) {
                 SanPham s = (SanPham) item.get("sanpham");
                 if (s.getId() == id) {
-                    item.put("soluong", slMoi);
+                    item.put("soluong", soLuongMoi);
                     break;
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
-    }
- @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doGet(req, resp);
-    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-   
+    private int tinhTongSoLuong(List<Map<String, Object>> gioHang) {
+        int tong = 0;
+        for (Map<String, Object> item : gioHang) {
+            tong += (int) item.get("soluong");
+        }
+        return tong;
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idSanPham = request.getParameter("idSanPham");
+
+        HttpSession session = request.getSession();
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+        if (gioHang == null) gioHang = new ArrayList<>();
+
+        // kiểm tra sản phẩm đã có trong giỏ chưa
+        boolean daCo = false;
+        for (Map<String, Object> item : gioHang) {
+            SanPham sp = (SanPham) item.get("sanpham");
+            if (sp.getId() == Integer.parseInt(idSanPham)) {
+                int sl = (int) item.get("soluong");
+                item.put("soluong", sl + 1);
+                daCo = true;
+                break;
+            }
+        }
+
+        if (!daCo) {
+            SanPhamDAO dao = new SanPhamDAO();
+            SanPham sp = dao.layTheoId(Integer.parseInt(idSanPham));
+
+            if (sp != null) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("sanpham", sp);
+                item.put("soluong", 1);
+                gioHang.add(item);
+            }
+        }
+
+        // lưu lại vào session
+        session.setAttribute("gioHang", gioHang);
+
+        // quay lại trang trước
+        response.sendRedirect(request.getHeader("referer"));
+    }
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Servlet xử lý giỏ hàng: thêm, xóa, cập nhật, hiển thị.";
+    }
 }
