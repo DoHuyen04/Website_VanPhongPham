@@ -58,18 +58,14 @@ private static final long serialVersionUID = 1L;
         String tuKhoa = req.getParameter("tuKhoa");
         String danhMuc = req.getParameter("danhmuc");
         String sapXep = req.getParameter("sapXep");
+    List<SanPham> ds = sanPhamDAO.timLocSapXep(tuKhoa, danhMuc, sapXep);
 
-        List<SanPham> ds;
-
-        // ✅ CHỈNH SỬA: xử lý lọc, tìm kiếm, sắp xếp
-        if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
-            ds = sanPhamDAO.timTheoTuKhoa(tuKhoa);
-        } else {
-            ds = sanPhamDAO.locVaSapXep(danhMuc, sapXep);
-        }
-
+        // trả lại view: đặt attribute để JSP render và giữ giá trị form
         req.setAttribute("danhSachSanPham", ds);
-        req.setAttribute("danhMucHienTai", danhMuc);
+        req.setAttribute("tuKhoa", tuKhoa == null ? "" : tuKhoa);
+        req.setAttribute("danhMucHienTai", danhMuc == null ? "" : danhMuc);
+        req.setAttribute("sapXepHienTai", sapXep == null ? "" : sapXep);
+
         RequestDispatcher rd = req.getRequestDispatcher("san_pham.jsp");
         rd.forward(req, resp);
     }

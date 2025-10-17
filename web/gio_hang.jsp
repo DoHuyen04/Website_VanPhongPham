@@ -137,7 +137,7 @@
             Tổng cộng: <%= String.format("%,.0f", tongTien) %> đ
         </div>
 
-        <a href="san_pham.jsp" class="back-btn">⬅️ Tiếp tục mua sắm</a>
+        <a href="SanPhamServlet" class="back-btn">⬅️ Tiếp tục mua sắm</a>
     <% } %>
 
 </body>
