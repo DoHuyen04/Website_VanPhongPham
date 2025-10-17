@@ -48,4 +48,16 @@
         <servlet-name>LienHeServlet</servlet-name>
         <url-pattern>/LienHeServlet</url-pattern>
     </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+            <scripting-invalid>false</scripting-invalid>
+            <el-ignored>false</el-ignored>
+        </jsp-property-group>
+    </jsp-config>
+
 </web-app>

@@ -4,6 +4,7 @@
     Author     : asus
 --%>
 <%@ page contentType="text/html;charset=UTF-8" %>
+<jsp:include page="header.jsp" />
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><title>Liên hệ</title></head>

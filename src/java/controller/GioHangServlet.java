@@ -175,7 +175,6 @@ public class GioHangServlet extends HttpServlet {
                 break;
             }
         }
-
         if (!daCo) {
             SanPhamDAO dao = new SanPhamDAO();
             SanPham sp = dao.layTheoId(Integer.parseInt(idSanPham));
