@@ -1,98 +1,123 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import dao.SanPhamDAO;
 import jakarta.servlet.RequestDispatcher;
-import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 import model.SanPham;
 
-/**
- *
- * @author asus
- */
 public class SanPhamServlet extends HttpServlet {
-private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     private SanPhamDAO sanPhamDAO;
 
     @Override
     public void init() throws ServletException {
         sanPhamDAO = new SanPhamDAO();
     }
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet SanPhamServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet SanPhamServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-     @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 🔹 Nhận tham số lọc / tìm kiếm / sắp xếp
         String tuKhoa = req.getParameter("tuKhoa");
-        String danhMuc = req.getParameter("danhmuc");
         String sapXep = req.getParameter("sapXep");
-    List<SanPham> ds = sanPhamDAO.timLocSapXep(tuKhoa, danhMuc, sapXep);
+        // Checkbox có thể chọn nhiều ⇒ dùng getParameterValues()
+        String[] danhMucs = req.getParameterValues("danhmuc");
+        String[] gias = req.getParameterValues("gia");
+        String[] loais = req.getParameterValues("loai");
 
-        // trả lại view: đặt attribute để JSP render và giữ giá trị form
+        // 🔹 Lấy toàn bộ sản phẩm
+        List<SanPham> ds = sanPhamDAO.layTatCa();
+
+        // 🔹 Lọc theo từ khóa
+        if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
+            ds = ds.stream()
+                    .filter(sp -> sp.getTen().toLowerCase().contains(tuKhoa.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        // 🔹 Lọc theo danh mục
+        if (danhMucs != null && danhMucs.length > 0) {
+            ds = ds.stream()
+                    .filter(sp -> Arrays.asList(danhMucs).contains(sp.getDanhMuc()))
+                    .collect(Collectors.toList());
+        }
+
+        // 🔹 Lọc theo giá
+        if (gias != null && gias.length > 0) {
+            ds = ds.stream().filter(sp -> {
+                double gia = sp.getGia();
+                boolean hopLe = false;
+                for (String g : gias) {
+                    switch (g) {
+                        case "duoi100":
+                            if (gia < 100000) hopLe = true;
+                            break;
+                        case "100-200":
+                            if (gia >= 100000 && gia <= 200000) hopLe = true;
+                            break;
+                        case "200-300":
+                            if (gia >= 200000 && gia <= 300000) hopLe = true;
+                            break;
+                        case "300-500":
+                            if (gia >= 300000 && gia <= 500000) hopLe = true;
+                            break;
+                        case "500-1000":
+                            if (gia >= 500000 && gia <= 1000000) hopLe = true;
+                            break;
+                        case "tren1000":
+                            if (gia > 1000000) hopLe = true;
+                            break;
+                    }
+                }
+                return hopLe;
+            }).collect(Collectors.toList());
+        }
+
+//        // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, ...)
+//        if (loais != null && loais.length > 0) {
+//            ds = ds.stream()
+//                    .filter(sp -> Arrays.asList(loais).contains(sp.getLoai()))
+//                    .collect(Collectors.toList());
+//        }
+
+        // 🔹 Sắp xếp
+        if (sapXep != null) {
+            switch (sapXep) {
+                case "tang":
+                    ds.sort(Comparator.comparingDouble(SanPham::getGia));
+                    break;
+                case "giam":
+                    ds.sort(Comparator.comparingDouble(SanPham::getGia).reversed());
+                    break;
+                case "az":
+                    ds.sort(Comparator.comparing(SanPham::getTen, String.CASE_INSENSITIVE_ORDER));
+                    break;
+                case "za":
+                    ds.sort(Comparator.comparing(SanPham::getTen, String.CASE_INSENSITIVE_ORDER).reversed());
+                    break;
+            }
+        }
+
+        // 🔹 Trả về JSP
         req.setAttribute("danhSachSanPham", ds);
         req.setAttribute("tuKhoa", tuKhoa == null ? "" : tuKhoa);
-        req.setAttribute("danhMucHienTai", danhMuc == null ? "" : danhMuc);
         req.setAttribute("sapXepHienTai", sapXep == null ? "" : sapXep);
 
         RequestDispatcher rd = req.getRequestDispatcher("san_pham.jsp");
         rd.forward(req, resp);
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        //processRequest(request, response);
-        doGet(request, response);
+        doGet(req, resp);
     }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }

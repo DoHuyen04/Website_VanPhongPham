@@ -3,71 +3,17 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
+   <jsp:include page="header.jsp" />
   <title>Trang chủ - Cửa hàng Văn phòng phẩm</title>
   <link rel="stylesheet" href="css/kieu.css">
   <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
-   <%-- ✅ Lấy tên đăng nhập từ session --%>
-  <%
-      HttpSession ses = request.getSession(false);
-      String tenDangNhap = null;
-      if (ses != null) {
-          tenDangNhap = (String) ses.getAttribute("tenDangNhap");
-      }
-  %>
-
-  <!-- 🟥 Banner -->
-  <header class="banner">
-    <div class="banner-left">
-      <img src="hinh_anh/logo.png" alt="Logo" class="logo-img">
-    </div>
-    <div class="banner-center">
-      <input type="text" placeholder="Tìm theo thương hiệu..." class="search-box">
-      <button class="search-btn">🔍</button>
-    </div>
-    <div class="banner-right">
-      <div class="hotline">📞 0968.715.858</div>
-<!-- 👤 Hiển thị tài khoản -->
-            <%
-                if (tenDangNhap != null) {
-            %>
-                <div class="account-dropdown">
-                    <button class="account-btn" onclick="toggleAccountMenu()">
-                        <span class="account-icon">👤</span>
-                        <%= tenDangNhap %>
-                    </button>
-                    <div class="account-menu" id="accountMenu">
-                        <a href="thong_tin_ca_nhan.jsp">Thông tin cá nhân</a>
-                        <a href="don_hang.jsp">Đơn hàng đã mua</a>
-                        <a href="nguoidung?hanhDong=dang_xuat">Đăng xuất</a>
-                    </div>
-                </div>
-            <%
-                } else {
-            %>
-                <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
-            <%
-                }
-            %>
-
-      <a href="gio_hang.jsp" class="cart">🛒 Giỏ hàng (0)</a>
-    </div>
-  </header>
-
-
-  <!-- 🟡 Menu ngang -->
-  <nav class="top-menu">
-    <a href="trang_chu.jsp">Trang chủ</a>
-    <a href="san_pham.jsp">Sản phẩm</a>
-    <a href="gioi_thieu.jsp">Giới thiệu</a>
-    <a href="lien_he.jsp">Liên hệ</a>
-  </nav>
   <!-- Main -->
   <main class="container main-grid">
    <!-- Left Menu -->
 <aside class="left-menu">
-  <form action="san_pham.jsp" method="get">
+  <form action="SanPhamServlet" method="get">
     <h4>Danh mục sản phẩm</h4>
     <ul>
       <li><label><input type="checkbox" name="danhmuc" value="kynangsong"> Kỹ năng sống</label></li>
@@ -103,70 +49,24 @@
   </form>
 </aside>
 
-
-    <!-- Content -->
-      <!-- Khu vực hiển thị sản phẩm -->
-    <section class="content">
-      <div class="sort-bar">
-        <label>Sắp xếp:</label>
-        <select>
-          <option>Theo giá tăng dần</option>
-          <option>Theo giá giảm dần</option>
-          <option>Tên A → Z</option>
-          <option>Tên Z → A</option>
-        </select>
-      </div>
-
-      <div class="product-grid">
-        <div class="card">
-          <img src="hinh_anh/pen1.jpg" alt="Bút bi">
-          <h5>Bút bi Thiên Long</h5>
-          <div class="price">5.000 đ</div>
-          <button class="add-cart">+</button>
-        </div>
-
-        <div class="card">
-          <img src="hinh_anh/notebook1.jpg" alt="Sổ tay">
-          <h5>Sổ tay A5</h5>
-          <div class="price">15.000 đ</div>
-          <button class="add-cart">+</button>
-        </div>
-
-        <div class="card">
-          <img src="hinh_anh/ink1.jpg" alt="Mực in">
-          <h5>Mực in HP</h5>
-          <div class="price">350.000 đ</div>
-          <button class="add-cart">+</button>
-        </div>
-      </div>
-    </section>
+        <!-- 🔍 THANH TÌM KIẾM + SẮP XẾP -->
+        <form class="filter-form" action="SanPhamServlet" method="get">
+            <input type="hidden" name="danhmuc" value="<%= request.getParameter("danhmuc") != null ? request.getParameter("danhmuc") : ""%>" />
+            <input type="text" name="tuKhoa" placeholder="🔎 Từ khóa..."
+                   value="<%= request.getParameter("tuKhoa") != null ? request.getParameter("tuKhoa") : ""%>"
+                   style="padding: 6px 10px; border-radius: 5px; border: 1px solid #ccc; width: 250px;">
+            <select name="sapXep" style="margin-left: 10px;">
+                <option value="">-- Sắp xếp --</option>
+                <option value="tang">Giá tăng dần</option>
+                <option value="giam">Giá giảm dần</option>
+                <option value="az">Tên A - Z</option>
+                <option value="za">Tên Z - A</option>
+            </select>
+            <button type="submit" class="btn-loc" style="margin-left: 10px;">Áp dụng</button>
+        </form>
   </main>
 <!-- Footer -->
-<footer class="footer">
-  <div class="container footer-grid">
-    <div class="member">
-      <h4>Đỗ Thị Huyền</h4>
-      <p>📅 03/04/2004</p>
-      <p>📞 033 7949 703</p>
-      <p>✉️ dohuyen34204@gmail.com</p>
-    </div>
-
-    <div class="member">
-      <h4>Đậu Thị Mai</h4>
-      <p>📅 (chưa cập nhật)</p>
-      <p>📞 0123 456 789</p>
-      <p>✉️ mai@example.com</p>
-    </div>
-
-    <div class="member">
-      <h4>Nông Thị Mai Hương</h4>
-      <p>📅 03/03/2000</p>
-      <p>📞 0123 456 789</p>
-      <p>✉️ huong@example.com</p>
-    </div>
-  </div>
-</footer>
-
+<jsp:include page="footer.jsp" />
 <script src="js/script.js"></script>
 
 </body>
