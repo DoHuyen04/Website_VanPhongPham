@@ -92,7 +92,7 @@
 
     <% if (gioHang.isEmpty()) { %>
         <p class="empty-cart">Giỏ hàng của bạn đang trống.</p>
-        <a href="content.jsp" class="back-btn">⬅️ Tiếp tục mua sắm</a>
+        <a href="SanPhamServlet" class="back-btn">⬅️ Tiếp tục mua sắm</a>
     <% } else { %>
         <form action="giohang" method="get">
             <input type="hidden" name="hanhDong" value="capnhatTatCa">
