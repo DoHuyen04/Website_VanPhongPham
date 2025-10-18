@@ -81,12 +81,12 @@ public class SanPhamServlet extends HttpServlet {
             }).collect(Collectors.toList());
         }
 
-//        // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, ...)
-//        if (loais != null && loais.length > 0) {
-//            ds = ds.stream()
-//                    .filter(sp -> Arrays.asList(loais).contains(sp.getLoai()))
-//                    .collect(Collectors.toList());
-//        }
+        // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, ...)
+        if (loais != null && loais.length > 0) {
+            ds = ds.stream()
+                    .filter(sp -> Arrays.asList(loais).contains(sp.getLoai()))
+                    .collect(Collectors.toList());
+        }
 
         // 🔹 Sắp xếp
         if (sapXep != null) {

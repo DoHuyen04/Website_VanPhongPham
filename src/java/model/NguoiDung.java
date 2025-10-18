@@ -1,5 +1,9 @@
 package model;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+
 public class NguoiDung {
     private int id;
     private String tenDangNhap;
@@ -7,10 +11,11 @@ public class NguoiDung {
     private String hoTen;
     private String email;
     private String soDienThoai;
+    private String gioiTinh;
+    private LocalDate ngaySinh;
 
     public NguoiDung() {}
-
-    // getters/setters
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getTenDangNhap() { return tenDangNhap; }
@@ -23,4 +28,17 @@ public class NguoiDung {
     public void setEmail(String email) { this.email = email; }
     public String getSoDienThoai() { return soDienThoai; }
     public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
+    public String getGioiTinh() { return gioiTinh; }
+    public void setGioiTinh(String gioiTinh) { this.gioiTinh = gioiTinh; }
+    public LocalDate getNgaySinh() { return ngaySinh; }
+    public void setNgaySinh(LocalDate ngaySinh) { this.ngaySinh = ngaySinh; }
+    
+    public String getNgaySinhForInputDate() {
+        if (ngaySinh == null) return "";
+        return ngaySinh.format(DateTimeFormatter.ISO_LOCAL_DATE); 
+    }
+    public String getNgaySinhVn() {
+        if (ngaySinh == null) return "";
+        return ngaySinh.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
 }

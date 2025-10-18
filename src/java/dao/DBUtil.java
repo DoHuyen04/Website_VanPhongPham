@@ -5,9 +5,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBUtil {
-  private static final String DB_URL = "jdbc:mysql://localhost:3307/vanphongpham?useSSL=false&serverTimezone=UTC";
+  private static final String DB_URL = "jdbc:mysql://localhost:3306/vanphongpham?useSSL=false&serverTimezone=UTC";
 private static final String DB_USER = "root";
-private static final String DB_PASS = "@Huyen2004";
+private static final String DB_PASS = "123@";
 
     static {
         try {

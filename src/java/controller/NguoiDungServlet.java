@@ -13,13 +13,22 @@ import java.sql.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
+import dao.NguoiDungDAO;
+import model.NguoiDung;
+import java.time.LocalDate;
 
 @WebServlet("/nguoidung")
 public class NguoiDungServlet extends HttpServlet {
+
     private static final long serialVersionUID = 1L;
+    private final NguoiDungDAO nguoiDungDAO = new NguoiDungDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if ("hoso".equals(req.getParameter("hanhDong"))) {
+            hienThiHoSo(req, resp);
+            return;
+        }
         String hanhDong = req.getParameter("hanhDong");
         if ("dang_xuat".equals(hanhDong)) {
             req.getSession().invalidate();
@@ -27,14 +36,19 @@ public class NguoiDungServlet extends HttpServlet {
             return;
         }
         req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        String hanhDong = request.getParameter("hanhDong");
+        if ("capnhat_hoso".equals(request.getParameter("hanhDong"))) {
+            capNhatHoSo(request, response);
+            return;
+        }
 
+        String hanhDong = request.getParameter("hanhDong");
         if ("dangky".equals(hanhDong)) {
             dangKy(request, response);
         } else if ("dangnhap".equals(hanhDong)) {
@@ -123,6 +137,54 @@ public class NguoiDungServlet extends HttpServlet {
             request.setAttribute("error", "Lỗi hệ thống. Vui lòng thử lại sau!");
             request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
         }
+    }
+
+    private void hienThiHoSo(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("tenDangNhap") == null) {
+            resp.sendRedirect("dang_nhap.jsp");
+            return;
+        }
+        String tenDangNhap = (String) session.getAttribute("tenDangNhap");
+        NguoiDung nd = nguoiDungDAO.layDayDuTheoTenDangNhap(tenDangNhap);
+        req.setAttribute("nguoidung", nd);
+        req.getRequestDispatcher("hoso.jsp").forward(req, resp);
+    }
+
+    private void capNhatHoSo(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("tenDangNhap") == null) {
+            response.sendRedirect("dang_nhap.jsp");
+            return;
+        }
+
+        String tenDangNhap = (String) session.getAttribute("tenDangNhap");
+        String hoTen = request.getParameter("hoten");
+        String soDienThoai = request.getParameter("sodienthoai");
+        String gioiTinh = request.getParameter("gioitinh");
+        String ngaySinhStr = request.getParameter("ngaysinh");
+
+        NguoiDung nd = nguoiDungDAO.layDayDuTheoTenDangNhap(tenDangNhap);
+        if (nd == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        nd.setHoTen(hoTen);
+        nd.setSoDienThoai(soDienThoai);
+        nd.setGioiTinh((gioiTinh != null && !gioiTinh.isBlank()) ? gioiTinh : null);
+        if (ngaySinhStr != null && !ngaySinhStr.isBlank()) {
+            nd.setNgaySinh(LocalDate.parse(ngaySinhStr));
+        } else {
+            nd.setNgaySinh(null);
+        }
+
+        boolean ok = nguoiDungDAO.capNhatHoSo(nd);
+        request.setAttribute("thongbao", ok ? "Cập nhật hồ sơ thành công!" : "Cập nhật không thành công!");
+        request.setAttribute("nguoidung", nd);
+        request.getRequestDispatcher("hoso.jsp").forward(request, response);
     }
 
     @Override
