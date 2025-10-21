@@ -58,3 +58,73 @@ if (ses != null) {
   <a href="gioi_thieu.jsp">Giới thiệu</a>
   <a href="lien_he.jsp">Liên hệ</a>
 </nav>
+  <style>
+  /* Khung dropdown tài khoản */
+  .account-dropdown{ position:relative; display:inline-block; }
+  .account-btn{ background:transparent; border:0; cursor:pointer; padding:.25rem .5rem; }
+
+  /* Hộp menu */
+  .account-menu{
+    position:absolute; right:0; top:120%;
+    min-width:210px; background:#fff;
+    border:1px solid #e5e7eb; border-radius:6px;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+    display:none; z-index:1000;
+  }
+  .account-menu a{
+    display:block; padding:.7rem 1rem;
+    text-decoration:none; color:#111827; font-weight:600;
+  }
+  .account-menu a:hover{ background:#f3f4f6; }
+
+  /* Mũi nhọn nhỏ như hình */
+  .account-menu::before{
+    content:""; position:absolute; top:-8px; right:20px;
+    width:14px; height:14px; background:#fff;
+    border-left:1px solid #e5e7eb; border-top:1px solid #e5e7eb;
+    transform:rotate(45deg);
+  }
+
+  /* Hiện menu khi rê chuột */
+  .account-dropdown:hover .account-menu{ display:block; }
+</style>
+<script>
+  (function(){
+    // Dùng cho nút onclick="toggleAccountMenu()" đã có trong HTML (hữu ích trên mobile)
+    window.toggleAccountMenu = function(){
+      var menu = document.getElementById('accountMenu');
+      if(!menu) return;
+      var open = menu.style.display === 'block';
+      menu.style.display = open ? 'none' : 'block';
+    };
+
+    // Click ra ngoài để đóng (mobile/desktop đều có lợi)
+    document.addEventListener('click', function(e){
+      var wrapper = document.querySelector('.account-dropdown');
+      var menu = document.getElementById('accountMenu');
+      if(!wrapper || !menu) return;
+      if(!wrapper.contains(e.target)){
+        menu.style.display = 'none';
+      }
+    });
+  })();
+</script>
+<style>
+  /* Giữ mở khi rê vào menu hoặc đang focus (tab) */
+  .account-dropdown:hover .account-menu,
+  .account-dropdown:focus-within .account-menu,
+  .account-menu:hover{
+    display:block;
+  }
+
+  /* Xóa gap giữa nút và menu (đặt thấp hơn 1-2px) */
+  .account-menu{
+    top: calc(100% + 2px) !important; /* trước là 120% nên có khe hở */
+  }
+
+  /* Mũi nhọn to hơn để “bắc cầu” hover */
+  .account-menu::before{
+    top:-9px; right:22px; width:18px; height:18px;
+  }
+</style>
+

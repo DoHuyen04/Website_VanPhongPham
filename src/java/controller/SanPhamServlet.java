@@ -3,6 +3,7 @@ package controller;
 import dao.SanPhamDAO;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -81,12 +82,12 @@ public class SanPhamServlet extends HttpServlet {
             }).collect(Collectors.toList());
         }
 
-//        // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, ...)
-//        if (loais != null && loais.length > 0) {
-//            ds = ds.stream()
-//                    .filter(sp -> Arrays.asList(loais).contains(sp.getLoai()))
-//                    .collect(Collectors.toList());
-//        }
+        // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, ...)
+        if (loais != null && loais.length > 0) {
+            ds = ds.stream()
+                    .filter(sp -> Arrays.asList(loais).contains(sp.getLoai()))
+                    .collect(Collectors.toList());
+        }
 
         // 🔹 Sắp xếp
         if (sapXep != null) {
