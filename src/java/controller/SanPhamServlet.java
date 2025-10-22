@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import model.SanPham;
-
+@WebServlet("/SanPhamServlet")
 public class SanPhamServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private SanPhamDAO sanPhamDAO;
@@ -82,12 +82,17 @@ public class SanPhamServlet extends HttpServlet {
             }).collect(Collectors.toList());
         }
 
-        // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, ...)
-        if (loais != null && loais.length > 0) {
-            ds = ds.stream()
-                    .filter(sp -> Arrays.asList(loais).contains(sp.getLoai()))
-                    .collect(Collectors.toList());
-        }
+       // 🔹 Lọc theo loại sản phẩm (bán chạy, giảm giá, khuyến mãi, ...)
+if (loais != null && loais.length > 0) {
+    List<String> danhSachLoai = Arrays.asList(loais); // tránh tạo lại nhiều lần
+    ds = ds.stream()
+           .filter(sp -> {
+               String loaiSP = sp.getLoai();
+               return danhSachLoai.contains(loaiSP) || danhSachLoai.contains("khuyenmai");
+           })
+           .collect(Collectors.toList());
+}
+
 
         // 🔹 Sắp xếp
         if (sapXep != null) {

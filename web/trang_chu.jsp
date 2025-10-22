@@ -41,8 +41,8 @@
     <h4>Sản phẩm</h4>
     <ul>
       <li><label><input type="checkbox" name="loai" value="banchay"> Bán chạy</label></li>
-      <li><label><input type="checkbox" name="loai" value="giamgia"> Khuyến mại - Giảm giá</label></li>
-      <li><label><input type="checkbox" name="loai" value="magiamgia"> Mã giảm giá</label></li>
+      <li><label><input type="checkbox" name="loai" value="khuyenmai"> Khuyến mại - Giảm giá</label></li>
+    
     </ul>
 
     <button type="submit" class="btn-loc">Lọc sản phẩm</button>
@@ -62,7 +62,7 @@
                 <option value="az">Tên A - Z</option>
                 <option value="za">Tên Z - A</option>
             </select>
-            <button type="submit" class="btn-loc" style="margin-left: 10px;">Áp dụng</button>
+            <button type="submit" class="btn-AD" >Áp dụng</button>
         </form>
   </main>
 <!-- Footer -->

@@ -24,7 +24,7 @@
     <img src="hinh_anh/<%= sp.getHinhAnh() %>" alt="" style="max-width:200px"/>
     <p>Giá: <%= sp.getGia() %> VNĐ</p>
     <p><%= sp.getMoTa() %></p>
-    <a href="giohang?hanhDong=them&id=<%= sp.getId() %>">Thêm vào giỏ</a>
+    <a href="giohang?hanhDong=them&id=<%= sp.getId_sanpham()%>">Thêm vào giỏ</a>
 <% } else { %>
     <p>Không tìm thấy sản phẩm</p>
 <% } %>

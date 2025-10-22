@@ -19,7 +19,7 @@
 <% } else { %>
     <ul>
     <% for (DonHang dh : ds) { %>
-        <li>Đơn #<%= dh.getId() %> - <%= dh.getTongTien() %> VNĐ - <%= dh.getNgayLap() %></li>
+        <li>Đơn #<%= dh.getIdDonHang()%> - <%= dh.getTongTien() %> VNĐ - <%= dh.getNgayDat()%></li>
     <% } %>
     </ul>
 <% } %>

@@ -17,8 +17,8 @@ public class SanPham {
     }
 
     // getters & setters
-    public int getId() { return id_sanpham; }
-    public void setId(int id) { this.id_sanpham = id; }
+    public int getId_sanpham() { return id_sanpham; }
+    public void setId_sanpham(int id) { this.id_sanpham = id; }
     public String getTen() { return ten; }
     public void setTen(String ten) { this.ten = ten; }
     public String getMoTa() { return moTa; }

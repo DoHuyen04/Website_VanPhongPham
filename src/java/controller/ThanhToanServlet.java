@@ -4,29 +4,21 @@
  */
 package controller;
 
+import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import dao.SanPhamDAO;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-import model.SanPham;
 
-import java.io.IOException;
-import java.sql.*;
 /**
  *
  * @author asus
  */
-@WebServlet("/LienHeServlet")
-public class LienHeServlet extends HttpServlet {
+@WebServlet(name = "ThanhToanServlet", urlPatterns = {"/ThanhToanServlet"})
+public class ThanhToanServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -45,10 +37,10 @@ public class LienHeServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet LienHeServlet</title>");
+            out.println("<title>Servlet ThanhToanServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet LienHeServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ThanhToanServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -64,8 +56,9 @@ public class LienHeServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getRequestDispatcher("lien_he.jsp").forward(req, resp);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
     }
 
     /**
@@ -77,24 +70,13 @@ public class LienHeServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String hoTen = req.getParameter("hoTen");
-        String email = req.getParameter("email");
-        String sdt = req.getParameter("soDienThoai");
-        String noiDung = req.getParameter("noiDung");
-
-        // lưu đơn giản vào bảng contacts
-        String sql = "INSERT INTO contacts(ho_ten, email, so_dien_thoai, noi_dung) VALUES (?,?,?,?)";
-        try (Connection cn = dao.DBUtil.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setString(1, hoTen);
-            ps.setString(2, email);
-            ps.setString(3, sdt);
-            ps.setString(4, noiDung);
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-        req.setAttribute("thongbao", "Cảm ơn bạn đã liên hệ. Chúng tôi sẽ trả lời sớm.");
-        req.getRequestDispatcher("lien_he.jsp").forward(req, resp);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+       
+         String tongTien = request.getParameter("tongTien");
+        request.setAttribute("tongTien", tongTien);
+        RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
+        rd.forward(request, response);
     }
 
     /**

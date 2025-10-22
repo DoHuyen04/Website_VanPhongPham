@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet("/taikhoan") // URL riêng cho trang hồ sơ
+@WebServlet("/TaiKhoanServlet")
 public class TaiKhoanServlet extends HttpServlet {
     private final NguoiDungDAO ndDao = new NguoiDungDAO();
 

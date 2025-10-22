@@ -6,14 +6,14 @@
 
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.*" %>
-<%@ page import="dao.BankDAO, model.BankAccount" %>
+<%@ page import="dao.TKNganHangDAO, model.TKNganHang" %>
 
 <%
   HttpSession ss = request.getSession(false);
   String username = ss != null ? (String) ss.getAttribute("tenDangNhap") : null;
-  List<BankAccount> banks = new ArrayList<>();
+  List<TKNganHang> banks = new ArrayList<>();
   if (username != null) {
-      banks = new BankDAO().listByUsername(username);
+      banks = new TKNganHangDAO().layDanhSachTheoTenDangNhap(username);
   }
   String flash = (String) session.getAttribute("msgBank");
   if (flash != null) session.removeAttribute("msgBank");
@@ -64,7 +64,7 @@
 </div>
 
 <!-- Danh sách -->
-<% for (BankAccount b : banks) { %>
+<% for (TKNganHang b : banks) { %>
   <div class="bank-item">
     <div class="bank-left">
       <img src="hinh_anh/bank.png" style="width:44px;height:44px;border-radius:8px;border:1px solid #eee">
@@ -88,7 +88,7 @@
       <% if (!b.isMacDinh()) { %>
         <form method="post" action="bank" style="display:inline">
           <input type="hidden" name="act" value="set_default">
-          <input type="hidden" name="id" value="<%= b.getId() %>">
+          <input type="hidden" name="id" value="<%= b.getIdNguoiDung()%>">
           <button type="submit" style="opacity:.65;border:1px solid #ddd;border-radius:8px;padding:6px 10px;">Thiết Lập Mặc Định</button>
         </form>
       <% } else { %>
@@ -97,7 +97,7 @@
 
       <form method="post" action="bank" style="display:inline" onsubmit="return confirm('Xóa thẻ ngân hàng này?');">
         <input type="hidden" name="act" value="delete">
-        <input type="hidden" name="id" value="<%= b.getId() %>">
+        <input type="hidden" name="id" value="<%= b.getIdTkNganHang()%>">
         <button type="submit" class="del">Xóa</button>
       </form>
     </div>

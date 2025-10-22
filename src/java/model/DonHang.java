@@ -3,33 +3,79 @@ package model;
 import java.util.*;
 
 public class DonHang {
-    private int id;
-    private int maNguoiDung;
+    private int id_donhang;
+    private int id_nguoidung;
     private String diaChi;
     private String soDienThoai;
     private String phuongThuc;
     private double tongTien;
-    private Date ngayLap;
+    private Date ngayDat;
     private List<DonHangChiTiet> chiTiet = new ArrayList<>();
 
     public DonHang() {}
 
-    // getters/setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public int getMaNguoiDung() { return maNguoiDung; }
-    public void setMaNguoiDung(int maNguoiDung) { this.maNguoiDung = maNguoiDung; }
-    public String getDiaChi() { return diaChi; }
-    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
-    public String getSoDienThoai() { return soDienThoai; }
-    public void setSoDienThoai(String soDienThoai) { this.soDienThoai = soDienThoai; }
-    public String getPhuongThuc() { return phuongThuc; }
-    public void setPhuongThuc(String phuongThuc) { this.phuongThuc = phuongThuc; }
-    public double getTongTien() { return tongTien; }
-    public void setTongTien(double tongTien) { this.tongTien = tongTien; }
-    public Date getNgayLap() { return ngayLap; }
-    public void setNgayLap(Date ngayLap) { this.ngayLap = ngayLap; }
-    public List<DonHangChiTiet> getChiTiet() { return chiTiet; }
-    public void setChiTiet(List<DonHangChiTiet> chiTiet) { this.chiTiet = chiTiet; }
-    public void themChiTiet(DonHangChiTiet ct) { this.chiTiet.add(ct); }
+    public int getIdDonHang() {
+        return id_donhang;
+    }
+
+    public void setIdDonHang(int idDonHang) {
+        this.id_donhang = idDonHang;
+    }
+
+    public int getIdNguoiDung() {
+        return id_nguoidung;
+    }
+
+    public void setIdNguoiDung(int idNguoiDung) {
+        this.id_nguoidung = idNguoiDung;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
+    }
+
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
+
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai;
+    }
+
+    public String getPhuongThuc() {
+        return phuongThuc;
+    }
+
+    public void setPhuongThuc(String phuongThuc) {
+        this.phuongThuc = phuongThuc;
+    }
+
+    public double getTongTien() {
+        return tongTien;
+    }
+
+    public void setTongTien(double tongTien) {
+        this.tongTien = tongTien;
+    }
+
+    public Date getNgayDat() {
+        return ngayDat;
+    }
+
+    public void setNgayDat(Date ngayDat) {
+        this.ngayDat = ngayDat;
+    }
+
+    public List<DonHangChiTiet> getChiTiet() {
+        return chiTiet;
+    }
+
+    public void setChiTiet(List<DonHangChiTiet> chiTiet) {
+        this.chiTiet = chiTiet;
+    }
+    
 }
