@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class NguoiDung {
-    private int id;
+    private int id_nguoidung;
     private String tenDangNhap;
     private String matKhau;
     private String hoTen;
@@ -16,8 +16,8 @@ public class NguoiDung {
 
     public NguoiDung() {}
     
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() { return id_nguoidung; }
+    public void setId(int id) { this.id_nguoidung = id; }
     public String getTenDangNhap() { return tenDangNhap; }
     public void setTenDangNhap(String tenDangNhap) { this.tenDangNhap = tenDangNhap; }
     public String getMatKhau() { return matKhau; }

@@ -13,6 +13,7 @@ import java.io.IOException;
 
 @WebServlet("/taikhoan") // URL riêng cho trang hồ sơ
 public class TaiKhoanServlet extends HttpServlet {
+
     private final NguoiDungDAO ndDao = new NguoiDungDAO();
 
     @Override
@@ -41,9 +42,9 @@ public class TaiKhoanServlet extends HttpServlet {
         nd.setTenDangNhap(tenDangNhap); // chống sửa TĐN
         nd.setHoTen(req.getParameter("hoTen"));
         nd.setEmail(req.getParameter("email"));
-        nd.setSoDienThoai(req.getParameter("sodienthoai"));
-
-        boolean ok = ndDao.capNhatThongTinCoBan(nd);
+        nd.setSoDienThoai(req.getParameter("soDienThoai"));
+        //boolean ok = ndDao.capNhatHoSo(nd);
+        boolean ok = ndDao.capNhatThongTin(nd);
         // flash message đơn giản
         ses.setAttribute("msgTK", ok ? "Đã lưu hồ sơ." : "Lưu thất bại!");
         resp.sendRedirect("taikhoan"); // load lại để thấy dữ liệu mới

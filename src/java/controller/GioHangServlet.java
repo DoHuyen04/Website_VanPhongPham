@@ -25,21 +25,12 @@ import model.SanPham;
  * @author asus
  */
 public class GioHangServlet extends HttpServlet {
- private SanPhamDAO sanPhamDAO = new SanPhamDAO();
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private SanPhamDAO sanPhamDAO = new SanPhamDAO();
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -84,11 +75,9 @@ public class GioHangServlet extends HttpServlet {
                 break;
         }
 
-        // Cập nhật tổng số lượng trong session để hiển thị trên biểu tượng giỏ hàng
         int tongSoLuong = tinhTongSoLuong(gioHang);
         session.setAttribute("tongSoLuong", tongSoLuong);
 
-        // Nếu người dùng đang ở trang content.jsp hoặc thêm từ nút cộng → redirect hợp lý
         String redirect = req.getParameter("redirect");
         if (redirect != null && redirect.equals("content")) {
             resp.sendRedirect("content.jsp");
@@ -97,7 +86,6 @@ public class GioHangServlet extends HttpServlet {
         }
     }
 
-    
     private void themSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
@@ -106,7 +94,7 @@ public class GioHangServlet extends HttpServlet {
 
             for (Map<String, Object> item : gioHang) {
                 SanPham s = (SanPham) item.get("sanpham");
-                if (s.getId() == id) {
+                if (s.getId_sanpham() == id) {            // đổi getId() -> getId_sanpham()
                     int soLuong = (int) item.get("soluong");
                     item.put("soluong", soLuong + 1);
                     return;
@@ -125,7 +113,7 @@ public class GioHangServlet extends HttpServlet {
     private void xoaSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
         try {
             int id = Integer.parseInt(req.getParameter("id"));
-            gioHang.removeIf(item -> ((SanPham) item.get("sanpham")).getId() == id);
+            gioHang.removeIf(item -> ((SanPham) item.get("sanpham")).getId_sanpham() == id); // đổi getId()
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -137,7 +125,7 @@ public class GioHangServlet extends HttpServlet {
             int soLuongMoi = Integer.parseInt(req.getParameter("soLuong"));
             for (Map<String, Object> item : gioHang) {
                 SanPham s = (SanPham) item.get("sanpham");
-                if (s.getId() == id) {
+                if (s.getId_sanpham() == id) {           // đổi getId()
                     item.put("soluong", soLuongMoi);
                     break;
                 }
@@ -164,11 +152,10 @@ public class GioHangServlet extends HttpServlet {
         List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
         if (gioHang == null) gioHang = new ArrayList<>();
 
-        // kiểm tra sản phẩm đã có trong giỏ chưa
         boolean daCo = false;
         for (Map<String, Object> item : gioHang) {
             SanPham sp = (SanPham) item.get("sanpham");
-            if (sp.getId() == Integer.parseInt(idSanPham)) {
+            if (sp.getId_sanpham() == Integer.parseInt(idSanPham)) { // đổi getId()
                 int sl = (int) item.get("soluong");
                 item.put("soluong", sl + 1);
                 daCo = true;
@@ -187,12 +174,10 @@ public class GioHangServlet extends HttpServlet {
             }
         }
 
-        // lưu lại vào session
         session.setAttribute("gioHang", gioHang);
-
-        // quay lại trang trước
         response.sendRedirect(request.getHeader("referer"));
     }
+
     @Override
     public String getServletInfo() {
         return "Servlet xử lý giỏ hàng: thêm, xóa, cập nhật, hiển thị.";

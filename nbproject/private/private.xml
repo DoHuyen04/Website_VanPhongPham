@@ -3,29 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/gio_hang.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/GioHangServlet.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/san_pham.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/nbproject/project.properties</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/model/DonHang.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/model/NguoiDung.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/dao/DBUtil.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/dao/NguoiDungDAO.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/dang_ky.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
             <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/thong_tin_ca_nhan.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/.gitignore</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/header.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/TaiKhoanServlet.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/CapNhatThongTinServlet.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/TKNganHangServlet.java</file>
             <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/tk_ngan_hang.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/model/BankAccount.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/dao/BankDAO.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/BankServlet.java</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/tk_dia_chi.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/tk_doi_mat_khau.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/tk_rieng_tu.jsp</file>
-            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/tk_thong_tin_ca_nhan.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/header.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/dao/DonHangDAO.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/model/NguoiDung.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/model/TKNganHang.java</file>
         </group>
     </open-files>
 </project-private>
