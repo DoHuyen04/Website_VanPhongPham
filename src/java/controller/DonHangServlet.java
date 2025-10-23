@@ -67,60 +67,84 @@ public class DonHangServlet extends HttpServlet {
             req.getRequestDispatcher("lich_su_don_hang.jsp").forward(req, resp);
             return;
         }
-        resp.sendRedirect("trangchu");
+        resp.sendRedirect("trangchu.jsp");
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession phien = req.getSession();
-        NguoiDung nd = (NguoiDung) phien.getAttribute("nguoiDung");
-        if (nd == null) {
-            resp.sendRedirect("dang_nhap.jsp");
-            return;
-        }
-
-        String diaChi = req.getParameter("diaChi");
-        String sdt = req.getParameter("soDienThoai");
-        String phuongThuc = req.getParameter("phuongThuc");
-
-        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) phien.getAttribute("gioHang");
-        if (gioHang == null || gioHang.isEmpty()) {
-            resp.sendRedirect("gio_hang.jsp");
-            return;
-        }
-
-        DonHang dh = new DonHang();
-        // đổi setMaNguoiDung -> setId_nguoidung cho khớp class DonHang
-        dh.setIdNguoiDung(nd.getId());
-        dh.setDiaChi(diaChi);
-        dh.setSoDienThoai(sdt);
-        dh.setPhuongThuc(phuongThuc);
-
-        double tong = 0.0;
-        for (Map<String, Object> item : gioHang) {
-            SanPham sp = (SanPham) item.get("sanpham");
-            int sl = (int) item.get("soluong");
-
-            DonHangChiTiet ct = new DonHangChiTiet();
-            ct.setId_sanpham(sp.getId_sanpham());
-            ct.setSoLuong(sl);
-            ct.setGia(sp.getGia());
-
-            dh.getChiTiet().add(ct); 
-            tong += sp.getGia() * sl;
-        }
-        dh.setTongTien(tong);
-
-        int id_donhang = donHangDAO.themDonHang(dh);
-        if (id_donhang > 0) {
-            phien.removeAttribute("gioHang");
-            resp.sendRedirect("donhang?hanhDong=lichsu");
-        } else {
-            req.setAttribute("loi", "Tạo đơn hàng thất bại");
-            req.getRequestDispatcher("thanh_toan.jsp").forward(req, resp);
-        }
+protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    HttpSession phien = req.getSession();
+    NguoiDung nd = (NguoiDung) phien.getAttribute("nguoiDung");
+    if (nd == null) {
+        resp.sendRedirect("dang_nhap.jsp");
+        return;
     }
+
+    // LẤY THÔNG TIN ĐỊA CHỈ TỪ FORM (duong, xa, huyen, tinh)
+    String duong = req.getParameter("duong");
+    String xa = req.getParameter("xa");
+    String huyen = req.getParameter("huyen");
+    String tinh = req.getParameter("tinh");
+    // Nếu bạn vẫn dùng param tên "diaChi" ở form, đoạn này vẫn hoạt động nếu "duong" null -> fallback
+    String diaChi = "";
+    if (duong != null && !duong.isEmpty()) {
+        diaChi = duong + ", ";
+    }
+    if (xa != null && !xa.isEmpty()) {
+        diaChi += xa + ", ";
+    }
+    if (huyen != null && !huyen.isEmpty()) {
+        diaChi += huyen + ", ";
+    }
+    if (tinh != null && !tinh.isEmpty()) {
+        diaChi += tinh;
+    }
+
+    String sdt = req.getParameter("soDienThoai");
+    String phuongThuc = req.getParameter("phuongThuc");
+
+    // LẤY GIỎ HÀNG TỪ SESSION
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) phien.getAttribute("gioHang");
+    if (gioHang == null || gioHang.isEmpty()) {
+        resp.sendRedirect("gio_hang.jsp");
+        return;
+    }
+
+    // Tạo DonHang object
+    DonHang dh = new DonHang();
+    dh.setIdNguoiDung(nd.getId()); // lưu id người dùng đúng tên getter/setter trong model
+    dh.setDiaChi(diaChi);
+    dh.setSoDienThoai(sdt);
+    dh.setPhuongThuc(phuongThuc);
+
+    double tong = 0.0;
+    for (Map<String, Object> item : gioHang) {
+        SanPham sp = (SanPham) item.get("sanpham");
+        int sl = (int) item.get("soluong");
+
+        DonHangChiTiet ct = new DonHangChiTiet();
+        ct.setId_sanpham(sp.getId_sanpham());
+        ct.setSoLuong(sl);
+        ct.setGia(sp.getGia());
+
+        dh.getChiTiet().add(ct);
+        tong += sp.getGia() * sl;
+    }
+    dh.setTongTien(tong);
+
+    // Gọi DAO để lưu
+    int id_donhang = donHangDAO.themDonHang(dh);
+    if (id_donhang > 0) {
+        // Lưu thành công -> xoá giỏ và chuyển hướng tới hiển thị lịch sử (đúng URL servlet)
+        phien.removeAttribute("gioHang");
+        // chuyển về chính servlet nhưng với param hanhDong=lichsu (chú ý tên servlet chính xác)
+        resp.sendRedirect("DonHangServlet?hanhDong=lichsu");
+    } else {
+        req.setAttribute("loi", "Tạo đơn hàng thất bại");
+        req.getRequestDispatcher("thanh_toan.jsp").forward(req, resp);
+    }
+}
+
 
     @Override
     public String getServletInfo() {

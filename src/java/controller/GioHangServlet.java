@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,100 +52,35 @@ public class GioHangServlet extends HttpServlet {
     }
 
     @SuppressWarnings("unchecked")
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session  = req.getSession();
-        List<Map<String,Object>> gioHang = (List<Map<String,Object>>) session .getAttribute("gioHang");
-        if (gioHang == null) {
-            gioHang = new ArrayList<>();
-            session.setAttribute("gioHang", gioHang);
-        }
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-        String hanhDong = req.getParameter("hanhDong");
-        if (hanhDong == null) hanhDong = "xem";
+        HttpSession session = request.getSession();
+        String action = request.getParameter("action");
+        String idParam = request.getParameter("id");
 
-        switch (hanhDong) {
-            case "them":
-                themSanPham(req, gioHang);
-                break;
-            case "xoa":
-                xoaSanPham(req, gioHang);
-                break;
-            case "capnhat":
-                capNhatSoLuong(req, gioHang);
-                break;
-            case "xem":
-            default:
-                break;
-        }
+        if (action != null && action.equals("xoa") && idParam != null) {
+            int idXoa = Integer.parseInt(idParam);
+            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
 
-        int tongSoLuong = tinhTongSoLuong(gioHang);
-        session.setAttribute("tongSoLuong", tongSoLuong);
-
-        String redirect = req.getParameter("redirect");
-        if (redirect != null && redirect.equals("content")) {
-            resp.sendRedirect("content.jsp");
-        } else {
-            resp.sendRedirect("gio_hang.jsp");
-        }
-    }
-
-    private void themSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
-        try {
-            int id = Integer.parseInt(req.getParameter("id"));
-            SanPham sp = sanPhamDAO.layTheoId(id);
-            if (sp == null) return;
-
-            for (Map<String, Object> item : gioHang) {
-                SanPham s = (SanPham) item.get("sanpham");
-                if (s.getId_sanpham()== id) {            // đổi getId() -> getId_sanpham()
-                    int soLuong = (int) item.get("soluong");
-                    item.put("soluong", soLuong + 1);
-                    return;
+            if (gioHang != null) {
+                Iterator<Map<String, Object>> iterator = gioHang.iterator();
+                while (iterator.hasNext()) {
+                    Map<String, Object> item = iterator.next();
+                    model.SanPham sp = (model.SanPham) item.get("sanpham");
+                    if (sp.getId_sanpham() == idXoa) {
+                        iterator.remove(); // ✅ Xóa sản phẩm khỏi giỏ
+                        break;
+                    }
                 }
+                session.setAttribute("gioHang", gioHang);
             }
-
-            Map<String, Object> newItem = new HashMap<>();
-            newItem.put("sanpham", sp);
-            newItem.put("soluong", 1);
-            gioHang.add(newItem);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-    }
 
-    private void xoaSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
-        try {
-            int id = Integer.parseInt(req.getParameter("id"));
-            gioHang.removeIf(item -> ((SanPham) item.get("sanpham")).getId_sanpham() == id); // đổi getId()
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Quay lại trang giỏ hàng sau khi xóa
+        response.sendRedirect("gio_hang.jsp");
     }
-
-    private void capNhatSoLuong(HttpServletRequest req, List<Map<String, Object>> gioHang) {
-        try {
-            int id = Integer.parseInt(req.getParameter("id"));
-            int soLuongMoi = Integer.parseInt(req.getParameter("soLuong"));
-            for (Map<String, Object> item : gioHang) {
-                SanPham s = (SanPham) item.get("sanpham");
-                if (s.getId_sanpham() == id) {           // đổi getId()
-                    item.put("soluong", soLuongMoi);
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private int tinhTongSoLuong(List<Map<String, Object>> gioHang) {
-        int tong = 0;
-        for (Map<String, Object> item : gioHang) {
-            tong += (int) item.get("soluong");
-        }
-        return tong;
-    }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

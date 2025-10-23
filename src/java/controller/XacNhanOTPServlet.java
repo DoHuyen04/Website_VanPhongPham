@@ -4,7 +4,6 @@
  */
 package controller;
 
-import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -87,7 +86,7 @@ public class XacNhanOTPServlet extends HttpServlet {
         if (email == null) {
             email = "dohuyen34204@gmail.com"; // test mặc định nếu chưa đăng nhập
         }
-
+  
         // 🔹 Lấy tổng tiền từ session
         double tongTien = 0;
         if (session.getAttribute("tongTien") != null) {

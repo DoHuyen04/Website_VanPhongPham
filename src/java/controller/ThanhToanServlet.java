@@ -12,6 +12,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import model.SanPham;
 
 /**
  *
@@ -70,20 +75,46 @@ public class ThanhToanServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-       
-         String tongTien = request.getParameter("tongTien");
-        request.setAttribute("tongTien", tongTien);
-        RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
-        rd.forward(request, response);
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    HttpSession session = request.getSession();
+
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+    if (gioHang == null || gioHang.isEmpty()) {
+        response.sendRedirect("gio_hang.jsp");
+        return;
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
+    String tongTienStr = request.getParameter("tongTien");
+    double tongTien = 0;
+    if (tongTienStr != null && !tongTienStr.isEmpty()) {
+        tongTien = Double.parseDouble(tongTienStr);
+    }
+
+    // ✅ Lưu tổng tiền vào session
+    session.setAttribute("tongTien", tongTien);
+
+    String[] chonSp = request.getParameterValues("chonSp");
+    List<SanPham> dsChon = new ArrayList<>();
+    if (chonSp != null) {
+        for (String idStr : chonSp) {
+            int id = Integer.parseInt(idStr);
+            for (Map<String, Object> item : gioHang) {
+                SanPham sp = (SanPham) item.get("sanpham");
+                if (sp.getId_sanpham() == id) {
+                    dsChon.add(sp);
+                }
+            }
+        }
+    }
+
+    request.setAttribute("dsChon", dsChon);
+    request.setAttribute("tongTienHang", tongTien);
+
+    RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
+    rd.forward(request, response);
+}
+
     @Override
     public String getServletInfo() {
         return "Short description";

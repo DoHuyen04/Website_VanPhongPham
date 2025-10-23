@@ -1,133 +1,263 @@
+<%@page import="java.text.DecimalFormat"%>  
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%
-    // Lấy tổng tiền từ tham số hoặc session
+    DecimalFormat df = new DecimalFormat("#,### VNĐ");
+
     double tongTienHang = 0;
-    try {
-        tongTienHang = Double.parseDouble(request.getParameter("tongTien"));
-    } catch (Exception e) {
-        // Nếu chưa có thì thử lấy từ session (VD: khi quay lại trang)
-        if (session.getAttribute("tongTien") != null)
-            tongTienHang = (double) session.getAttribute("tongTien");
+    if (request.getAttribute("tongTienHang") != null) {
+        tongTienHang = (double) request.getAttribute("tongTienHang");
+    } else if (session.getAttribute("tongTienHang") != null) {
+        tongTienHang = (double) session.getAttribute("tongTienHang");
     }
 
     double phiVanChuyen = 15000;
     double tongThanhToan = tongTienHang + phiVanChuyen;
 
-    // Lưu lại vào session để dùng cho bước OTP sau
-    session.setAttribute("tongTien", tongThanhToan);
+    session.setAttribute("tongTienHang", tongTienHang);
+    session.setAttribute("tongThanhToan", tongThanhToan);
 %>
+
 <html>
-<head>
-  <title>Thanh toán đơn hàng</title>
-  <link rel="stylesheet" href="css/kieu.css">
-</head>
-<body>
-<h2>Thanh toán đơn hàng</h2>
+    <head>
+        <title>Thanh toán đơn hàng</title>
+        <link rel="stylesheet" href="css/kieu.css">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f9f9f9;
+                margin: 40px;
+            }
+            h2 {
+                text-align: center;
+                color: #333;
+            }
+            .pay-form {
+                width: 540px;
+                margin: auto;
+                background: white;
+                padding: 25px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            .pay-form label {
+                display: block;
+                margin-top: 12px;
+                font-weight: bold;
+            }
+            .pay-form input, .pay-form select {
+                width: 100%;
+                padding: 8px;
+                margin-top: 6px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            .btn {
+                background: #28a745;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                margin-top: 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                width: 100%;
+            }
+            .btn:hover {
+                background: #218838;
+            }
+            .summary {
+                margin-top: 20px;
+                background: #f1f1f1;
+                padding: 12px;
+                border-radius: 6px;
+            }
+            #map {
+                width: 100%;
+                height: 250px;
+                margin-top: 10px;
+                border-radius: 8px;
+            }
+            .address-group input, .address-group select {
+                margin-top: 6px;
+            }
+        </style>
+    </head>
 
-<form action="XacNhanOTPServlet" method="post" class="pay-form">
-  <label>Họ tên người nhận:</label>
-  <input type="text" name="tenNguoiNhan" required>
+    <body>
+        <h2>Thanh toán đơn hàng</h2>
 
-  <label>Địa chỉ nhận hàng:</label>
-  <div class="address-group">
-    <select name="tinh" id="tinh" required>
-      <option value="">-- Chọn Tỉnh/Thành phố --</option>
-      <option value="Hà Nội">Hà Nội</option>
-      <option value="TP Hồ Chí Minh">TP Hồ Chí Minh</option>
-      <option value="Đà Nẵng">Đà Nẵng</option>
-      <option value="Hải Phòng">Hải Phòng</option>
-      <option value="Cần Thơ">Cần Thơ</option>
-    </select>
+        <form id="payForm" action="XacNhanOTPServlet" method="post" class="pay-form">
+            <label>Họ tên người nhận:</label>
+            <input type="text" name="tenNguoiNhan" required>
 
-    <select name="huyen" id="huyen" required>
-      <option value="">-- Chọn Quận/Huyện --</option>
-    </select>
+            <label>Địa chỉ nhận hàng:</label>
+            <div class="address-group">
+                <input list="dsTinh" id="tinh" name="tinh" placeholder="Nhập hoặc chọn Tỉnh/Thành phố" required>
+                <datalist id="dsTinh"></datalist>
 
-    <select name="xa" id="xa" required>
-      <option value="">-- Chọn Phường/Xã --</option>
-    </select>
+                <input list="dsHuyen" id="huyen" name="huyen" placeholder="Nhập hoặc chọn Quận/Huyện" required>
+                <datalist id="dsHuyen"></datalist>
 
-    <input type="text" name="duong" placeholder="Tên đường, Số nhà" required>
-  </div>
+                <input list="dsXa" id="xa" name="xa" placeholder="Nhập hoặc chọn Phường/Xã" required>
+                <datalist id="dsXa"></datalist>
 
-  <label>Số điện thoại:</label>
-  <input type="text" name="sdt" required>
+                <input type="text" name="duong" id="duong" placeholder="Tên đường, Số nhà" required>
+            </div>
 
-  <label>Phương thức thanh toán:</label>
-  <select name="phuongThuc" id="phuongThuc" onchange="toggleTaiKhoan()" required>
-    <option value="COD">Thanh toán khi nhận hàng (COD)</option>
-    <option value="Bank">Ngân hàng liên kết</option>
-  </select>
+            <label>Tìm địa chỉ trên Google Maps (tùy chọn):</label>
+            <input type="text" id="diaChi" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
+            <div id="map"></div>
 
-  <div id="taiKhoanNganHang" style="display:none;">
-    <label>Tài khoản ngân hàng (từ hồ sơ của tôi):</label>
-    <%
-      // Giả sử trong Session có thông tin tài khoản ngân hàng của người dùng
-      String taiKhoan = (String) session.getAttribute("taiKhoanNganHang");
-      if(taiKhoan == null) taiKhoan = "123456789 - Vietcombank";
-    %>
-    <input type="text" name="taiKhoan" value="<%= taiKhoan %>" readonly>
-  </div>
+            <label>Số điện thoại</label>
+            <input type="text" name="soDienThoai" id="soDienThoai">
+            <div class="error" id="soDienThoaiError"></div>
 
-  <div class="summary">
-    <p><b>Tổng tiền hàng:</b> <%= String.format("%,.0f", tongTienHang) %> VNĐ</p>
-    <p><b>Phí vận chuyển:</b> <%= String.format("%,.0f", phiVanChuyen) %> VNĐ</p>
-    <p><b>Tổng thanh toán:</b> <%= String.format("%,.0f", tongThanhToan) %> VNĐ</p>
-  </div>
+            <label>Phương thức thanh toán:</label>
+            <select name="phuongThuc" id="phuongThuc" onchange="toggleTaiKhoan()" required>
+                <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+                <option value="Bank">Ngân hàng liên kết</option>
+            </select>
 
-  <button type="submit" class="btn">Xác nhận & Đặt hàng</button>
-</form>
+            <div id="taiKhoanNganHang" style="display:none;">
+                <label>Tài khoản ngân hàng (từ hồ sơ của tôi):</label>
+                <%
+                    String taiKhoan = (String) session.getAttribute("taiKhoanNganHang");
+                    if (taiKhoan == null)
+                        taiKhoan = "123456789 - Vietcombank";
+                %>
+                <input type="text" name="taiKhoan" value="<%= taiKhoan%>" readonly>
+            </div>
 
-<script>
-  function toggleTaiKhoan(){
-    const v = document.getElementById("phuongThuc").value;
-    document.getElementById("taiKhoanNganHang").style.display = (v==="Bank")?"block":"none";
-  }
+            <div class="summary">
+                <p><b>Tổng tiền hàng:</b> <%= df.format(tongTienHang)%></p>
+                <p><b>Phí vận chuyển:</b> <%= df.format(phiVanChuyen)%></p>
+                <hr>
+                <p><b>Tổng thanh toán:</b> <span style="color:red;"><%= df.format(tongThanhToan)%></span></p>
+            </div>
 
-  // Dữ liệu mẫu mô phỏng danh sách quận/huyện và xã/phường
-  const data = {
-    "Hà Nội": {
-      "Ba Đình": ["Phúc Xá", "Trúc Bạch", "Vĩnh Phúc"],
-      "Hoàn Kiếm": ["Hàng Bạc", "Hàng Đào", "Lý Thái Tổ"]
-    },
-    "TP Hồ Chí Minh": {
-      "Quận 1": ["Bến Nghé", "Bến Thành", "Nguyễn Thái Bình"],
-      "Quận 3": ["Võ Thị Sáu", "Phường 7", "Phường 8"]
-    },
-    "Đà Nẵng": {
-      "Hải Châu": ["Phước Ninh", "Thạch Thang", "Hòa Cường Bắc"],
-      "Thanh Khê": ["An Khê", "Vĩnh Trung"]
+            <button type="button" class="btn" onclick="hienThiBanDo()">Hiển thị trên bản đồ</button>
+            <button type="submit" class="btn">Xác nhận & Đặt hàng</button>
+        </form>
+
+        <!-- Google Maps -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyk-_EMKXoUykzkL5nmg9OzJidA6cRW4A&libraries=places"></script>
+
+        <!-- ====== Dữ liệu hành chính Việt Nam đầy đủ ====== -->
+        <script>
+              let dataVN = {};
+
+              // 1️⃣ Đọc dữ liệu hành chính Việt Nam
+              fetch('data/hanhchinhvn.json')
+                      .then(res => res.json())
+                      .then(data => {
+                          dataVN = data;
+                          const tinhSelect = document.getElementById('dsTinh');
+                          Object.keys(dataVN).forEach(k => {
+                              const opt = document.createElement('option');
+                              opt.value = dataVN[k].name_with_type;
+                              tinhSelect.appendChild(opt);
+                          });
+                      });
+
+              // 2️⃣ Khi chọn tỉnh → hiện huyện
+              document.getElementById('tinh').addEventListener('input', e => {
+                  const tinhTen = e.target.value;
+                  const huyenList = document.getElementById('dsHuyen');
+                  const xaList = document.getElementById('dsXa');
+                  huyenList.innerHTML = '';
+                  xaList.innerHTML = '';
+
+                  const maTinh = Object.keys(dataVN).find(
+                          k => dataVN[k].name_with_type === tinhTen || dataVN[k].name === tinhTen
+                  );
+                  if (!maTinh)
+                      return;
+
+                  const dsHuyen = dataVN[maTinh]['quan-huyen'];
+                  Object.keys(dsHuyen).forEach(k => {
+                      const opt = document.createElement('option');
+                      opt.value = dsHuyen[k].name_with_type;
+                      huyenList.appendChild(opt);
+                  });
+              });
+
+              // 3️⃣ Khi chọn huyện → hiện xã
+              document.getElementById('huyen').addEventListener('input', e => {
+                  const tinhTen = document.getElementById('tinh').value;
+                  const huyenTen = e.target.value;
+                  const xaList = document.getElementById('dsXa');
+                  xaList.innerHTML = '';
+
+                  const maTinh = Object.keys(dataVN).find(
+                          k => dataVN[k].name_with_type === tinhTen || dataVN[k].name === tinhTen
+                  );
+                  if (!maTinh)
+                      return;
+
+                  const dsHuyen = dataVN[maTinh]['quan-huyen'];
+                  const maHuyen = Object.keys(dsHuyen).find(
+                          k => dsHuyen[k].name_with_type === huyenTen || dsHuyen[k].name === huyenTen
+                  );
+                  if (!maHuyen)
+                      return;
+
+                  const dsXa = dsHuyen[maHuyen]['xa-phuong'];
+                  Object.keys(dsXa).forEach(x => {
+                      const opt = document.createElement('option');
+                      opt.value = dsXa[x].name_with_type;
+                      xaList.appendChild(opt);
+                  });
+              });
+
+              // ====== Google Map ======
+              let map, marker;
+              function initMap() {
+                  map = new google.maps.Map(document.getElementById("map"), {
+                      center: {lat: 21.0285, lng: 105.8542},
+                      zoom: 13
+                  });
+                  marker = new google.maps.Marker({map});
+              }
+              window.onload = initMap;
+
+              function hienThiBanDo() {
+                  const diaChi = `${document.getElementById("duong").value}, ${document.getElementById("xa").value}, ${document.getElementById("huyen").value}, ${document.getElementById("tinh").value}, Việt Nam`;
+                  const geocoder = new google.maps.Geocoder();
+                  geocoder.geocode({address: diaChi}, (results, status) => {
+                      if (status === "OK") {
+                          map.setCenter(results[0].geometry.location);
+                          map.setZoom(16);
+                          marker.setPosition(results[0].geometry.location);
+                      } else {
+                          alert("Không tìm thấy địa chỉ: " + status);
+                      }
+                  });
+              }
+
+              function toggleTaiKhoan() {
+                  document.getElementById("taiKhoanNganHang").style.display =
+                          document.getElementById("phuongThuc").value === "Bank" ? "block" : "none";
+              }
+              const form = document.getElementById('payForm');
+
+form.addEventListener('submit', function (e) {
+    let valid = true;
+
+    // Reset lỗi
+    document.getElementById('soDienThoaiError').textContent = '';
+
+    const phone = document.getElementById('soDienThoai').value.trim();
+
+    // Regex: bắt đầu bằng 0, 10 hoặc 11 số
+    if (!/^0\d{9,10}$/.test(phone)) {
+        document.getElementById('soDienThoaiError').textContent = 'SĐT phải bắt đầu bằng 0 và có 10 hoặc 11 số.';
+        valid = false;
     }
-  };
 
-  const tinh = document.getElementById("tinh");
-  const huyen = document.getElementById("huyen");
-  const xa = document.getElementById("xa");
+    if (!valid) e.preventDefault();
+});
 
-  tinh.addEventListener("change", () => {
-    huyen.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
-    xa.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-    if(tinh.value && data[tinh.value]) {
-      Object.keys(data[tinh.value]).forEach(q => {
-        const opt = document.createElement("option");
-        opt.value = q;
-        opt.textContent = q;
-        huyen.appendChild(opt);
-      });
-    }
-  });
+        </script>
+       
 
-  huyen.addEventListener("change", () => {
-    xa.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-    if(tinh.value && huyen.value && data[tinh.value][huyen.value]) {
-      data[tinh.value][huyen.value].forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        xa.appendChild(opt);
-      });
-    }
-  });
-</script>
-</body>
+    </body>
 </html>

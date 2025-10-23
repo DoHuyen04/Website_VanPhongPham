@@ -10,10 +10,13 @@ public class DonHangDAO {
 
     // ➤ Thêm đơn hàng
     public int themDonHang(DonHang dh) {
-        String sql = "INSERT INTO donhang(id_nguoidung, diachi, sodienthoai, phuongthuc, tongtien, ngaydat) VALUES (?,?,?,?,?,NOW())";
-        try (Connection cn = DBUtil.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    String sql = "INSERT INTO donhang(id_nguoidung, diachi, sodienthoai, phuongthuc, tongtien, ngaydat) VALUES (?,?,?,?,?,NOW())";
+    Connection cn = null;
+    try {
+        cn = DBUtil.getConnection();
+        cn.setAutoCommit(false); // tắt auto-commit để quản lý transaction
 
+        try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, dh.getIdNguoiDung());
             ps.setString(2, dh.getDiaChi());
             ps.setString(3, dh.getSoDienThoai());
@@ -27,7 +30,6 @@ public class DonHangDAO {
                     if (rs.next()) {
                         int idDonHang = rs.getInt(1);
 
-                        // ➤ Lưu chi tiết đơn hàng
                         String sqlCt = "INSERT INTO donhangchitiet(id_donhang, id_sanpham, soluong, gia) VALUES (?,?,?,?)";
                         try (PreparedStatement psCt = cn.prepareStatement(sqlCt)) {
                             for (DonHangChiTiet ct : dh.getChiTiet()) {
@@ -39,15 +41,36 @@ public class DonHangDAO {
                             }
                             psCt.executeBatch();
                         }
+
+                        cn.commit(); // ✅ commit khi mọi thứ OK
                         return idDonHang;
                     }
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return -1;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        // rollback khi lỗi xảy ra
+        if (cn != null) {
+            try {
+                cn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    } finally {
+        if (cn != null) {
+            try {
+                cn.setAutoCommit(true); // bật lại auto-commit
+                cn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+    return -1;
+}
 
     // ➤ Lấy danh sách đơn hàng theo người dùng
     public List<DonHang> layDonHangTheoNguoiDung(int idNguoiDung) {
@@ -91,7 +114,7 @@ public class DonHangDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     DonHangChiTiet ct = new DonHangChiTiet();
-                    ct.setId_donhangchitiet(rs.getInt("id"));
+                    ct.setId_donhangchitiet(rs.getInt("id_donhangchitiet"));
                     ct.setId_sanpham(rs.getInt("id_sanpham"));
                     ct.setSoLuong(rs.getInt("soluong"));
                     ct.setGia(rs.getDouble("gia"));
