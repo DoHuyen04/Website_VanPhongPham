@@ -2,30 +2,23 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 public class DBUtil {
-  private static final String DB_URL = "jdbc:mysql://localhost:3307/vanphongpham?useSSL=false&serverTimezone=UTC";
-private static final String DB_USER = "root";
-private static final String DB_PASS = "@Huyen2004";
+    private static final String URL = "jdbc:mysql://localhost:3306/web_vanphongpham?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String USER = "root"; // nếu tài khoản khác thì sửa lại
+    private static final String PASSWORD = "140304"; // nếu MySQL có mật khẩu thì điền vào
 
-    static {
+    public static Connection getConnection() {
+        Connection conn = null;
         try {
+            // Dòng này phải có để load driver JDBC
             Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("✅ Kết nối MySQL thành công!");
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi kết nối CSDL: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-    }
-
-    public static void main(String[] args) {
-        try (Connection conn = getConnection()) {
-            System.out.println("✅ Kết nối MySQL thành công!");
-        } catch (SQLException e) {
-            System.out.println("❌ Lỗi khi kết nối: " + e.getMessage());
-        }
+        return conn;
     }
 }

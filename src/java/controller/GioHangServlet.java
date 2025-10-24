@@ -24,6 +24,7 @@ import model.SanPham;
  *
  * @author asus
  */
+@SuppressWarnings("unchecked")
 public class GioHangServlet extends HttpServlet {
  private SanPhamDAO sanPhamDAO = new SanPhamDAO();
     /**
