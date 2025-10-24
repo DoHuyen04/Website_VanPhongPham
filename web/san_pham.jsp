@@ -40,29 +40,7 @@
             Sản phẩm
             <small>(<%= request.getAttribute("danhMucHienTai") == null ? "Tất cả" : request.getAttribute("danhMucHienTai")%>)</small>
         </h3>
-
-        <form class="filter-bar" action="SanPhamServlet" method="get">
-            <input type="hidden" name="danhmuc" 
-                   value="<%= request.getParameter("danhmuc") != null ? request.getParameter("danhmuc") : ""%>">
-
-            <div class="search-group">
-                <input type="text" name="tuKhoa" class="input-search" 
-                       placeholder="🔍 Tìm sản phẩm..." 
-                       value="<%= request.getParameter("tuKhoa") != null ? request.getParameter("tuKhoa") : ""%>">
-            </div>
-
-            <div class="sort-group">
-                <label for="sapXep">Sắp xếp:</label>
-                <select id="sapXep" name="sapXep" class="select-sort">
-                    <option value="">-- Chọn --</option>
-                    <option value="tang" <%= "tang".equals(request.getParameter("sapXep")) ? "selected" : ""%>>Giá tăng dần</option>
-                    <option value="giam" <%= "giam".equals(request.getParameter("sapXep")) ? "selected" : ""%>>Giá giảm dần</option>
-                    <option value="az" <%= "az".equals(request.getParameter("sapXep")) ? "selected" : ""%>>Tên A - Z</option>
-                    <option value="za" <%= "za".equals(request.getParameter("sapXep")) ? "selected" : ""%>>Tên Z - A</option>
-                </select>
-                <button type="submit" class="btn-apply">Áp dụng</button>
-            </div>
-        </form>
+<jsp:include page="thanh_timkiem.jsp" />
 
         <!-- 🛍️ LƯỚI SẢN PHẨM -->
         <div class="product-grid">

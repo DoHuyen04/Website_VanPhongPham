@@ -24,34 +24,27 @@ public class TrangChuServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
 
-        String loai = request.getParameter("loai");
+    List<SanPham> spBanChay = sanPhamDAO.laySanPhamTheoLoai("banchay");
+    List<SanPham> spKhuyenMai = sanPhamDAO.laySanPhamTheoLoai("khuyenmai");
 
-        // 🔹 Nếu có tham số "loai" -> chỉ hiển thị loại đó
-        if (loai != null && !loai.isEmpty()) {
-            List<SanPham> dsTheoLoai = sanPhamDAO.laySanPhamTheoLoai(loai);
-            request.setAttribute("dsSanPham", dsTheoLoai);
-            request.setAttribute("loaiHienTai", loai); // Gửi tên loại để hiển thị tiêu đề
+    request.setAttribute("spBanChay", spBanChay);
+    request.setAttribute("spKhuyenMai", spKhuyenMai);
 
-        } else {
-            // 🔹 Nếu không có tham số "loai" -> hiển thị cả 2 loại (bán chạy + khuyến mại)
-            List<SanPham> spBanChay = sanPhamDAO.laySanPhamTheoLoai("banchay");
-            List<SanPham> spKhuyenMai = sanPhamDAO.laySanPhamTheoLoai("khuyenmai");
+    HttpSession session = request.getSession();
+    String tenDangNhap = (String) session.getAttribute("tendangnhap");
+    request.setAttribute("tenDangNhap", tenDangNhap);
 
-            request.setAttribute("spBanChay", spBanChay);
-            request.setAttribute("spKhuyenMai", spKhuyenMai);
-        }
-
-        // 🔹 Lấy thông tin người dùng từ session (nếu có)
-        HttpSession session = request.getSession();
-        String tenDangNhap = (String) session.getAttribute("tendangnhap");
-        request.setAttribute("tenDangNhap", tenDangNhap);
-
-        // 🔹 Chuyển hướng đến trang index.jsp
-        request.getRequestDispatcher("index.jsp").forward(request, response);
+    // ✅ Nếu vừa đăng nhập -> hiển thị trang_chu.jsp
+    String nextPage = "index.jsp";
+    if ("true".equals(request.getParameter("afterLogin"))) {
+        nextPage = "trang_chu.jsp";
     }
+
+    request.getRequestDispatcher(nextPage).forward(request, response);
+}
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

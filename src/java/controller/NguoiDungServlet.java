@@ -150,7 +150,7 @@ private void dangKy(HttpServletRequest request, HttpServletResponse response)
                 session.setAttribute("tenDangNhap", rs.getString("tenDangNhap"));
                 session.setAttribute("hoTen", rs.getString("hoTen"));
                 request.getSession().setAttribute("thongBaoDangNhap", "Đăng nhập thành công!");
-                response.sendRedirect("trang_chu.jsp");
+               response.sendRedirect("TrangChuServlet?afterLogin=true");
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
                 request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
