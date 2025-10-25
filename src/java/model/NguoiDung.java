@@ -13,7 +13,7 @@ public class NguoiDung {
     private String soDienThoai;
     private String gioiTinh;
     private LocalDate ngaySinh;
-
+ private String avatarUrl;
     public NguoiDung() {}
     
     public int getId() { return id_nguoidung; }
@@ -40,5 +40,13 @@ public class NguoiDung {
     public String getNgaySinhVn() {
         if (ngaySinh == null) return "";
         return ngaySinh.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+    
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

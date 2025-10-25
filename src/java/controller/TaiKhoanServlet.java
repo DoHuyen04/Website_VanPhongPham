@@ -15,8 +15,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
+
 @WebServlet("/TaiKhoanServlet")
 public class TaiKhoanServlet extends HttpServlet {
+
     private final NguoiDungDAO ndDao = new NguoiDungDAO();
 
     @Override
@@ -42,14 +44,12 @@ public class TaiKhoanServlet extends HttpServlet {
         String tenDangNhap = (String) ses.getAttribute("tenDangNhap");
 
         NguoiDung nd = new NguoiDung();
-        nd.setTenDangNhap(tenDangNhap); // chống sửa TĐN
+        nd.setTenDangNhap(tenDangNhap); 
         nd.setHoTen(req.getParameter("hoTen"));
         nd.setEmail(req.getParameter("email"));
-        nd.setSoDienThoai(req.getParameter("sodienthoai"));
-
-        boolean ok = ndDao.capNhatThongTinCoBan(nd);
-        // flash message đơn giản
+        nd.setSoDienThoai(req.getParameter("soDienThoai"));
+        boolean ok = ndDao.capNhatThongTin(nd);
         ses.setAttribute("msgTK", ok ? "Đã lưu hồ sơ." : "Lưu thất bại!");
-        resp.sendRedirect("taikhoan"); // load lại để thấy dữ liệu mới
+        resp.sendRedirect("taikhoan"); 
     }
 }

@@ -47,10 +47,4 @@ public class DonHangChiTiet {
     public void setGia(double gia) {
         this.gia = gia;
     }
-
-    public int getMaSanPham() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    
 }

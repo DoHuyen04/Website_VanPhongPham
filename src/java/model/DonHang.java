@@ -29,6 +29,17 @@ public class DonHang {
     public void setIdNguoiDung(int idNguoiDung) {
         this.id_nguoidung = idNguoiDung;
     }
+    public void setId_donhang(int id_donhang) {
+        this.id_donhang = id_donhang;
+    }
+
+    public int getId_nguoidung() {
+        return id_nguoidung;
+    }
+
+    public void setId_nguoidung(int id_nguoidung) {
+        this.id_nguoidung = id_nguoidung;
+    }
 
     public String getDiaChi() {
         return diaChi;
@@ -69,7 +80,6 @@ public class DonHang {
     public void setNgayDat(Date ngayDat) {
         this.ngayDat = ngayDat;
     }
-
     public List<DonHangChiTiet> getChiTiet() {
         return chiTiet;
     }
@@ -77,5 +87,8 @@ public class DonHang {
     public void setChiTiet(List<DonHangChiTiet> chiTiet) {
         this.chiTiet = chiTiet;
     }
-    
+    public int getMaNguoiDung() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 }
