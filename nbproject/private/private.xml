@@ -6,6 +6,7 @@
         <group/>
 =======
         <group>
+<<<<<<< HEAD
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/DonHangChiTiet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/css/kieu.css</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_timkiem.jsp</file>
@@ -28,6 +29,10 @@
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_toan.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/GioHangServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thong_tin_ca_nhan.jsp</file>
+=======
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/thong_tin_ca_nhan.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
+>>>>>>> origin/iamaine
         </group>
 >>>>>>> origin/huyenpea
     </open-files>

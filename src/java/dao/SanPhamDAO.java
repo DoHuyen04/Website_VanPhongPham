@@ -16,7 +16,11 @@ public class SanPhamDAO {
 
             while (rs.next()) {
                 SanPham sp = new SanPham();
+<<<<<<< HEAD
                 sp.setId_sanpham(rs.getInt("id_sanpham"));
+=======
+                sp.setId(rs.getInt("id_sanpham"));
+>>>>>>> origin/iamaine
                 sp.setTen(rs.getString("ten"));
                 sp.setMoTa(rs.getString("moTa"));
                 sp.setGia(rs.getDouble("gia"));
@@ -42,7 +46,11 @@ public class SanPhamDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     SanPham sp = new SanPham();
+<<<<<<< HEAD
                     sp.setId_sanpham(rs.getInt("id_sanpham"));
+=======
+                    sp.setId(rs.getInt("id_sanpham"));
+>>>>>>> origin/iamaine
                     sp.setTen(rs.getString("ten"));
                     sp.setMoTa(rs.getString("moTa"));
                     sp.setGia(rs.getDouble("gia"));
@@ -70,7 +78,11 @@ public class SanPhamDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     SanPham sp = new SanPham();
+<<<<<<< HEAD
                     sp.setId_sanpham(rs.getInt("id_sanpham"));
+=======
+                    sp.setId(rs.getInt("id_sanpham"));
+>>>>>>> origin/iamaine
                     sp.setTen(rs.getString("ten"));
                     sp.setMoTa(rs.getString("moTa"));
                     sp.setGia(rs.getDouble("gia"));
@@ -113,7 +125,11 @@ public class SanPhamDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 SanPham sp = new SanPham();
+<<<<<<< HEAD
                 sp.setId_sanpham(rs.getInt("id_sanpham"));
+=======
+                sp.setId(rs.getInt("id_sanpham"));
+>>>>>>> origin/iamaine
                 sp.setTen(rs.getString("ten"));
                 sp.setMoTa(rs.getString("moTa"));
                 sp.setGia(rs.getDouble("gia"));
@@ -151,7 +167,11 @@ public class SanPhamDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 SanPham sp = new SanPham();
+<<<<<<< HEAD
                 sp.setId_sanpham(rs.getInt("id_sanpham"));
+=======
+                sp.setId(rs.getInt("id_sanpham"));
+>>>>>>> origin/iamaine
                 sp.setTen(rs.getString("ten"));
                 sp.setGia(rs.getDouble("gia"));
                 sp.setMoTa(rs.getString("moTa"));
@@ -192,7 +212,11 @@ public class SanPhamDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     SanPham sp = new SanPham();
+<<<<<<< HEAD
                     sp.setId_sanpham(rs.getInt("id_sanpham"));
+=======
+                    sp.setId(rs.getInt("id_sanpham"));
+>>>>>>> origin/iamaine
                     sp.setTen(rs.getString("ten"));
                     sp.setMoTa(rs.getString("moTa"));
                     sp.setGia(rs.getDouble("gia"));
@@ -215,6 +239,7 @@ public class SanPhamDAO {
         return laySanPhamTheoLoai("banchay");
     }
 
+<<<<<<< HEAD
     // ✅ Lấy danh sách sản phẩm khuyến mãi
     public List<SanPham> laySanPhamKhuyenMai() {
         return laySanPhamTheoLoai("khuyenmai");
@@ -240,6 +265,19 @@ public class SanPhamDAO {
                     sp.setLoai(rs.getString("loai"));
                     ds.add(sp);
                 }
+=======
+            while (rs.next()) {
+                SanPham sp = new SanPham();
+                sp.setId(rs.getInt("id_sanpham"));
+                sp.setTen(rs.getString("ten"));
+                sp.setMoTa(rs.getString("moTa"));
+                sp.setGia(rs.getDouble("gia"));
+                sp.setDanhMuc(rs.getString("danhMuc"));
+                sp.setSoLuong(rs.getInt("soLuong"));
+                sp.setHinhAnh(rs.getString("hinhAnh"));
+                sp.setLoai(rs.getString("loai"));
+                ds.add(sp);
+>>>>>>> origin/iamaine
             }
         } catch (SQLException e) {
             e.printStackTrace();

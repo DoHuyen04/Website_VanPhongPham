@@ -12,7 +12,10 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.SanPham;
 
+<<<<<<< HEAD
 @WebServlet("/TrangChuServlet")
+=======
+>>>>>>> origin/iamaine
 public class TrangChuServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;

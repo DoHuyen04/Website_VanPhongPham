@@ -6,6 +6,7 @@ public class DonHangChiTiet {
     private int soLuong;
     private double gia;
 
+<<<<<<< HEAD
     public DonHangChiTiet() {
     }
 
@@ -14,6 +15,17 @@ public class DonHangChiTiet {
         this.id_sanpham = id_sanpham;
         this.soLuong = soLuong;
         this.gia = gia;
+=======
+    public DonHangChiTiet(int id_donhangchitiet, int id_sanpham, int soLuong, double gia) {
+        this.id_donhangchitiet = id_donhangchitiet;
+        this.id_sanpham = id_sanpham;
+        this.soLuong = soLuong;
+        this.gia = gia;
+    }
+
+    public DonHangChiTiet() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+>>>>>>> origin/iamaine
     }
 
     public int getId_donhangchitiet() {
@@ -52,5 +64,12 @@ public class DonHangChiTiet {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+<<<<<<< HEAD
+=======
+    public void id_donhangchitiet(int aInt) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+>>>>>>> origin/iamaine
     
 }

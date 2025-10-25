@@ -72,6 +72,7 @@ public class DonHangServlet extends HttpServlet {
 
     @SuppressWarnings("unchecked")
     @Override
+<<<<<<< HEAD
 protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
     HttpSession phien = req.getSession();
     NguoiDung nd = (NguoiDung) phien.getAttribute("nguoiDung");
@@ -146,6 +147,58 @@ protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws S
 }
 
 
+=======
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession phien = req.getSession();
+        NguoiDung nd = (NguoiDung) phien.getAttribute("nguoiDung");
+        if (nd == null) {
+            resp.sendRedirect("dang_nhap.jsp");
+            return;
+        }
+
+        String diaChi = req.getParameter("diaChi");
+        String sdt = req.getParameter("soDienThoai");
+        String phuongThuc = req.getParameter("phuongThuc");
+
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) phien.getAttribute("gioHang");
+        if (gioHang == null || gioHang.isEmpty()) {
+            resp.sendRedirect("gio_hang.jsp");
+            return;
+        }
+
+        DonHang dh = new DonHang();
+        // đổi setMaNguoiDung -> setId_nguoidung cho khớp class DonHang
+        dh.setId_nguoidung(nd.getId());
+        dh.setDiaChi(diaChi);
+        dh.setSoDienThoai(sdt);
+        dh.setPhuongThuc(phuongThuc);
+
+        double tong = 0.0;
+        for (Map<String, Object> item : gioHang) {
+            SanPham sp = (SanPham) item.get("sanpham");
+            int sl = (int) item.get("soluong");
+
+            DonHangChiTiet ct = new DonHangChiTiet();
+            ct.setId_sanpham(sp.id_donhangchitiet());
+            ct.setSoLuong(sl);
+            ct.setGia(sp.getGia());
+
+            dh.getChiTiet().add(ct); // dùng list chiTiet trong DonHang
+            tong += sp.getGia() * sl;
+        }
+        dh.setTongTien(tong);
+
+        int id_donhang = donHangDAO.themDonHang(dh);
+        if (id_donhang > 0) {
+            phien.removeAttribute("gioHang");
+            resp.sendRedirect("donhang?hanhDong=lichsu");
+        } else {
+            req.setAttribute("loi", "Tạo đơn hàng thất bại");
+            req.getRequestDispatcher("thanh_toan.jsp").forward(req, resp);
+        }
+    }
+
+>>>>>>> origin/iamaine
     @Override
     public String getServletInfo() {
         return "Short description";

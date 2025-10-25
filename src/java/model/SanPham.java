@@ -17,8 +17,13 @@ public class SanPham {
     }
 
     // getters & setters
+<<<<<<< HEAD
     public int getId_sanpham() { return id_sanpham; }
     public void setId_sanpham(int id) { this.id_sanpham = id; }
+=======
+    public int getId() { return id_sanpham; }
+    public void setId(int id) { this.id_sanpham = id; }
+>>>>>>> origin/iamaine
     public String getTen() { return ten; }
     public void setTen(String ten) { this.ten = ten; }
     public String getMoTa() { return moTa; }
@@ -33,4 +38,24 @@ public class SanPham {
     public void setHinhAnh(String hinhAnh) { this.hinhAnh = hinhAnh; }
     public String getLoai() { return  loai;}
     public void setLoai(String loai) { this.loai = loai; }
+
+    public void id_sanpham(int aInt) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void settensanpham(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public void setten(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public int id_donhangchitiet() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public int getId_sanpham() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

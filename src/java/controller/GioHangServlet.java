@@ -32,7 +32,10 @@ import model.SanPham;
 @WebServlet(name = "GioHangServlet", urlPatterns = {"/GioHangServlet"})
 >>>>>>> origin/huyenpea
 public class GioHangServlet extends HttpServlet {
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/iamaine
     private SanPhamDAO sanPhamDAO = new SanPhamDAO();
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -95,21 +98,82 @@ public class GioHangServlet extends HttpServlet {
             int idXoa = Integer.parseInt(idParam);
             List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
 
+<<<<<<< HEAD
             if (gioHang != null) {
                 gioHang.removeIf(item -> {
                     SanPham sp = (SanPham) item.get("sanpham");
                     return sp.getId_sanpham() == idXoa;
                 });
                 session.setAttribute("gioHang", gioHang);
+=======
+        int tongSoLuong = tinhTongSoLuong(gioHang);
+        session.setAttribute("tongSoLuong", tongSoLuong);
+
+        String redirect = req.getParameter("redirect");
+        if (redirect != null && redirect.equals("content")) {
+            resp.sendRedirect("content.jsp");
+        } else {
+            resp.sendRedirect("gio_hang.jsp");
+        }
+    }
+
+    private void themSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            SanPham sp = sanPhamDAO.layTheoId(id);
+            if (sp == null) return;
+
+            for (Map<String, Object> item : gioHang) {
+                SanPham s = (SanPham) item.get("sanpham");
+                if (s.getId_sanpham() == id) {            // đổi getId() -> getId_sanpham()
+                    int soLuong = (int) item.get("soluong");
+                    item.put("soluong", soLuong + 1);
+                    return;
+                }
+>>>>>>> origin/iamaine
             }
 
             response.sendRedirect("gio_hang.jsp");
             return;
         }
 
+<<<<<<< HEAD
         // ✅ Chuyển đến trang hiển thị giỏ hàng
         request.getRequestDispatcher("gio_hang.jsp").forward(request, response);
 
+=======
+    private void xoaSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            gioHang.removeIf(item -> ((SanPham) item.get("sanpham")).getId_sanpham() == id); // đổi getId()
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void capNhatSoLuong(HttpServletRequest req, List<Map<String, Object>> gioHang) {
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            int soLuongMoi = Integer.parseInt(req.getParameter("soLuong"));
+            for (Map<String, Object> item : gioHang) {
+                SanPham s = (SanPham) item.get("sanpham");
+                if (s.getId_sanpham() == id) {           // đổi getId()
+                    item.put("soluong", soLuongMoi);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int tinhTongSoLuong(List<Map<String, Object>> gioHang) {
+        int tong = 0;
+        for (Map<String, Object> item : gioHang) {
+            tong += (int) item.get("soluong");
+        }
+        return tong;
+>>>>>>> origin/iamaine
     }
 
     @Override
@@ -164,7 +228,11 @@ public class GioHangServlet extends HttpServlet {
         // ✅ Nếu sản phẩm đã có trong giỏ thì tăng số lượng
         for (Map<String, Object> item : gioHang) {
             SanPham sp = (SanPham) item.get("sanpham");
+<<<<<<< HEAD
             if (sp.getId_sanpham() == id) {
+=======
+            if (sp.getId_sanpham() == Integer.parseInt(idSanPham)) { // đổi getId()
+>>>>>>> origin/iamaine
                 int sl = (int) item.get("soluong");
                 item.put("soluong", sl + 1);
                 daCo = true;
@@ -183,10 +251,14 @@ public class GioHangServlet extends HttpServlet {
             }
         }
 
+<<<<<<< HEAD
         // ✅ Cập nhật lại session
         session.setAttribute("gioHang", gioHang);
 
         // ✅ Sau khi thêm sản phẩm, quay lại trang trước
+=======
+        session.setAttribute("gioHang", gioHang);
+>>>>>>> origin/iamaine
         response.sendRedirect(request.getHeader("referer"));
     }
 
