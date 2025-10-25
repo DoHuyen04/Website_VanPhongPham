@@ -2,21 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/util/MailUtil.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/dao/DonHangDAO.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/web/xac_thuc_ma.jsp</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/web/dang_nhap.jsp</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/controller/XacThucMaServlet.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/controller/DangKyServlet.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/model/NguoiDung.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/dao/DBUtil.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/web/dang_ky.jsp</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/controller/GioHangServlet.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/controller/GuiLaiMaServlet.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/dao/SanPhamDAO.java</file>
-            <file>file:/D:/WEB%20VĂN%20PHÒNG%20PHẨM/Website_VanPhongPham/src/java/dao/NguoiDungDAO.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
