@@ -1,1 +1,19 @@
+<<<<<<< HEAD
 /dist/
+=======
+# 👉 Bỏ qua thư mục riêng của NetBeans
+nbproject/private/
+
+# 👉 Bỏ qua các file build, WAR, JAR sinh ra tự động
+build/
+dist/
+# hoặc (tùy bạn muốn rõ ràng hơn)
+# /dist/
+
+# 👉 Bỏ qua các file hệ thống của macOS
+.DS_Store
+
+# 👉 Không bao giờ bỏ qua thư viện web
+!web/WEB-INF/lib/
+!web/WEB-INF/lib/*.jar
+>>>>>>> origin/huyenpea

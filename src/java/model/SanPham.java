@@ -1,23 +1,24 @@
 package model;
 
 public class SanPham {
-    private int id;
+    private int id_sanpham;
     private String ten;
     private String moTa;
     private double gia;
     private String danhMuc;
     private int soLuong;
     private String hinhAnh;
+   private String loai; 
 
     public SanPham() {}
 
-    public SanPham(int id, String ten, String moTa, double gia, String danhMuc, int soLuong, String hinhAnh) {
-        this.id = id; this.ten = ten; this.moTa = moTa; this.gia = gia; this.danhMuc = danhMuc; this.soLuong = soLuong; this.hinhAnh = hinhAnh;
+    public SanPham(int id, String ten, String moTa, double gia, String danhMuc, int soLuong, String hinhAnh, String loai) {
+        this.id_sanpham = id; this.ten = ten; this.moTa = moTa; this.gia = gia; this.danhMuc = danhMuc; this.soLuong = soLuong; this.hinhAnh = hinhAnh;this.loai = loai;
     }
 
     // getters & setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId_sanpham() { return id_sanpham; }
+    public void setId_sanpham(int id) { this.id_sanpham = id; }
     public String getTen() { return ten; }
     public void setTen(String ten) { this.ten = ten; }
     public String getMoTa() { return moTa; }
@@ -30,4 +31,6 @@ public class SanPham {
     public void setSoLuong(int soLuong) { this.soLuong = soLuong; }
     public String getHinhAnh() { return hinhAnh; }
     public void setHinhAnh(String hinhAnh) { this.hinhAnh = hinhAnh; }
+    public String getLoai() { return  loai;}
+    public void setLoai(String loai) { this.loai = loai; }
 }

@@ -1,144 +1,225 @@
-<%-- 
-    Document   : gio_hang
-    Created on : Oct 11, 2025, 1:55:37 PM
-    Author     : asus
---%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" %>  
 <%@ page import="java.util.*, model.SanPham" %>
 
 <%
-    List<Map<String,Object>> gioHang = (List<Map<String,Object>>) session.getAttribute("gioHang");
-    if (gioHang == null) gioHang = new ArrayList<>();
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+    if (gioHang == null) {
+        gioHang = new ArrayList<>();
+    }
+
     double tongTien = 0;
+    for (Map<String, Object> item : gioHang) {
+        SanPham sp = (SanPham) item.get("sanpham");
+        int soLuong = (int) item.get("soluong");
+        tongTien += sp.getGia() * soLuong;
+    }
+    session.setAttribute("tongTien", tongTien);
 %>
 
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>🛍️ Giỏ hàng</title>
-    <link rel="stylesheet" href="css/kieu.css">
-    <style>
-       body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background: #f0f0f0;
-        }
-        img {
-            border-radius: 6px;
-        }
-        .btn {
-            padding: 4px 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #fff;
-        }
-        .btn-update {
-            background-color: #4CAF50;
-        }
-        .btn-delete {
-            background-color: #e74c3c;
-        }
-        .btn-delete:hover {
-            background-color: #c0392b;
-        }
-        .btn-update:hover {
-            background-color: #388e3c;
-        }
-        .total {
-            margin-top: 15px;
-            text-align: right;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .empty-cart {
-            color: #555;
-            font-size: 18px;
-        }
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 6px 10px;
-            border-radius: 4px;
-        }
-        .back-btn:hover {
-            background: #f8f8f8;
-        }
-    </style>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <title>Giỏ hàng</title>
+        <link rel="stylesheet" href="css/kieu.css">
+        <style>
+            body {
+                font-family: Arial;
+                background: #f8f8f8;
+                margin: 0;
+                padding: 20px;
+            }
+            .cart-container {
+                background: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            h2 {
+                color: #333;
+            }
+            table {
+                width:100%;
+                border-collapse:collapse;
+                margin-top:15px;
+            }
+            th,td {
+                border-bottom:1px solid #eee;
+                padding:10px;
+                text-align:center;
+                vertical-align: middle;
+            }
+            th {
+                background:#f5f5f5;
+            }
+            img {
+                border-radius:6px;
+                width:70px;
+                height:70px;
+                object-fit:cover;
+            }
+            .qty-btn {
+                background:#007bff;
+                color:white;
+                border:none;
+                border-radius:4px;
+                padding:4px 8px;
+                cursor:pointer;
+                font-size:16px;
+            }
+            .qty-input {
+                width:40px;
+                text-align:center;
+                border:1px solid #ccc;
+            }
+            .btn-delete {
+                color:#fff;
+                background:#e74c3c;
+                padding:6px 10px;
+                border:none;
+                border-radius:4px;
+                cursor:pointer;
+            }
+            .total {
+                margin-top:20px;
+                text-align:right;
+                font-size:18px;
+                font-weight:bold;
+            }
+            .btn-checkout {
+                background:#28a745;
+                color:white;
+                padding:10px 18px;
+                border:none;
+                border-radius:6px;
+                cursor:pointer;
+                font-size:16px;
+            }
+            .select-all {
+                margin-bottom:10px;
+            }
+        </style>
+        <script>
+            function updateQuantity(id, change) {
+                const qtyInput = document.getElementById('qty-' + id);
+                let value = parseInt(qtyInput.value) + change;
+                if (value < 1) value = 1;
+                qtyInput.value = value;
 
-<body>
-    <h2>🛍️ Giỏ hàng của bạn</h2>
+                const price = parseFloat(document.querySelector('.product-check[value="' + id + '"]').dataset.price);
+                const thanhTien = price * value;
+                document.getElementById('total-' + id).innerText = thanhTien.toLocaleString() + " đ";
+                calculateTotal();
+            }
 
-    <% if (gioHang.isEmpty()) { %>
-        <p class="empty-cart">Giỏ hàng của bạn đang trống.</p>
-        <a href="content.jsp" class="back-btn">⬅️ Tiếp tục mua sắm</a>
-    <% } else { %>
-        <form action="giohang" method="get">
-            <input type="hidden" name="hanhDong" value="capnhatTatCa">
-            <table>
-                <tr>
-                    <th>Ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Thành tiền</th>
-                    <th>Hành động</th>
-                </tr>
+            function calculateTotal() {
+                let total = 0;
+                const checkboxes = document.querySelectorAll('.product-check:checked');
+                checkboxes.forEach(chk => {
+                    const price = parseFloat(chk.dataset.price);
+                    const qty = parseInt(document.getElementById('qty-' + chk.value).value);
+                    total += price * qty;
+                });
 
-                <% for (Map<String,Object> item : gioHang) {
-                    SanPham sp = (SanPham) item.get("sanpham");
-                    int soLuong = (int) item.get("soluong");
-                    double thanhTien = sp.getGia() * soLuong;
-                    tongTien += thanhTien;
-                %>
-                <tr>
-                    <td><img src="<%= sp.getHinhAnh() %>" width="70"></td>
-                    <td><%= sp.getTen() %></td>
-                    <td><%= String.format("%,.0f", sp.getGia()) %> đ</td>
-                    <td>
-                        <form action="giohang" method="get" style="display:inline;">
-                            <input type="hidden" name="hanhDong" value="capnhat">
-                            <input type="hidden" name="id" value="<%= sp.getId() %>">
-                            <input type="number" name="soLuong" value="<%= soLuong %>" min="1" style="width:60px;">
-                            <button type="submit" class="btn btn-update">Cập nhật</button>
-                        </form>
-                    </td>
-                    <td><%= String.format("%,.0f", thanhTien) %> đ</td>
-                    <td>
-                        <a href="giohang?hanhDong=xoa&id=<%= sp.getId() %>" class="btn btn-delete">Xóa</a>
-                    </td>
-                </tr>
-                <% } %>
-            </table>
-        </form>
+                // 🧮 Hiển thị tổng tiền
+                document.getElementById('tongTien').innerText = total.toLocaleString() + " đ";
+                // ✅ Cập nhật input ẩn để gửi qua Servlet
+                document.getElementById('tongTienInput').value = total;
+            }
 
-        <div class="total">
-            Tổng cộng: <%= String.format("%,.0f", tongTien) %> đ
+            function toggleAll(source) {
+                const checkboxes = document.querySelectorAll('.product-check');
+                checkboxes.forEach(chk => chk.checked = source.checked);
+                calculateTotal();
+            }
+
+            function thanhToan() {
+                const selected = Array.from(document.querySelectorAll('.product-check:checked')).map(chk => chk.value);
+                if (selected.length === 0) {
+                    alert("Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!");
+                    return;
+                }
+
+                // 🔹 Nếu người dùng không chọn gì, vẫn gửi tổng tất cả
+                if (document.getElementById('tongTienInput').value === "0") {
+                    const tong = <%= tongTien %>;
+                    document.getElementById('tongTienInput').value = tong;
+                }
+
+                document.getElementById("checkoutForm").submit();
+            }
+        </script>
+
+    </head>
+    <body>
+        <div class="cart-container">
+            <h2>🛒 Giỏ hàng của bạn</h2>
+
+            <% if (gioHang.isEmpty()) { %>
+            <p>Giỏ hàng trống. 
+                <a href="SanPhamServlet">Tiếp tục mua sắm</a></p>
+            <% } else { %>
+            <form id="checkoutForm" action="ThanhToanServlet" method="post">
+                <input type="hidden" id="tongTienInput" name="tongTien" value="<%= tongTien %>">
+                <a href="SanPhamServlet">Tiếp tục mua sắm</a></br>
+                <label class="select-all">
+                    <input type="checkbox" onclick="toggleAll(this)"> Chọn tất cả
+                </label>
+                <table>
+                    <tr>
+                        <th>Chọn</th>
+                        <th>Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                        <th>Hành động</th>
+                    </tr>
+
+                    <%
+                        for (Map<String, Object> item : gioHang) {
+                            SanPham sp = (SanPham) item.get("sanpham");
+                            int soLuong = (int) item.get("soluong");
+                            String hinh = sp.getHinhAnh();
+
+                            if (hinh != null && !hinh.startsWith("http")) {
+                                hinh = request.getContextPath() + "/hinh_anh/" + hinh;
+                            }
+                    %>
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="product-check"
+                                   name="chonSp" value="<%= sp.getId_sanpham()%>"
+                                   data-price="<%= sp.getGia()%>"
+                                   onchange="calculateTotal()">
+                        </td>
+                        <td>
+                            <img src="<%= hinh%>" alt="Ảnh sản phẩm" width="80" height="80"
+                                 style="border-radius:6px; object-fit:cover;">
+                        </td>
+                        <td><%= sp.getTen()%></td>
+                        <td><%= String.format("%,.0f", sp.getGia())%> đ</td>
+                        <td>
+                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, -1)">-</button>
+                            <input type="text" id="qty-<%= sp.getId_sanpham()%>" name="soLuong_<%= sp.getId_sanpham()%>" value="<%= soLuong%>" class="qty-input" onchange="calculateTotal()">
+                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, 1)">+</button>
+                        </td>
+                        <td><span id="total-<%= sp.getId_sanpham()%>"><%= String.format("%,.0f", sp.getGia() * soLuong)%> đ</span></td>
+                        <td><a href="GioHangServlet?action=xoa&id=<%= sp.getId_sanpham()%>" class="btn-delete">🗑️</a>
+</td>
+                    </tr>
+                    <% } %>
+                </table>
+                <div class="total">
+                    Tổng tiền: <span id="tongTien"><%= String.format("%,.0f", tongTien)%> đ</span>
+                    <input type="hidden" name="tongTien" id="tongTienInput" value="<%= tongTien %>">
+
+                </div>
+                <div style="text-align:right; margin-top:20px;">
+                    <button type="button" class="btn-checkout" onclick="thanhToan()">Thanh toán</button>
+                </div>
+            </form>
+            <% } %>
         </div>
-
-        <a href="san_pham.jsp" class="back-btn">⬅️ Tiếp tục mua sắm</a>
-    <% } %>
-
-</body>
+    </body>
 </html>

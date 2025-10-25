@@ -2,6 +2,33 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+<<<<<<< HEAD
         <group/>
+=======
+        <group>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/DonHangChiTiet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/css/kieu.css</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_timkiem.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/XacNhanOTPServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_toan_thanh_cong.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/dang_ky.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/data/hanhchinhvn.json</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/DonHangServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/TrangChuServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/DonHang.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/lich_su_don_hang.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/trang_chu.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/dao/DonHangDAO.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/index.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/gio_hang.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/ThanhToanServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/san_pham.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/KiemTraOTPServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_toan.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/GioHangServlet.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thong_tin_ca_nhan.jsp</file>
+        </group>
+>>>>>>> origin/huyenpea
     </open-files>
 </project-private>

@@ -8,82 +8,122 @@ import java.util.List;
 
 public class DonHangDAO {
 
+    // ➤ Thêm đơn hàng
     public int themDonHang(DonHang dh) {
-        String sql = "INSERT INTO don_hang(ma_nguoi_dung, dia_chi, so_dien_thoai, phuong_thuc, tong_tien) VALUES (?,?,?,?,?)";
-        try (Connection cn = DBUtil.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, dh.getMaNguoiDung());
+    String sql = "INSERT INTO donhang(id_nguoidung, diachi, sodienthoai, phuongthuc, tongtien, ngaydat) VALUES (?,?,?,?,?,NOW())";
+    Connection cn = null;
+    try {
+        cn = DBUtil.getConnection();
+        cn.setAutoCommit(false); // tắt auto-commit để quản lý transaction
+
+        try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, dh.getIdNguoiDung());
             ps.setString(2, dh.getDiaChi());
             ps.setString(3, dh.getSoDienThoai());
             ps.setString(4, dh.getPhuongThuc());
             ps.setDouble(5, dh.getTongTien());
+
             int kq = ps.executeUpdate();
+
             if (kq > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
-                        int maDon = rs.getInt(1);
-                        // lưu chi tiết
-                        String sqlCt = "INSERT INTO don_hang_chi_tiet(ma_don_hang, ma_san_pham, so_luong, gia) VALUES (?,?,?,?)";
+                        int idDonHang = rs.getInt(1);
+
+                        String sqlCt = "INSERT INTO donhangchitiet(id_donhang, id_sanpham, soluong, gia) VALUES (?,?,?,?)";
                         try (PreparedStatement psCt = cn.prepareStatement(sqlCt)) {
                             for (DonHangChiTiet ct : dh.getChiTiet()) {
-                                psCt.setInt(1, maDon);
-                                psCt.setInt(2, ct.getMaSanPham());
+                                psCt.setInt(1, idDonHang);
+                                psCt.setInt(2, ct.getId_sanpham());
                                 psCt.setInt(3, ct.getSoLuong());
                                 psCt.setDouble(4, ct.getGia());
                                 psCt.addBatch();
                             }
                             psCt.executeBatch();
                         }
-                        return maDon;
+
+                        cn.commit(); // ✅ commit khi mọi thứ OK
+                        return idDonHang;
                     }
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return -1;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        // rollback khi lỗi xảy ra
+        if (cn != null) {
+            try {
+                cn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    } finally {
+        if (cn != null) {
+            try {
+                cn.setAutoCommit(true); // bật lại auto-commit
+                cn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public List<DonHang> layDonHangTheoNguoiDung(int maNguoiDung) {
+    return -1;
+}
+
+    // ➤ Lấy danh sách đơn hàng theo người dùng
+    public List<DonHang> layDonHangTheoNguoiDung(int idNguoiDung) {
         List<DonHang> ds = new ArrayList<>();
-        String sql = "SELECT id, ma_nguoi_dung, dia_chi, so_dien_thoai, phuong_thuc, tong_tien, ngay_lap FROM don_hang WHERE ma_nguoi_dung=? ORDER BY ngay_lap DESC";
+        String sql = "SELECT * FROM donhang WHERE id_nguoidung=? ORDER BY ngaydat DESC";
+
         try (Connection cn = DBUtil.getConnection();
              PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setInt(1, maNguoiDung);
+
+            ps.setInt(1, idNguoiDung);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     DonHang dh = new DonHang();
-                    dh.setId(rs.getInt("id"));
-                    dh.setMaNguoiDung(rs.getInt("ma_nguoi_dung"));
-                    dh.setDiaChi(rs.getString("dia_chi"));
-                    dh.setSoDienThoai(rs.getString("so_dien_thoai"));
-                    dh.setPhuongThuc(rs.getString("phuong_thuc"));
-                    dh.setTongTien(rs.getDouble("tong_tien"));
-                    dh.setNgayLap(rs.getTimestamp("ngay_lap"));
-                    // load chi tiết
-                    dh.setChiTiet(layChiTietDonHang(dh.getId()));
+                    dh.setIdDonHang(rs.getInt("id_donhang"));
+                    dh.setIdNguoiDung(rs.getInt("id_nguoidung"));
+                    dh.setDiaChi(rs.getString("diachi"));
+                    dh.setSoDienThoai(rs.getString("sodienthoai"));
+                    dh.setPhuongThuc(rs.getString("phuongthuc"));
+                    dh.setTongTien(rs.getDouble("tongtien"));
+                    dh.setNgayDat(rs.getDate("ngaydat"));
+                    // ➤ Lấy chi tiết đơn hàng
+                    dh.setChiTiet(layChiTietDonHang(dh.getIdDonHang()));
                     ds.add(dh);
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return ds;
     }
 
-    private List<DonHangChiTiet> layChiTietDonHang(int maDon) {
+    // ➤ Lấy chi tiết đơn hàng
+    private List<DonHangChiTiet> layChiTietDonHang(int idDonHang) {
         List<DonHangChiTiet> ds = new ArrayList<>();
-        String sql = "SELECT id, ma_san_pham, so_luong, gia FROM don_hang_chi_tiet WHERE ma_don_hang=?";
+        String sql = "SELECT * FROM donhangchitiet WHERE id_donhang=?";
+
         try (Connection cn = DBUtil.getConnection();
              PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setInt(1, maDon);
+
+            ps.setInt(1, idDonHang);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     DonHangChiTiet ct = new DonHangChiTiet();
-                    ct.setId(rs.getInt("id"));
-                    ct.setMaSanPham(rs.getInt("ma_san_pham"));
-                    ct.setSoLuong(rs.getInt("so_luong"));
+                    ct.setId_donhangchitiet(rs.getInt("id_donhangchitiet"));
+                    ct.setId_sanpham(rs.getInt("id_sanpham"));
+                    ct.setSoLuong(rs.getInt("soluong"));
                     ct.setGia(rs.getDouble("gia"));
                     ds.add(ct);
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return ds;
     }
 }
