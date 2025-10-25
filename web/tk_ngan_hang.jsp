@@ -23,9 +23,8 @@
     }
 %>
 <style>
-    /* ===== Palette & base ===== */
     :root{
-        --brand:#7295E3;         /* cam Shopee */
+        --brand:#7295E3;
         --text:#111827;
         --muted:#6b7280;
         --line:#e5e7eb;
@@ -35,7 +34,6 @@
         --bg:#f8fafc;
     }
 
-    /* Header */
     .bank-header{
         display:flex;
         justify-content:space-between;
@@ -51,7 +49,6 @@
         color:var(--text);
     }
 
-    /* Add button */
     .btn-add{
         background:var(--brand);
         color:#fff;
@@ -72,7 +69,6 @@
         opacity:.9;
     }
 
-    /* Bank item (card) */
     .bank-item{
         display:flex;
         justify-content:space-between;
@@ -182,7 +178,6 @@
         font-weight:800;
         cursor:not-allowed;
     }
-    /* Khi có thể bấm (không mặc định) */
     .bank-actions .btn-set-default:not([disabled]):not(.disabled){
         background:#e8f1ff;
         color:#0b3cff;
@@ -197,7 +192,6 @@
         filter:brightness(1.03);
     }
 
-    /* CTA, inputs, grid */
     .bank-cta{
         display:none;
         margin:12px 0 4px;
@@ -235,19 +229,16 @@
 
 </style>
 <h2>Tài Khoản Ngân Hàng Của Tôi</h2>
-
-<% if (flash != null) {%>
-<div style="background:#e6ffed;border:1px solid #b7eb8f;padding:8px 10px;border-radius:8px;margin:10px 0;"><%= flash%></div>
-<% } %>
-
 <div class="bank-header">
     <div></div>
-    <button class="btn-add" type="button" onclick="document.getElementById('addBankBox').style.display = 'block'">＋ Thêm Ngân Hàng Liên Kết</button>
+    <button class="btn-add" type="button" onclick="document.getElementById('addBankBox').style.display = 'block'">
+        ＋ Thêm Ngân Hàng Liên Kết
+    </button>
 </div>
 
 <div id="addBankBox" class="bank-cta">
     <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
-        <input type="hidden" name="act" value="add">
+        <input type="hidden" name="action" value="add">
         <div class="grid2">
             <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng (VD: BIDV)" required>
             <input class="inp" name="chiNhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
@@ -255,7 +246,7 @@
             <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
         </div>
         <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
-            <input type="checkbox" name="macdinh" value="1"> Đặt làm mặc định
+            <input type="checkbox" name="macDinh"> Đặt làm mặc định
         </label>
         <div style="margin-top:10px">
             <button class="btn-add" type="submit">Lưu thẻ</button>
@@ -263,44 +254,49 @@
         </div>
     </form>
 </div>
-
 <!-- Danh sách -->
-<% for (TKNganHang b : banks) {%>
+<% for (TKNganHang b : banks) {
+        String stk = b.getSoTaiKhoan();
+        String last4 = (stk != null && stk.length() >= 4) ? stk.substring(stk.length() - 4) : (stk == null ? "" : stk);
+%>
 <div class="bank-item">
     <div class="bank-left">
-        <img src="hinh_anh/bank.png" style="width:44px;height:44px;border-radius:8px;border:1px solid #eee">
+        <img src="hinh_anh/bank.png" class="logo">
         <div>
-            <div style="font-weight:700">
+            <div class="bank-name">
                 <%= b.getTenNganHang()%>
-                <% if ("approved".equals(b.getTrangThai())) { %>
-                <span style="color:#10b981;margin-left:10px">Đã duyệt</span>
+                <% if ("daduyet".equalsIgnoreCase(b.getTrangThai())) { %>
+                <span class="bank-badge approved">Đã duyệt</span>
                 <% } %>
                 <% if (b.isMacDinh()) { %>
-                <span class="bank-badge">MẶC ĐỊNH</span>
+                <span class="bank-badge default">MẶC ĐỊNH</span>
                 <% }%>
             </div>
-            <div>Họ và tên: <b><%= b.getChuTaiKhoan()%></b></div>
-            <div>Chi nhánh: <%= b.getChiNhanh() == null ? "" : b.getChiNhanh()%></div>
+            <div class="sub">Họ và tên: <b><%= b.getChuTaiKhoan()%></b></div>
+            <div class="sub">Chi nhánh: <%= b.getChiNhanh() == null ? "" : b.getChiNhanh()%></div>
         </div>
     </div>
+
     <div class="bank-actions">
-        <div style="font-weight:700">* <%= b.getSoTaiKhoan().length() >= 4 ? b.getSoTaiKhoan().substring(b.getSoTaiKhoan().length() - 4) : b.getSoTaiKhoan()%></div>
+        <div class="bank-number">* <%= last4%></div>
 
         <% if (!b.isMacDinh()) {%>
         <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet" style="display:inline">
-            <input type="hidden" name="act" value="set_default">
-            <input type="hidden" name="id_TkNganHang" value="<%= b.getIdTkNganHang()%>">
-            <button type="submit" style="opacity:.65;border:1px solid #ddd;border-radius:8px;padding:6px 10px;">Thiết Lập Mặc Định</button>
+            <input type="hidden" name="action" value="setDefault">
+            <input type="hidden" name="id" value="<%= b.getId_TkNganHang()%>">
+            <button type="submit" class="btn-set-default">Thiết Lập Mặc Định</button>
         </form>
         <% } else { %>
-        <button disabled style="opacity:.35;border:1px solid #eee;border-radius:8px;padding:6px 10px;">Thiết Lập Mặc Định</button>
+        <button class="btn-set-default" disabled>Thiết Lập Mặc Định</button>
         <% }%>
 
-        <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet" style="display:inline" onsubmit="return confirm('Xóa thẻ ngân hàng này?');">
-            <input type="hidden" name="act" value="delete">
-            <input type="hidden" name="id_TkNganHang" value="<%= b.getIdTkNganHang()%>">
-            <button type="submit" class="del">Xóa</button>
-        </form>
+        <!-- Nút Xoá: chỉ mở modal, KHÔNG gọi servlet -->
+        <button type="button"
+                class="btn-delete-bank"
+                data-id="<%= b.getId_TkNganHang()%>"
+                style="padding:6px 10px;border:1px solid #ef4444;color:#ef4444;background:#fff;border-radius:8px;cursor:pointer">
+            Xoá
+        </button>
     </div>
 </div>
 <% } %>
@@ -308,4 +304,80 @@
 <% if (banks.isEmpty()) { %>
 <div style="color:#6b7280">Bạn chưa liên kết tài khoản ngân hàng nào.</div>
 <% }%>
+<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:9999">
+    <div style="background:#fff;border-radius:12px;max-width:420px;width:92%;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
+        <h3 style="margin:0 0 8px;font-size:18px">Xác nhận xoá thẻ</h3>
+        <p id="confirmText" style="margin:0 0 16px;color:#6b7280">
+            Bạn có chắc chắn muốn xoá thẻ ngân hàng này không?
+        </p>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button type="button" id="btnCancel" style="padding:8px 12px;border:1px solid #e5e7eb;background:#fff;border-radius:8px;cursor:pointer">Huỷ</button>
+            <button type="button" id="btnConfirm" style="padding:8px 12px;border:0;background:#ef4444;color:#fff;border-radius:8px;cursor:pointer">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<form id="deleteForm" method="post" action="${pageContext.request.contextPath}/TKNganHangServlet" style="display:none">
+    <input type="hidden" name="action" value="delete">
+    <input type="hidden" name="id" id="deleteId">
+</form>
+<script>
+    (function () {
+        const modal = document.getElementById('confirmModal');
+        const btnCancel = document.getElementById('btnCancel');
+        const btnConfirm = document.getElementById('btnConfirm');
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteIdInput = document.getElementById('deleteId');
+        const confirmText = document.getElementById('confirmText');
+
+        let pendingId = null;   
+        let pendingLabel = '';  
+
+        // Khi bấm nút Xoá
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-delete-bank');
+            if (!btn)
+                return;
+
+            e.preventDefault();
+            pendingId = btn.dataset.id;
+
+            // Hiện số tài khoản (4 số cuối) trong hộp thoại
+            const row = btn.closest('.bank-item');
+            const num = row ? row.querySelector('.bank-number') : null;
+            pendingLabel = num ? num.textContent.trim() : '';
+
+            if (confirmText && pendingLabel) {
+                confirmText.textContent = 'Bạn có chắc chắn muốn xoá thẻ ' + pendingLabel + ' không?';
+            }
+
+            // Mở modal
+            modal.style.display = 'flex';
+        });
+
+        // Nút Huỷ
+        btnCancel.addEventListener('click', function () {
+            pendingId = null;
+            modal.style.display = 'none';
+        });
+
+        // Nút Xác nhận
+        btnConfirm.addEventListener('click', function () {
+            if (!pendingId)
+                return;
+            deleteIdInput.value = pendingId;
+            modal.style.display = 'none';
+            deleteForm.submit(); // gửi request xoá đến servlet
+        });
+
+        // Click ra nền ngoài để đóng modal
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                pendingId = null;
+                modal.style.display = 'none';
+            }
+        });
+    })();
+</script>
+
 

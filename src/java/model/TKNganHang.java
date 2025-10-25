@@ -12,81 +12,36 @@ public class TKNganHang {
     private String chuTaiKhoan;
     private String chiNhanh;
     private boolean macDinh;
-    private String trangThai; 
+    private String trangThai;
 
-    public TKNganHang() {}
+    public int getId_TkNganHang() { return id_TkNganHang; }
+    public void setId_TkNganHang(int id_TkNganHang) { this.id_TkNganHang = id_TkNganHang; }
 
-    // Getter và Setter
-    public int getIdTkNganHang() {
-        return id_TkNganHang;
-    }
+    public int getId_nguoidung() { return id_nguoidung; }
+    public void setId_nguoidung(int id_nguoidung) { this.id_nguoidung = id_nguoidung; }
 
-    public void setIdTkNganHang(int idTkNganHang) {
-        this.id_TkNganHang = idTkNganHang;
-    }
+    public String getTenNganHang() { return tenNganHang; }
+    public void setTenNganHang(String tenNganHang) { this.tenNganHang = tenNganHang; }
 
-    public int getIdNguoiDung() {
-        return id_nguoidung;
-    }
+    public String getSoTaiKhoan() { return soTaiKhoan; }
+    public void setSoTaiKhoan(String soTaiKhoan) { this.soTaiKhoan = soTaiKhoan; }
 
-    public void setIdNguoiDung(int idNguoiDung) {
-        this.id_nguoidung = idNguoiDung;
-    }
+    public String getChuTaiKhoan() { return chuTaiKhoan; }
+    public void setChuTaiKhoan(String chuTaiKhoan) { this.chuTaiKhoan = chuTaiKhoan; }
 
-    public String getTenNganHang() {
-        return tenNganHang;
-    }
+    public String getChiNhanh() { return chiNhanh; }
+    public void setChiNhanh(String chiNhanh) { this.chiNhanh = chiNhanh; }
 
-    public void setTenNganHang(String tenNganHang) {
-        this.tenNganHang = tenNganHang;
-    }
+    public boolean isMacDinh() { return macDinh; }
+    public void setMacDinh(boolean macDinh) { this.macDinh = macDinh; }
 
-    public String getSoTaiKhoan() {
-        return soTaiKhoan;
-    }
+    public String getTrangThai() { return trangThai; }
+    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
 
-    public void setSoTaiKhoan(String soTaiKhoan) {
-        this.soTaiKhoan = soTaiKhoan;
-    }
+    public int getIdTkNganHang() { return id_TkNganHang; }
+    public void setIdTkNganHang(int id) { this.id_TkNganHang = id; }
 
-    public String getChuTaiKhoan() {
-        return chuTaiKhoan;
-    }
-
-    public void setChuTaiKhoan(String chuTaiKhoan) {
-        this.chuTaiKhoan = chuTaiKhoan;
-    }
-
-    public String getChiNhanh() {
-        return chiNhanh;
-    }
-
-    public void setChiNhanh(String chiNhanh) {
-        this.chiNhanh = chiNhanh;
-    }
-
-    public boolean isMacDinh() {
-        return macDinh;
-    }
-
-    public void setMacDinh(boolean macDinh) {
-        this.macDinh = macDinh;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
-
-    public void setId_nguoidung(int idNguoiDung) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    public void setId_TkNganHang(int aInt) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public int getIdNguoiDung() { return id_nguoidung; }
+    public void setIdNguoiDung(int id) { this.id_nguoidung = id; }
 }
 

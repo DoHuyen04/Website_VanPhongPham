@@ -16,10 +16,6 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.SanPham;
 
-/**
- *
- * @author asus
- */
 public class TrangChuServlet extends HttpServlet {
 
      private static final long serialVersionUID = 1L;

@@ -1,5 +1,6 @@
 package dao;
 
+import static dao.DBUtil.getConnection;
 import model.NguoiDung;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 
 public class NguoiDungDAO {
 
-    // ✅ Đăng ký người dùng mới
+    // Đăng ký người dùng mới
     public boolean dangKy(NguoiDung nd) {
         String sql = "INSERT INTO nguoidung (tendangnhap, matkhau, hoten, email, sodienthoai, gioitinh, ngaysinh) VALUES (?,?,?,?,?,?,?)";
         try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
@@ -51,9 +52,9 @@ public class NguoiDungDAO {
         return false;
     }
 
-    // ✅ Đăng nhập
+    // Đăng nhập
     public NguoiDung dangNhap(String tenDangNhap, String matKhau) {
-        String sql = "SELECT id_nguoidung, tendangnhap, hoten, email, sodienthoai FROM nguoidung WHERE tendangnhap=? AND matkhau=?";
+        String sql = "SELECT id_nguoidung, tendangnhap, hoten, email, sodienthoai, avatarurl FROM nguoidung WHERE tendangnhap=? AND matkhau=?";
         try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, tenDangNhap);
@@ -67,6 +68,7 @@ public class NguoiDungDAO {
                     nd.setHoTen(rs.getString("hoten"));
                     nd.setEmail(rs.getString("email"));
                     nd.setSoDienThoai(rs.getString("sodienthoai"));
+                    nd.setAvatarUrl(rs.getString("avatarurl"));
                     return nd;
                 }
             }
@@ -76,11 +78,13 @@ public class NguoiDungDAO {
         }
         return null;
     }
-    // dao/NguoiDungDAO.java
 
     public NguoiDung layTheoIdDayDu(int id) {
-        String sql = "SELECT id_nguoidung, tendangnhap, matkhau, hoten, email, sodienthoai, gioitinh, ngaysinh "
-                + "FROM nguoidung WHERE id_nguoidung = ?";
+        String sql = "SELECT id_nguoidung, tendangnhap, matkhau, hoten, email, sodienthoai, gioitinh, ngaysinh, "
+                + "avatar_url AS avatarUrl "
+                + // ✨ alias về avatarUrl
+                "FROM nguoidung WHERE id_nguoidung = ?";
+
         try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -94,10 +98,9 @@ public class NguoiDungDAO {
                     nd.setEmail(rs.getString("email"));
                     nd.setSoDienThoai(rs.getString("sodienthoai"));
                     nd.setGioiTinh(rs.getString("gioitinh"));
-
-                    Date d = rs.getDate("ngaysinh"); // java.sql.Date
+                    nd.setAvatarUrl(rs.getString("avatarUrl"));          // ✨ lấy theo alias
+                    Date d = rs.getDate("ngaysinh");
                     nd.setNgaySinh(d != null ? d.toLocalDate() : null);
-
                     return nd;
                 }
             }
@@ -122,7 +125,6 @@ public class NguoiDungDAO {
         return null;
     }
 
-
     public boolean capNhatThongTin(NguoiDung nd) {
         final String sql
                 = "UPDATE nguoidung "
@@ -146,7 +148,7 @@ public class NguoiDungDAO {
                 ps.setNull(5, java.sql.Types.DATE);
             }
 
-            ps.setInt(6, nd.getId()); // map tới id_nguoidung
+            ps.setInt(6, nd.getId());
 
             return ps.executeUpdate() > 0;
 
@@ -155,6 +157,7 @@ public class NguoiDungDAO {
             return false;
         }
     }
+
     public boolean themNguoiDung(NguoiDung nd) {
         String sql = "INSERT INTO nguoidung (tendangnhap, matkhau, hoten, email, sodienthoai, gioitinh, ngaysinh) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -180,7 +183,7 @@ public class NguoiDungDAO {
     }
 
     public boolean updateAvatar(String tenDangNhap, String avatarUrl) {
-        String sql = "UPDATE nguoidung SET avatar_url = ? WHERE tendangnhap = ?";
+        String sql = "UPDATE nguoidung SET avatar_url = ? WHERE tendangnhap = ?";  // ✨ avatar_url
         try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, avatarUrl);
             ps.setString(2, tenDangNhap);
@@ -189,5 +192,41 @@ public class NguoiDungDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void updateAvatar(int userId, String avatarUrl) {
+        String sql = "UPDATE nguoidung SET avatar_url = ? WHERE id_nguoidung = ?"; // ✨ avatar_url
+        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, avatarUrl);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi cập nhật avatar: " + e.getMessage());
+        }
+    }
+
+    public boolean updatePassword(int userId, String hashed) {
+        final String sql = "UPDATE nguoidung SET matKhau=? WHERE id_nguoidung=?";
+        try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, hashed);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updatePasswordByUsername(String username, String hashed) {
+        final String sql = "UPDATE nguoidung SET matKhau=? WHERE tenDangNhap=?";
+        try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, hashed);
+            ps.setString(2, username);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

@@ -11,7 +11,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-@WebServlet("/taikhoan") // URL riêng cho trang hồ sơ
+@WebServlet("/taikhoan")
 public class TaiKhoanServlet extends HttpServlet {
 
     private final NguoiDungDAO ndDao = new NguoiDungDAO();
@@ -39,14 +39,12 @@ public class TaiKhoanServlet extends HttpServlet {
         String tenDangNhap = (String) ses.getAttribute("tenDangNhap");
 
         NguoiDung nd = new NguoiDung();
-        nd.setTenDangNhap(tenDangNhap); // chống sửa TĐN
+        nd.setTenDangNhap(tenDangNhap); 
         nd.setHoTen(req.getParameter("hoTen"));
         nd.setEmail(req.getParameter("email"));
         nd.setSoDienThoai(req.getParameter("soDienThoai"));
-        //boolean ok = ndDao.capNhatHoSo(nd);
         boolean ok = ndDao.capNhatThongTin(nd);
-        // flash message đơn giản
         ses.setAttribute("msgTK", ok ? "Đã lưu hồ sơ." : "Lưu thất bại!");
-        resp.sendRedirect("taikhoan"); // load lại để thấy dữ liệu mới
+        resp.sendRedirect("taikhoan"); 
     }
 }

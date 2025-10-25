@@ -24,7 +24,10 @@ import jakarta.servlet.http.HttpSession;
 import model.NguoiDung;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
 
+@MultipartConfig(maxFileSize = 1024 * 1024) // 1MB
 @WebServlet("/nguoidung")
 public class NguoiDungServlet extends HttpServlet {
 
@@ -36,7 +39,6 @@ public class NguoiDungServlet extends HttpServlet {
             throws ServletException, IOException {
 
         req.setCharacterEncoding("UTF-8");
-        // (tuỳ chọn) đảm bảo response UTF-8
         resp.setCharacterEncoding("UTF-8");
 
         HttpSession ses = req.getSession(false);
@@ -66,25 +68,47 @@ public class NguoiDungServlet extends HttpServlet {
         }
 
         if (nd == null) {
-            // Không tìm thấy trong DB → bắt đăng nhập lại
             resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
             return;
         }
 
-        // format ngày sinh để JSP hiển thị
         String ngaySinhText = (nd.getNgaySinh() != null)
                 ? nd.getNgaySinh().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                 : "";
 
-        // --- set attribute cho JSP ---
         req.setAttribute("nguoiDung", nd);
         req.setAttribute("ngaySinhText", ngaySinhText);
 
-        // Sidebar kiểu Shopee đang dùng 'active'
-        req.setAttribute("active", "profile");
+        String tab = req.getParameter("tab");
+        if ("password".equals(tab)) {
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+            return;
+        }
+        if ("tknh".equals(tab)) {
+            java.util.List<model.TKNganHang> dsTKNH
+                    = new dao.TKNganHangDAO().listByUserId(nd.getId());
+            req.setAttribute("dsTKNH", dsTKNH);
 
-        // (tuỳ chọn) vẫn set 'tab' để tương thích chéo nếu nơi khác còn đọc 'tab'
-        req.setAttribute("tab", "profile");
+            req.setAttribute("active", "tknh");
+            req.setAttribute("tab", "tknh");
+
+        } else if ("address".equals(tab)) {
+            java.util.List<model.DiaChi> dsDiaChi
+                    = new dao.DiaChiDAO().listByUser(nd.getId());
+            req.setAttribute("dsDiaChi", dsDiaChi);
+            req.setAttribute("active", "address");
+            req.setAttribute("tab", "address");
+
+        } else if ("password".equals(tab)) {
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+
+        } else {
+            req.setAttribute("active", "profile");
+            req.setAttribute("tab", "profile");
+        }
 
         req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
     }
@@ -114,14 +138,22 @@ public class NguoiDungServlet extends HttpServlet {
                 dangNhap(request, response);
                 break;
 
+            case "doimatkhau":
+                doiMatKhau(request, response);
+                break;
+
+            // ✅ CASE MỚI: upload avatar
+            case "upload_avatar":
+                uploadAvatar(request, response);
+                break;
+
             default:
-                // Không rõ action → đưa về hồ sơ (hoặc trang đăng nhập tùy ý bạn)
                 response.sendRedirect(request.getContextPath() + "/nguoidung?hanhDong=hoso");
                 break;
         }
     }
 
-    // ✅ Hàm mã hóa mật khẩu SHA-256
+    // Hàm mã hóa mật khẩu SHA-256
     private String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -136,7 +168,7 @@ public class NguoiDungServlet extends HttpServlet {
         }
     }
 
-    // ✅ Xử lý đăng ký tài khoản
+    // Xử lý đăng ký tài khoản
     private void dangKy(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -154,17 +186,13 @@ public class NguoiDungServlet extends HttpServlet {
             ngaySinh = LocalDate.parse(ngaySinhStr);
         }
 
-        // 👉 Mã hóa mật khẩu trước khi lưu
         String matKhauMaHoa = hashPassword(matKhau);
-
-        // ✅ Kiểm tra tên đăng nhập hoặc email đã tồn tại
         if (nguoiDungDAO.kiemTraTonTai(tenDangNhap, email)) {
             request.setAttribute("thongBao", "Tên đăng nhập hoặc email đã tồn tại!");
             request.getRequestDispatcher("dang_ky.jsp").forward(request, response);
             return;
         }
 
-        // ✅ Tạo đối tượng người dùng
         NguoiDung nd = new NguoiDung();
         nd.setTenDangNhap(tenDangNhap);
         nd.setMatKhau(matKhauMaHoa);
@@ -174,7 +202,6 @@ public class NguoiDungServlet extends HttpServlet {
         nd.setGioiTinh(gioiTinh);
         nd.setNgaySinh(ngaySinh);
 
-        // ✅ Gọi DAO để lưu vào DB
         boolean thanhCong = nguoiDungDAO.dangKy(nd);
 
         if (thanhCong) {
@@ -185,14 +212,14 @@ public class NguoiDungServlet extends HttpServlet {
         }
     }
 
-    // ✅ Xử lý đăng nhập tài khoản
+    // Xử lý đăng nhập tài khoản
     private void dangNhap(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String tenDangNhap = request.getParameter("tenDangNhap");
         String matKhau = request.getParameter("matKhau");
 
-        // 👉 Mã hóa mật khẩu nhập vào để so sánh với DB
+        // Mã hóa mật khẩu nhập vào để so sánh với DB
         String matKhauMaHoa = hashPassword(matKhau);
 
         try (Connection conn = DBUtil.getConnection()) {
@@ -211,7 +238,6 @@ public class NguoiDungServlet extends HttpServlet {
                 session.setAttribute("userId", rs.getInt("id_nguoidung"));  // <--- thêm dòng này
                 response.sendRedirect(request.getContextPath() + "/trang_chu.jsp");
 
-//                response.sendRedirect("trang_chu.jsp");
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
                 request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
@@ -221,6 +247,73 @@ public class NguoiDungServlet extends HttpServlet {
             request.setAttribute("error", "Lỗi hệ thống. Vui lòng thử lại sau!");
             request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
         }
+    }
+
+    private void doiMatKhau(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        HttpSession ss = req.getSession(false);
+        Integer userId = (ss != null) ? (Integer) ss.getAttribute("userId") : null;
+        String tenDangNhap = (ss != null) ? (String) ss.getAttribute("tenDangNhap") : null;
+
+        // Chưa đăng nhập → về trang đăng nhập
+        if (ss == null || (userId == null && (tenDangNhap == null || tenDangNhap.isBlank()))) {
+            resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
+            return;
+        }
+
+        String pw = req.getParameter("pw");
+        String pw2 = req.getParameter("pw2");
+
+        pw = (pw != null) ? pw.trim() : "";
+        pw2 = (pw2 != null) ? pw2.trim() : "";
+
+        // 1) Kiểm tra trống
+        if (pw.isEmpty() || pw2.isEmpty()) {
+            req.setAttribute("err", "Vui lòng nhập đầy đủ thông tin.");
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+            return;
+        }
+
+        // 2) Khớp nhau
+        if (!pw.equals(pw2)) {
+            req.setAttribute("err", "Mật khẩu xác nhận không khớp.");
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+            return;
+        }
+
+        if (!pw.matches("^(?=.*[0-9])(?=.*[^A-Za-z0-9\\s]).{8,}$")) {
+            req.setAttribute("err", "Mật khẩu chưa đạt yêu cầu (≥8 ký tự, có số & ký tự đặc biệt).");
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+            return;
+        }
+
+        // 4) Hash & cập nhật DB
+        String hashed = hashPassword(pw);
+
+        boolean ok;
+        NguoiDungDAO dao = new NguoiDungDAO();
+        if (userId != null) {
+            ok = dao.updatePassword(userId.intValue(), hashed);
+        } else {
+            ok = dao.updatePasswordByUsername(tenDangNhap, hashed);
+        }
+
+        if (ok) {
+            req.setAttribute("ok", "Đổi mật khẩu thành công.");
+        } else {
+            req.setAttribute("err", "Đổi mật khẩu thất bại. Vui lòng thử lại.");
+        }
+
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
     }
 
     private void hienThiHoSo(HttpServletRequest req, HttpServletResponse resp)
@@ -250,37 +343,37 @@ public class NguoiDungServlet extends HttpServlet {
 
         int userId = (Integer) ses.getAttribute("userId");
 
-        // Lấy input (chỉ các trường được phép cập nhật)
         String hoTen = trimOrNull(req.getParameter("hoTen"));
         String email = trimOrNull(req.getParameter("email"));
         String soDienThoai = trimOrNull(req.getParameter("soDienThoai"));
         String gioiTinh = trimOrNull(req.getParameter("gioiTinh"));
-        String ngaySinhStr = trimOrNull(req.getParameter("ngaySinh")); // dd/MM/yyyy
+        String ngaySinhStr = trimOrNull(req.getParameter("ngaySinh"));
 
         java.time.LocalDate ngaySinh = null;
 
-    // thử parse với nhiều định dạng
-    if (ngaySinhStr != null) {
-        String[] patterns = { "dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd" };
-        for (String p : patterns) {
-            try {
-                java.time.format.DateTimeFormatter f =
-                        java.time.format.DateTimeFormatter.ofPattern(p);
-                ngaySinh = java.time.LocalDate.parse(ngaySinhStr, f);
-                break; // parse được thì thoát
-            } catch (Exception ignore) { /* thử pattern tiếp theo */ }
+        if (ngaySinhStr != null) {
+            String[] patterns = {"dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd"};
+            for (String p : patterns) {
+                try {
+                    java.time.format.DateTimeFormatter f
+                            = java.time.format.DateTimeFormatter.ofPattern(p);
+                    ngaySinh = java.time.LocalDate.parse(ngaySinhStr, f);
+                    break; // parse được thì thoát
+                } catch (Exception ignore) {
+                }
+            }
         }
-    }
 
-    // nếu vẫn không parse được (hoặc để trống) -> GIỮ NGÀY CŨ, không ghi NULL
-    if (ngaySinh == null) {
-        NguoiDung cu = nguoiDungDAO.layTheoIdDayDu(userId);
-        if (cu != null) ngaySinh = cu.getNgaySinh();
-    }
+        if (ngaySinh == null) {
+            NguoiDung cu = nguoiDungDAO.layTheoIdDayDu(userId);
+            if (cu != null) {
+                ngaySinh = cu.getNgaySinh();
+            }
+        }
 
         // Đóng gói model để update
         NguoiDung nd = new NguoiDung();
-        nd.setId(userId);                 // mapping tới id_nguoidung (DB)
+        nd.setId(userId);
         nd.setHoTen(hoTen);
         nd.setEmail(email);
         nd.setSoDienThoai(soDienThoai);
@@ -290,7 +383,6 @@ public class NguoiDungServlet extends HttpServlet {
         boolean ok = nguoiDungDAO.capNhatThongTin(nd);
 
         if (ok) {
-            // Làm mới dữ liệu phiên (nếu bạn có dùng trong JSP)
             NguoiDung ndMoi = nguoiDungDAO.layTheoIdDayDu(userId);
             ses.setAttribute("nguoiDung", ndMoi);
 
@@ -300,6 +392,59 @@ public class NguoiDungServlet extends HttpServlet {
             req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
         }
     }
+// ✨ Hàm xử lý upload avatar
+
+    private void uploadAvatar(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        HttpSession ses = req.getSession(false);
+        if (ses == null || ses.getAttribute("userId") == null) {
+            resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
+            return;
+        }
+        int userId = (Integer) ses.getAttribute("userId");
+
+        Part part = req.getPart("avatar");
+        if (part == null || part.getSize() == 0) {
+            resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&err=no_file");
+            return;
+        }
+
+        String ct = part.getContentType();
+        if (ct == null || !(ct.equalsIgnoreCase("image/jpeg") || ct.equalsIgnoreCase("image/png"))) {
+            resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&err=type");
+            return;
+        }
+
+        String ext = ct.equalsIgnoreCase("image/png") ? ".png" : ".jpg";
+        String fileName = "u" + userId + "-" + System.currentTimeMillis() + ext;
+
+        // Thư mục lưu trong webapp
+        String uploadRoot = getServletContext().getRealPath("/uploads/avatars");
+        java.io.File dir = new java.io.File(uploadRoot);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        java.io.File saved = new java.io.File(dir, fileName);
+        part.write(saved.getAbsolutePath());
+
+        String webPath = "/uploads/avatars/" + fileName;
+
+        // Cập nhật DB
+        new NguoiDungDAO().updateAvatar(userId, webPath);
+
+        // Cập nhật session
+        NguoiDung nd = (NguoiDung) ses.getAttribute("nguoiDung");
+        if (nd == null) {
+            nd = new NguoiDungDAO().layTheoIdDayDu(userId);
+        }
+        nd.setAvatarUrl(webPath);
+        ses.setAttribute("nguoiDung", nd);
+
+        // Tránh cache ảnh cũ
+        resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&v=" + System.currentTimeMillis());
+    }
 
     private String trimOrNull(String s) {
         if (s == null) {
@@ -308,6 +453,7 @@ public class NguoiDungServlet extends HttpServlet {
         s = s.trim();
         return s.isEmpty() ? null : s;
     }
+
     private static LocalDate parseNgaySinhFlexible(String s) {
         if (s == null) {
             return null;
@@ -325,7 +471,7 @@ public class NguoiDungServlet extends HttpServlet {
             } catch (Exception ignore) {
             }
         }
-        return null; // không parse được
+        return null;
     }
 
     @Override

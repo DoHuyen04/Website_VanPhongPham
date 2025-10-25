@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import dao.TKNganHangDAO;
@@ -18,74 +14,81 @@ public class TKNganHangServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
-    req.setCharacterEncoding("UTF-8");
+        req.setCharacterEncoding("UTF-8");
 
-    HttpSession session = req.getSession(false);
-    if (session == null) {
-        resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
-        return;
-    }
+        HttpSession session = req.getSession(false);
+        if (session == null) {
+            resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
+            return;
+        }
 
-    // Đồng bộ: chấp nhận CẢ userId HOẶC tenDangNhap
-    Integer idNguoiDungObj = (Integer) session.getAttribute("userId");
-    String tenDangNhap = (String) session.getAttribute("tenDangNhap");
+        // Có thể có cả userId lẫn tenDangNhap, ưu tiên userId
+        Integer idNguoiDungObj = (Integer) session.getAttribute("userId");
+        String tenDangNhap = (String) session.getAttribute("tenDangNhap");
+        if (idNguoiDungObj == null && (tenDangNhap == null || tenDangNhap.isBlank())) {
+            resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
+            return;
+        }
+        int userId = (idNguoiDungObj != null) ? idNguoiDungObj : -1;
 
-    if (idNguoiDungObj == null && (tenDangNhap == null || tenDangNhap.isBlank())) {
-        resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
-        return;
-    }
+        String action = req.getParameter("action");
+        if (action == null) {
+            action = req.getParameter("act");
+        }
+        if ("set_default".equalsIgnoreCase(action)) {
+            action = "setDefault";
+        }
 
-    // Dùng id nếu có, nếu không có thì để -1 (để nhánh dùng username hoạt động)
-    int idNguoiDung = (idNguoiDungObj != null) ? idNguoiDungObj : -1;
+        boolean success = false;
 
-    String action = req.getParameter("act");
-    boolean success = false;
-
-    try {
-        switch (action == null ? "" : action) {
-
-            case "add" -> {
+        try {
+            if ("add".equals(action)) {
                 TKNganHang tk = new TKNganHang();
-                if (idNguoiDung != -1) tk.setId_nguoidung(idNguoiDung);
                 tk.setTenNganHang(req.getParameter("tenNganHang"));
                 tk.setSoTaiKhoan(req.getParameter("soTaiKhoan"));
                 tk.setChuTaiKhoan(req.getParameter("chuTaiKhoan"));
                 tk.setChiNhanh(req.getParameter("chiNhanh"));
-                String md = String.valueOf(req.getParameter("macDinh"));
+
+                String md = String.valueOf(req.getParameter("macDinh")); 
                 tk.setMacDinh("1".equals(md) || "on".equalsIgnoreCase(md) || "true".equalsIgnoreCase(md));
-                tk.setTrangThai("approved");
-                success = tkDAO.themTaiKhoan(tenDangNhap, tk);          // nếu DAO theo tenDangNhap
-            }
+                tk.setTrangThai("daduyet"); 
 
-            case "delete" -> {
-                int idTkNganHang = Integer.parseInt(req.getParameter("id_TkNganHang"));
-                success = (idNguoiDung != -1)
-                        ? tkDAO.xoaTaiKhoan(idNguoiDung, idTkNganHang)
-                        : tkDAO.xoaTaiKhoan(tenDangNhap, idTkNganHang);
-            }
+                if (userId != -1) {
+                    tk.setId_nguoidung(userId);
+                    success = tkDAO.themTaiKhoanByUserId(userId, tk);
+                } else {
+                    success = tkDAO.themTaiKhoan(tenDangNhap, tk);
+                }
 
-            case "set_default" -> {
-                int idTkNganHang = Integer.parseInt(req.getParameter("id_TkNganHang"));
-                success = (idNguoiDung != -1)
-                        ? tkDAO.datMacDinh(idNguoiDung, idTkNganHang)
-                        : tkDAO.datMacDinh(tenDangNhap, idTkNganHang);
-            }
+            } else if ("delete".equals(action)) {
+                int idTk = Integer.parseInt(req.getParameter("id"));
+                success = (userId != -1)
+                        ? tkDAO.xoaTaiKhoan(userId, idTk)
+                        : tkDAO.xoaTaiKhoan(tenDangNhap, idTk);
 
-            default -> success = false;
+            } else if ("setDefault".equals(action)) {
+                int idTk = Integer.parseInt(req.getParameter("id"));
+                success = (userId != -1)
+                        ? tkDAO.datMacDinh(userId, idTk)
+                        : tkDAO.datMacDinh(tenDangNhap, idTk);
+
+            } else {
+                success = false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            success = false;
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-        success = false;
+        session.setAttribute("msgBank", success ? "Lưu thẻ thành công!" : "Thao tác thất bại!");
+        resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&tab=tknh");
     }
 
-    session.setAttribute("msgBank", success ? "Thao tác thành công." : "Thao tác thất bại!");
-    resp.sendRedirect(req.getContextPath() + "/thong_tin_ca_nhan.jsp?tab=tknh");
-}
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
-        resp.sendRedirect("thong_tin_ca_nhan.jsp?tab=tknh");
+        resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&tab=tknh");
+
     }
 }
