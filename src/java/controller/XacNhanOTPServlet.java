@@ -75,7 +75,10 @@ public class XacNhanOTPServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       
+
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+
         HttpSession session = request.getSession();
 
         // Lấy thông tin người dùng từ form thanh toán
@@ -86,7 +89,7 @@ public class XacNhanOTPServlet extends HttpServlet {
         if (email == null) {
             email = "dohuyen34204@gmail.com"; // test mặc định nếu chưa đăng nhập
         }
-  
+
         // 🔹 Lấy tổng tiền từ session
         double tongTien = 0;
         if (session.getAttribute("tongTien") != null) {
@@ -103,38 +106,39 @@ public class XacNhanOTPServlet extends HttpServlet {
         session.setAttribute("tenNguoiNhan", tenNguoiNhan);
         session.setAttribute("diaChi", diaChi);
         session.setAttribute("sdt", sdt);
-       
 
         // Gửi mail OTP
         String subject = "Mã xác nhận thanh toán đơn hàng của bạn";
-        String message = 
-    "<html>" +
-    "<body style='font-family:Arial,sans-serif; line-height:1.6; background-color:#f7f8fa; padding:20px;'>" +
-        "<div style='max-width:600px; margin:auto; background-color:#ffffff; border-radius:10px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);'>" +
-            "<h2 style='color:#4A90E2; text-align:center;'>Xác nhận thanh toán đơn hàng</h2>" +
-            "<p>Xin chào <b>" + tenNguoiNhan + "</b>,</p>" +
-            "<p>Cảm ơn bạn đã mua sắm tại <b>WEB Văn Phòng Phẩm</b>! <br>" +
-            "Dưới đây là mã xác nhận (OTP) để hoàn tất thanh toán đơn hàng của bạn:</p>" +
-            "<div style='text-align:center; margin:25px 0;'>" +
-                "<span style='font-size:26px; font-weight:bold; color:#ffffff; background:linear-gradient(135deg, #74ABE2, #5563DE); padding:12px 30px; border-radius:8px; letter-spacing:3px;'>" + otp + "</span>" +
-            "</div>" +
-            "<p>Mã OTP có hiệu lực trong <b>5 phút</b>. Vui lòng không chia sẻ mã này với bất kỳ ai để đảm bảo an toàn tài khoản của bạn.</p>" +
-            "<p style='margin-top:25px;'>Trân trọng,<br>" +
-            "<b>Đội ngũ hỗ trợ - WEB Văn Phòng Phẩm</b></p>" +
-            "<hr style='margin-top:30px; border:none; border-top:1px solid #ddd;'>" +
-            "<p style='font-size:12px; color:#777; text-align:center;'>Đây là email tự động, vui lòng không phản hồi lại email này.</p>" +
-        "</div>" +
-    "</body>" +
-    "</html>";
+        String message
+                = "<html>"
+                + "<body style='font-family:Arial,sans-serif; line-height:1.6; background-color:#f7f8fa; padding:20px;'>"
+                + "<div style='max-width:600px; margin:auto; background-color:#ffffff; border-radius:10px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);'>"
+                + "<h2 style='color:#4A90E2; text-align:center;'>Xác nhận thanh toán đơn hàng</h2>"
+                + "<p>Xin chào <b>" + tenNguoiNhan + "</b>,</p>"
+                + "<p>Cảm ơn bạn đã mua sắm tại <b>WEB Văn Phòng Phẩm</b>! <br>"
+                + "Dưới đây là mã xác nhận (OTP) để hoàn tất thanh toán đơn hàng của bạn:</p>"
+                + "<div style='text-align:center; margin:25px 0;'>"
+                + "<span style='font-size:26px; font-weight:bold; color:#ffffff; background:linear-gradient(135deg, #74ABE2, #5563DE); padding:12px 30px; border-radius:8px; letter-spacing:3px;'>" + otp + "</span>"
+                + "</div>"
+                + "<p>Mã OTP có hiệu lực trong <b>5 phút</b>. Vui lòng không chia sẻ mã này với bất kỳ ai để đảm bảo an toàn tài khoản của bạn.</p>"
+                + "<p style='margin-top:25px;'>Trân trọng,<br>"
+                + "<b>Đội ngũ hỗ trợ - WEB Văn Phòng Phẩm</b></p>"
+                + "<hr style='margin-top:30px; border:none; border-top:1px solid #ddd;'>"
+                + "<p style='font-size:12px; color:#777; text-align:center;'>Đây là email tự động, vui lòng không phản hồi lại email này.</p>"
+                + "</div>"
+                + "</body>"
+                + "</html>";
         try {
             EmailUtility.sendEmail(email, subject, message);
+            request.setAttribute("thongBao", "Mã OTP đã được gửi đến email " + email);
             request.getRequestDispatcher("xacnhan_otp.jsp").forward(request, response);
         } catch (MessagingException e) {
             e.printStackTrace();
-            response.getWriter().println("Lỗi gửi email: " + e.getMessage());
+//            response.getWriter().println("Lỗi gửi email: " + e.getMessage());
+            request.setAttribute("error", "Không thể gửi email OTP. Vui lòng thử lại!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
         }
     }
-    
 
     /**
      * Returns a short description of the servlet.

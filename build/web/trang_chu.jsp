@@ -170,6 +170,7 @@
                     <h3 class="product-name"><%= sp.getTen() %></h3>
                     <p class="product-price"><%= sp.getGia() %> đ</p>
                 </div>
+                
                 <%
                         }
                     } else {

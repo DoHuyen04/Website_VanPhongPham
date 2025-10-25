@@ -13,7 +13,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -99,7 +101,8 @@ public class KiemTraOTPServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Nếu OTP đúng
+      
+        // ✅ OTP chính xác → tạo đơn hàng
         String tenNguoiNhan = (String) session.getAttribute("tenNguoiNhan");
         String diaChi = (String) session.getAttribute("diaChi");
         String sdt = (String) session.getAttribute("sdt");
@@ -107,19 +110,38 @@ public class KiemTraOTPServlet extends HttpServlet {
         String taiKhoan = (String) session.getAttribute("taiKhoan");
         Double tongTien = (Double) session.getAttribute("tongTien");
 
-        // ✅ Lưu thông tin đơn hàng vào session (giả lập database)
-        session.setAttribute("donHangGanNhat", new Date() + " - " + tenNguoiNhan + " - " + tongTien + " VND");
+        if (tongTien == null) tongTien = 0.0;
 
-        // ✅ Lưu vào danh sách lịch sử đơn hàng
-        java.util.List<String> lichSu = (java.util.List<String>) session.getAttribute("lichSuDonHang");
-        if (lichSu == null) lichSu = new java.util.ArrayList<>();
-        lichSu.add(new Date() + " | Người nhận: " + tenNguoiNhan + " | Tổng: " + tongTien + " VND | " + phuongThuc);
+        // ✅ Ghi nhận thời gian tạo đơn
+        Date ngayTao = new Date();
+
+        // 🟢 Nếu bạn có DAO thực tế thì ở đây bạn sẽ thêm:
+        // DonHangDAO donHangDAO = new DonHangDAO();
+        // DonHang donHang = new DonHang(tenNguoiNhan, diaChi, sdt, tongTien, phuongThuc, ngayTao);
+        // donHangDAO.themDonHang(donHang);
+        // (Sau đó xóa giỏ hàng khỏi session)
+        // session.removeAttribute("gioHang");
+
+        // 🟡 Nếu chưa có DAO → demo lưu trong session
+        session.setAttribute("donHangGanNhat", ngayTao + " - " + tenNguoiNhan + " - " + tongTien + " VND");
+
+        List<String> lichSu = (List<String>) session.getAttribute("lichSuDonHang");
+        if (lichSu == null) lichSu = new ArrayList<>();
+
+        lichSu.add(ngayTao + " | Người nhận: " + tenNguoiNhan
+                + " | Tổng: " + tongTien + " VND"
+                + " | Phương thức: " + (phuongThuc != null ? phuongThuc : "Không xác định"));
+
         session.setAttribute("lichSuDonHang", lichSu);
 
-        // ✅ Chuyển sang trang thanh toán thành công
+        // ✅ Xóa OTP sau khi dùng
+        session.removeAttribute("otp");
+        session.removeAttribute("otp_expire");
+
+        // ✅ Chuyển đến trang thanh toán thành công
+        request.setAttribute("thongBao", "Thanh toán thành công!");
         request.getRequestDispatcher("thanh_toan_thanh_cong.jsp").forward(request, response);
     }
-
     /**
      * Returns a short description of the servlet.
      *

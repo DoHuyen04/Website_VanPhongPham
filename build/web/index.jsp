@@ -144,7 +144,13 @@
                     <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
                     <h3 class="product-name"><%= sp.getTen() %></h3>
                     <p class="product-price"><%= sp.getGia() %> đ</p>
+                     <form action="GioHangServlet" method="post">
+
+                    <input type="hidden" name="idSanPham" value="<%= sp.getId_sanpham()%>">
+                    <button class="add-cart" title="Thêm vào giỏ hàng">+</button>
+                </form>
                 </div>
+                
                 <%
                         }
                     } else {
@@ -169,7 +175,13 @@
                     <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
                     <h3 class="product-name"><%= sp.getTen() %></h3>
                     <p class="product-price"><%= sp.getGia() %> đ</p>
+                    <form action="GioHangServlet" method="post">
+
+                    <input type="hidden" name="idSanPham" value="<%= sp.getId_sanpham()%>">
+                    <button class="add-cart" title="Thêm vào giỏ hàng">+</button>
+                </form>
                 </div>
+                 
                 <%
                         }
                     } else {
