@@ -4,6 +4,37 @@
 <jsp:include page="header.jsp" />
 
 <link rel="stylesheet" href="css/kieu.css">
+<style>
+    .detail {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* căn toàn bộ nội dung sang trái */
+  gap: 10px; /* khoảng cách giữa các phần tử trong .detail */
+  margin-top: 8px;
+}
+
+.detail .btn-xemchitiet {
+  display: inline-block;
+  background: linear-gradient(135deg, #42a5f5, #1e88e5); /* xanh nhẹ */
+  color: white;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(30, 136, 229, 0.4);
+  transition: all 0.3s ease;
+}
+
+.detail .btn-xemchitiet:hover {
+  background: linear-gradient(135deg, #ff9800, #ff5722); /* chuyển sang cam khi hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.4);
+}
+
+</style>
 <%
     List<SanPham> ds = (List<SanPham>) request.getAttribute("danhSachSanPham");
     if (ds == null) {
@@ -57,6 +88,13 @@
                     <input type="hidden" name="idSanPham" value="<%= sp.getId_sanpham()%>">
                     <button class="add-cart" title="Thêm vào giỏ hàng">+</button>
                 </form>
+                    <div class ="detail">
+                        
+                        <a href="ChiTietSanPhamServlet?id=<%= sp.getId_sanpham() %>" class="btn-xemchitiet">
+    Detail
+</a>
+                    </div>
+                   
             </div>
             <% }
             } else { %>

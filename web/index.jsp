@@ -82,6 +82,30 @@
           color: #222;
           margin-bottom: 10px;
       }
+      /* ===== Nút Xem Chi Tiết ===== */
+.btn-xemchitiet {
+  display: inline-block;
+  background: linear-gradient(135deg, #42a5f5, #1e88e5); /* xanh nhẹ */
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 6px;
+  margin-right: auto;
+  margin-left: 10px; /* căn sang trái nhẹ cho cân */
+  box-shadow: 0 2px 6px rgba(30, 136, 229, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-xemchitiet:hover {
+  background: linear-gradient(135deg, #ff9800, #ff5722); /* chuyển sang cam khi hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.4);
+}
   </style>
 </head>
 <body>
@@ -149,6 +173,9 @@
                     <input type="hidden" name="idSanPham" value="<%= sp.getId_sanpham()%>">
                     <button class="add-cart" title="Thêm vào giỏ hàng">+</button>
                 </form>
+                   <a href="ChiTietSanPhamServlet?id=<%= sp.getId_sanpham() %>" class="btn-xemchitiet">
+    Detail
+</a>
                 </div>
                 
                 <%
@@ -180,6 +207,9 @@
                     <input type="hidden" name="idSanPham" value="<%= sp.getId_sanpham()%>">
                     <button class="add-cart" title="Thêm vào giỏ hàng">+</button>
                 </form>
+                     <a href="ChiTietSanPhamServlet?id=<%= sp.getId_sanpham() %>" class="btn-xemchitiet">
+    Detail
+</a>
                 </div>
                  
                 <%

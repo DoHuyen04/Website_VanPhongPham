@@ -8,6 +8,7 @@
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/SanPham.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/tk_dia_chi.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/NguoiDung.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/dang_ky.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/data/hanhchinhvn.json</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/DonHangServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/TrangChuServlet.java</file>
@@ -15,6 +16,8 @@
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/xacnhan_otp.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/tk_doi_mat_khau.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/lich_su_don_hang.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/utils/MailUtil.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/CapNhatThongTinServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/dao/DonHangDAO.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/TKNganHang.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/TKNganHangServlet.java</file>
@@ -27,12 +30,16 @@
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_timkiem.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/dao/TKNganHangDAO.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/thanh_toan_thanh_cong.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/dang_nhap.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/utils/EmailUtility.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/header.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/model/DonHang.java</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/LienHeServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/TaiKhoanServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/trang_chu.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/index.jsp</file>
+            <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/DangKyServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/src/java/controller/ThanhToanServlet.java</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/san_pham.jsp</file>
             <file>file:/E:/WEB_VANPHONGPHAM/WEB_VanPhongPham/web/tk_ngan_hang.jsp</file>

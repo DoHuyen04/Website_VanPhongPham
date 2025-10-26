@@ -56,58 +56,66 @@ public class GioHangServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-//
+HttpSession session = request.getSession();
+    String action = request.getParameter("action");
+    String idParam = request.getParameter("id");
+
+    // ✅ Xử lý xóa sản phẩm khỏi giỏ
+    if ("xoa".equals(action) && idParam != null) {
+        int idXoa = Integer.parseInt(idParam);
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+
+        if (gioHang != null) {
+            gioHang.removeIf(item -> {
+                SanPham sp = (SanPham) item.get("sanpham");
+                return sp.getId_sanpham() == idXoa;
+            });
+            session.setAttribute("gioHang", gioHang);
+        }
+
+        // ✅ Quay lại trang giỏ hàng sau khi xóa
+        response.sendRedirect("GioHangServlet");
+        return;
+    }
+
+    // ✅ Nếu không có action => hiển thị giỏ hàng
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+    if (gioHang == null) {
+        gioHang = new ArrayList<>();
+        session.setAttribute("gioHang", gioHang);
+    }
+
+    // Gửi danh sách giỏ hàng qua JSP
+    request.setAttribute("gioHang", gioHang);
+    RequestDispatcher rd = request.getRequestDispatcher("gio_hang.jsp");
+    rd.forward(request, response);
+//    
 //        HttpSession session = request.getSession();
 //        String action = request.getParameter("action");
 //        String idParam = request.getParameter("id");
 //
-//        if (action != null && action.equals("xoa") && idParam != null) {
+//        // ✅ Xóa sản phẩm khỏi giỏ hàng
+//        if ("xoa".equals(action) && idParam != null) {
 //            int idXoa = Integer.parseInt(idParam);
 //            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
 //
 //            if (gioHang != null) {
-//                Iterator<Map<String, Object>> iterator = gioHang.iterator();
-//                while (iterator.hasNext()) {
-//                    Map<String, Object> item = iterator.next();
-//                    model.SanPham sp = (model.SanPham) item.get("sanpham");
-//                    if (sp.getId_sanpham() == idXoa) {
-//                        iterator.remove(); // ✅ Xóa sản phẩm khỏi giỏ
-//                        break;
-//                    }
-//                }
+//                gioHang.removeIf(item -> {
+//                    SanPham sp = (SanPham) item.get("sanpham");
+//                    return sp.getId_sanpham() == idXoa;
+//                });
 //                session.setAttribute("gioHang", gioHang);
+//                int tongSoLuong = tinhTongSoLuong(gioHang);
+//                session.setAttribute("tongSoLuong", tongSoLuong);
+//
+//                String redirect = request.getParameter("redirect");
+//                if (redirect != null && redirect.equals("content")) {
+//                    response.sendRedirect("content.jsp");
+//                } else {
+//                    response.sendRedirect("gio_hang.jsp");
+//                }
 //            }
 //        }
-//
-//        // Quay lại trang giỏ hàng sau khi xóa
-//        response.sendRedirect("gio_hang.jsp");
-
-        HttpSession session = request.getSession();
-        String action = request.getParameter("action");
-        String idParam = request.getParameter("id");
-
-        // ✅ Xóa sản phẩm khỏi giỏ hàng
-        if ("xoa".equals(action) && idParam != null) {
-            int idXoa = Integer.parseInt(idParam);
-            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
-
-            if (gioHang != null) {
-                gioHang.removeIf(item -> {
-                    SanPham sp = (SanPham) item.get("sanpham");
-                    return sp.getId_sanpham() == idXoa;
-                });
-                session.setAttribute("gioHang", gioHang);
-                int tongSoLuong = tinhTongSoLuong(gioHang);
-                session.setAttribute("tongSoLuong", tongSoLuong);
-
-                String redirect = request.getParameter("redirect");
-                if (redirect != null && redirect.equals("content")) {
-                    response.sendRedirect("content.jsp");
-                } else {
-                    response.sendRedirect("gio_hang.jsp");
-                }
-            }
-        }
     }
 
     private void themSanPham(HttpServletRequest req, List<Map<String, Object>> gioHang) {

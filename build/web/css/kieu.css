@@ -679,24 +679,3 @@ body {
     font-weight: bold;
     margin-bottom: 10px;
 }
-
-.btn-xemchitiet {
-    background: linear-gradient(45deg, #ff9800, #ff5722);
-    border: none;
-    color: white;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.btn-xemchitiet:hover {
-    background: linear-gradient(45deg, #ff7043, #f44336);
-}
-
-.no-product {
-    grid-column: 1/-1;
-    text-align: center;
-    font-style: italic;
-    color: #777;
-}
