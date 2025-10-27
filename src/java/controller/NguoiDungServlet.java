@@ -167,53 +167,53 @@ public class NguoiDungServlet extends HttpServlet {
     }
 
     // ✅ Xử lý đăng ký tài khoản
-private void dangKy(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    request.setCharacterEncoding("UTF-8");
+    private void dangKy(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
 
-    String tenDangNhap = request.getParameter("tenDangNhap");
-    String matKhau = request.getParameter("matKhau");
-    String hoTen = request.getParameter("hoTen");
-    String email = request.getParameter("email");
-    String soDienThoai = request.getParameter("soDienThoai");
-    String gioiTinh = request.getParameter("gioiTinh");
-    String ngaySinhStr = request.getParameter("ngaySinh");
+        String tenDangNhap = request.getParameter("tenDangNhap");
+        String matKhau = request.getParameter("matKhau");
+        String hoTen = request.getParameter("hoTen");
+        String email = request.getParameter("email");
+        String soDienThoai = request.getParameter("soDienThoai");
+        String gioiTinh = request.getParameter("gioiTinh");
+        String ngaySinhStr = request.getParameter("ngaySinh");
 
-    LocalDate ngaySinh = null;
-    if (ngaySinhStr != null && !ngaySinhStr.isEmpty()) {
-        ngaySinh = LocalDate.parse(ngaySinhStr);
+        LocalDate ngaySinh = null;
+        if (ngaySinhStr != null && !ngaySinhStr.isEmpty()) {
+            ngaySinh = LocalDate.parse(ngaySinhStr);
+        }
+
+        // 👉 Mã hóa mật khẩu trước khi lưu
+        String matKhauMaHoa = hashPassword(matKhau);
+
+        // ✅ Kiểm tra tên đăng nhập hoặc email đã tồn tại
+        if (nguoiDungDAO.kiemTraTonTai(tenDangNhap, email)) {
+            request.setAttribute("thongBao", "Tên đăng nhập hoặc email đã tồn tại!");
+            request.getRequestDispatcher("dang_ky.jsp").forward(request, response);
+            return;
+        }
+
+        // ✅ Tạo đối tượng người dùng
+        NguoiDung nd = new NguoiDung();
+        nd.setTenDangNhap(tenDangNhap);
+        nd.setMatKhau(matKhauMaHoa);
+        nd.setHoTen(hoTen);
+        nd.setEmail(email);
+        nd.setSoDienThoai(soDienThoai);
+        nd.setGioiTinh(gioiTinh);
+        nd.setNgaySinh(ngaySinh);
+
+        // ✅ Gọi DAO để lưu vào DB
+        boolean thanhCong = nguoiDungDAO.dangKy(nd);
+
+        if (thanhCong) {
+            response.sendRedirect("dang_nhap.jsp?thongbao=dk_thanhcong");
+        } else {
+            request.setAttribute("thongBao", "Đăng ký thất bại, vui lòng thử lại!");
+            request.getRequestDispatcher("dang_ky.jsp").forward(request, response);
+        }
     }
-
-    // 👉 Mã hóa mật khẩu trước khi lưu
-    String matKhauMaHoa = hashPassword(matKhau);
-
-    // ✅ Kiểm tra tên đăng nhập hoặc email đã tồn tại
-    if (nguoiDungDAO.kiemTraTonTai(tenDangNhap, email)) {
-        request.setAttribute("thongBao", "Tên đăng nhập hoặc email đã tồn tại!");
-        request.getRequestDispatcher("dang_ky.jsp").forward(request, response);
-        return;
-    }
-
-    // ✅ Tạo đối tượng người dùng
-    NguoiDung nd = new NguoiDung();
-    nd.setTenDangNhap(tenDangNhap);
-    nd.setMatKhau(matKhauMaHoa);
-    nd.setHoTen(hoTen);
-    nd.setEmail(email);
-    nd.setSoDienThoai(soDienThoai);
-    nd.setGioiTinh(gioiTinh);
-    nd.setNgaySinh(ngaySinh);
-
-    // ✅ Gọi DAO để lưu vào DB
-    boolean thanhCong = nguoiDungDAO.dangKy(nd);
-
-    if (thanhCong) {
-        response.sendRedirect("dang_nhap.jsp?thongbao=dk_thanhcong");
-    } else {
-        request.setAttribute("thongBao", "Đăng ký thất bại, vui lòng thử lại!");
-        request.getRequestDispatcher("dang_ky.jsp").forward(request, response);
-    }
-}
 
     // Xử lý đăng nhập tài khoản
     private void dangNhap(HttpServletRequest request, HttpServletResponse response)
@@ -239,10 +239,10 @@ private void dangKy(HttpServletRequest request, HttpServletResponse response)
 //                request.getSession().setAttribute("thongBaoDangNhap", "Đăng nhập thành công!");
 //               response.sendRedirect("TrangChuServlet?afterLogin=true");
                 session.setAttribute("id_nguoidung", rs.getInt("id_nguoidung"));
-                session.setAttribute("userId", rs.getInt("id_nguoidung")); 
+                session.setAttribute("userId", rs.getInt("id_nguoidung"));
                 request.getSession().setAttribute("thongBaoDangNhap", "Đăng nhập thành công!");
                 response.sendRedirect(request.getContextPath() + "/trang_chu.jsp");
-                return ;
+                return;
 
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");

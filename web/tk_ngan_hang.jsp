@@ -9,14 +9,14 @@
 <%@ page import="dao.TKNganHangDAO, model.TKNganHang" %>
 
 <%
-  HttpSession ss = request.getSession(false);
-  String username = ss != null ? (String) ss.getAttribute("tenDangNhap") : null;
-  List<TKNganHang> banks = new ArrayList<>();
-  if (username != null) {
-      banks = new TKNganHangDAO().layDanhSachTheoTenDangNhap(username);
-  }
-  String flash = (String) session.getAttribute("msgBank");
- 
+    HttpSession ss = request.getSession(false);
+    String username = ss != null ? (String) ss.getAttribute("tenDangNhap") : null;
+    List<TKNganHang> banks = new ArrayList<>();
+    if (username != null) {
+        banks = new TKNganHangDAO().layDanhSachTheoTenDangNhap(username);
+    }
+    String flash = (String) session.getAttribute("msgBank");
+
     Integer userId = (ss != null) ? (Integer) ss.getAttribute("userId") : null;
     if (userId != null) {
         banks = new TKNganHangDAO().listByUserId(userId);
@@ -240,48 +240,16 @@
 </div>
 
 <div id="addBankBox" class="bank-cta">
-  <form method="post" action="bank">
-    <input type="hidden" name="act" value="add">
-    <div class="grid2">
-      <input class="inp" name="tennganhang" placeholder="Tên ngân hàng (VD: BIDV)" required>
-      <input class="inp" name="chinhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
-      <input class="inp" name="chutaikhoan" placeholder="Chủ tài khoản" required>
-      <input class="inp" name="sotaikhoan" placeholder="Số tài khoản" required>
-    </div>
-    <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
-      <input type="checkbox" name="macdinh" value="1"> Đặt làm mặc định
-    </label>
-    <div style="margin-top:10px">
-      <button class="btn-add" type="submit">Lưu thẻ</button>
-      <button type="button" onclick="document.getElementById('addBankBox').style.display='none'">Hủy</button>
-    </div>
-  </form>
-</div>
-
-<!-- Danh sách -->
-<% for (TKNganHang b : banks) { %>
-  <div class="bank-item">
-    <div class="bank-left">
-      <img src="hinh_anh/bank.png" style="width:44px;height:44px;border-radius:8px;border:1px solid #eee">
-      <div>
-        <div style="font-weight:700">
-          <%= b.getTenNganHang() %>
-          <% if ("approved".equals(b.getTrangThai())) { %>
-            <span style="color:#10b981;margin-left:10px">Đã duyệt</span>
-          <% } %>
-          <% if (b.isMacDinh()) { %>
-            <span class="bank-badge">MẶC ĐỊNH</span>
-          <% } %>
-    <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
-        <input type="hidden" name="action" value="add">
+    <form method="post" action="bank">
+        <input type="hidden" name="act" value="add">
         <div class="grid2">
-            <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng (VD: BIDV)" required>
-            <input class="inp" name="chiNhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
-            <input class="inp" name="chuTaiKhoan" placeholder="Chủ tài khoản" required>
-            <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
+            <input class="inp" name="tennganhang" placeholder="Tên ngân hàng (VD: BIDV)" required>
+            <input class="inp" name="chinhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
+            <input class="inp" name="chutaikhoan" placeholder="Chủ tài khoản" required>
+            <input class="inp" name="sotaikhoan" placeholder="Số tài khoản" required>
         </div>
         <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
-            <input type="checkbox" name="macDinh"> Đặt làm mặc định
+            <input type="checkbox" name="macdinh" value="1"> Đặt làm mặc định
         </label>
         <div style="margin-top:10px">
             <button class="btn-add" type="submit">Lưu thẻ</button>
@@ -289,6 +257,43 @@
         </div>
     </form>
 </div>
+
+<!-- Danh sách -->
+<% for (TKNganHang b : banks) {%>
+<div class="bank-item">
+    <div class="bank-left">
+        <img src="hinh_anh/bank.png" style="width:44px;height:44px;border-radius:8px;border:1px solid #eee">
+        <div>
+            <div style="font-weight:700">
+                <%= b.getTenNganHang()%>
+                <% if ("approved".equals(b.getTrangThai())) { %>
+                <span style="color:#10b981;margin-left:10px">Đã duyệt</span>
+                <% } %>
+                <% if (b.isMacDinh()) { %>
+                <span class="bank-badge">MẶC ĐỊNH</span>
+                <% } %>
+                <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
+                    <input type="hidden" name="action" value="add">
+                    <div class="grid2">
+                        <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng (VD: BIDV)" required>
+                        <input class="inp" name="chiNhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
+                        <input class="inp" name="chuTaiKhoan" placeholder="Chủ tài khoản" required>
+                        <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
+                    </div>
+                    <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
+                        <input type="checkbox" name="macDinh"> Đặt làm mặc định
+                    </label>
+                    <div style="margin-top:10px">
+                        <button class="btn-add" type="submit">Lưu thẻ</button>
+                        <button type="button" onclick="document.getElementById('addBankBox').style.display = 'none'">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>   
+    </div>     
+</div>      
+<% } %>    
+
 <% if (banks.isEmpty()) { %>
 <div style="color:#6b7280">Bạn chưa liên kết tài khoản ngân hàng nào.</div>
 <% }%>
@@ -318,8 +323,8 @@
         const deleteIdInput = document.getElementById('deleteId');
         const confirmText = document.getElementById('confirmText');
 
-        let pendingId = null;   
-        let pendingLabel = '';  
+        let pendingId = null;
+        let pendingLabel = '';
 
         // Khi bấm nút Xoá
         document.addEventListener('click', function (e) {
