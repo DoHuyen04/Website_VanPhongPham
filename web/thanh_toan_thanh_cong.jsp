@@ -61,7 +61,7 @@
 
     <div style="margin-top:25px;">
         <a href="index.jsp" class="btn">🏠 Quay lại trang chủ</a>
-        <a href="lich_su_don_hang.jsp" class="btn">🧾 Xem đơn hàng đã đặt</a>
+        <a href="don_hang.jsp" class="btn">🧾 Xem đơn hàng đã đặt</a>
     </div>
 
     <% if (donHangMoi != null) { %>

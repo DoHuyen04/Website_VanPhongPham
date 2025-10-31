@@ -1,6 +1,7 @@
 package controller;
 
 import dao.DBUtil;
+import dao.DonHangDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.RequestDispatcher;
@@ -32,6 +33,7 @@ public class NguoiDungServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private final NguoiDungDAO nguoiDungDAO = new NguoiDungDAO();
+    private final DonHangDAO donHangDAO = new DonHangDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -92,6 +94,23 @@ public class NguoiDungServlet extends HttpServlet {
             req.setAttribute("active", "tknh");
             req.setAttribute("tab", "tknh");
 
+            // ====== THÊM KHỐI NÀY ======
+        } else if ("orders".equals(tab)) {
+            // sub-tab đơn hàng: all | dadat | dahuy | hoantien
+            String otab = req.getParameter("otab");
+            String filter = ("dadat".equals(otab) || "dahuy".equals(otab) || "hoantien".equals(otab)) ? otab : null;
+
+            java.util.List<model.DonHang> dsDon
+                    = (filter == null)
+                            ? donHangDAO.layDonHangTheoNguoiDung(nd.getId())
+                            : donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
+
+            req.setAttribute("dsDonHang", dsDon);                 // danh sách đơn
+            req.setAttribute("activeOrderTab", (otab == null ? "all" : otab)); // sub-tab đang chọn
+            req.setAttribute("active", "orders");                 // để sidebar highlight
+            req.setAttribute("tab", "orders");
+            // ====== HẾT KHỐI THÊM ======
+
         } else if ("address".equals(tab)) {
             java.util.List<model.DiaChi> dsDiaChi
                     = new dao.DiaChiDAO().listByUser(nd.getId());
@@ -140,7 +159,6 @@ public class NguoiDungServlet extends HttpServlet {
                 doiMatKhau(request, response);
                 break;
 
-            // ✅ CASE MỚI: upload avatar
             case "upload_avatar":
                 uploadAvatar(request, response);
                 break;

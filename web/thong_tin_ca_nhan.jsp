@@ -10,6 +10,7 @@
 <c:if test="${empty sessionScope.userId}">
     <c:redirect url="/dang_nhap.jsp"/>
 </c:if>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
 
 <style>
     body {
@@ -218,6 +219,11 @@
             <a class="tab-btn ${active=='profile' ? 'active' : ''}"
                href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">👤 Hồ sơ</a>
 
+            <!-- NEW: đơn hàng như 1 tab -->
+            <a class="tab-btn"
+               href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=all">🧾 Đơn hàng</a>
+
+
             <a class="tab-btn ${active=='tknh' ? 'active' : ''}"
                href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=tknh">🏦 Ngân Hàng</a>
 
@@ -227,6 +233,7 @@
             <a class="tab-btn ${active=='password' ? 'active' : ''}"
                href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=password">🔒 Đổi mật khẩu</a>
         </nav>
+
 
     </aside>
 

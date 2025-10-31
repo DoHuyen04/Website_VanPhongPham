@@ -12,6 +12,9 @@ public class DonHang {
     private Date ngayDat;
     private List<DonHangChiTiet> chiTiet = new ArrayList<>();
 
+    // --- NEW: trạng thái đơn hàng: 'dadat' | 'dahuy' | 'hoantien'
+    private String trangthai;
+
     public DonHang() {}
 
     public int getIdDonHang() {
@@ -29,6 +32,8 @@ public class DonHang {
     public void setIdNguoiDung(int idNguoiDung) {
         this.id_nguoidung = idNguoiDung;
     }
+
+    // Giữ nguyên các getter/setter hiện có
     public void setId_donhang(int id_donhang) {
         this.id_donhang = id_donhang;
     }
@@ -80,6 +85,7 @@ public class DonHang {
     public void setNgayDat(Date ngayDat) {
         this.ngayDat = ngayDat;
     }
+
     public List<DonHangChiTiet> getChiTiet() {
         return chiTiet;
     }
@@ -87,8 +93,18 @@ public class DonHang {
     public void setChiTiet(List<DonHangChiTiet> chiTiet) {
         this.chiTiet = chiTiet;
     }
+
+    // --- FIX: không còn ném exception, trả về id_nguoidung
     public int getMaNguoiDung() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return id_nguoidung;
     }
 
+    // --- NEW: getter/setter cho trạng thái
+    public String getTrangthai() {
+        return trangthai;
+    }
+
+    public void setTrangthai(String trangthai) {
+        this.trangthai = trangthai;
+    }
 }

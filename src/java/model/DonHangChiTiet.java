@@ -1,7 +1,9 @@
 package model;
 
 public class DonHangChiTiet {
+
     private int id_donhangchitiet;
+    private int id_donhang;
     private int id_sanpham;
     private int soLuong;
     private double gia;
@@ -22,6 +24,14 @@ public class DonHangChiTiet {
 
     public void setId_donhangchitiet(int id_donhangchitiet) {
         this.id_donhangchitiet = id_donhangchitiet;
+    }
+
+    public int getId_donhang() {
+        return id_donhang;
+    }
+
+    public void setId_donhang(int id_donhang) {
+        this.id_donhang = id_donhang;
     }
 
     public int getId_sanpham() {
