@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/dao/DonHangDAO.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/DonHangServlet.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/don_hang.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/thong_tin_ca_nhan.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/src/java/controller/NguoiDungServlet.java</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/san_pham.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/trang_chu.jsp</file>
+            <file>file:/Users/daumai/NetBeansProjects/Website_VanPhongPham/web/header.jsp</file>
+        </group>
+    </open-files>
+</project-private>

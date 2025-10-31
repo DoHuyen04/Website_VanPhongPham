@@ -5,12 +5,26 @@
 --%>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <footer class="footer">
-  <div class="container">
-    <div>Nhóm thực hiện:</div>
-    <ul class="team">
-      <li>Nguyễn Văn A — 01/01/2000</li>
-      <li>Trần Thị B — 02/02/2000</li>
-      <li>Lê Văn C — 03/03/2000</li>
-    </ul>
+  <div class="container footer-grid">
+    <div class="member">
+      <h4>Đỗ Thị Huyền</h4>
+      <p>📅 03/04/2004</p>
+      <p>📞 033 7949 703</p>
+      <p>✉️ dohuyen34204@gmail.com</p>
+    </div>
+
+    <div class="member">
+      <h4>Đậu Thị Mai</h4>
+      <p>📅 (26/12/2004)</p>
+      <p>📞 0966 478 623 </p>
+      <p>✉️ dauthimai2014@gmail.com</p>
+    </div>
+
+    <div class="member">
+      <h4>Nông Thị Mai Hương</h4>
+      <p>📅 14/03/2004</p>
+      <p>📞 0374 805 997</p>
+      <p>✉️ ntmhuong.dhti16a4hn@sv.uneti.vn.edu</p>
+    </div>
   </div>
 </footer>
