@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/kieu.css">
 </head>
 <body>
+    <jsp:include page="header.jsp" />
     <div class="login-page">
         <div class="login-container">
             <h2>Đổi mật khẩu</h2>
@@ -44,5 +45,6 @@
         }
     }
 </script>
+ <jsp:include page="footer.jsp" />
 </body>
 </html>

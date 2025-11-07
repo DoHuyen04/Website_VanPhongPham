@@ -246,4 +246,20 @@ public class SanPhamDAO {
         }
         return ds;
     }
+    public int laySoLuongTonKho(int idSanPham) {
+    int tonKho = 0;
+    try (Connection conn = DBUtil.getConnection()) {
+        String sql = "SELECT soLuong FROM SanPham WHERE id_sanpham = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, idSanPham);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            tonKho = rs.getInt("soLuong");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return tonKho;
+}
+
 }

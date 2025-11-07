@@ -85,8 +85,27 @@
 
 <!-- ==== FORM THANH TÌM KIẾM ==== -->
 <form class="filter-bar" action="SanPhamServlet" method="get">
-  <input type="hidden" name="danhmuc"
-         value="<%= request.getParameter("danhmuc") != null ? request.getParameter("danhmuc") : ""%>">
+
+  <!-- Giữ lại danh mục, giá, loại khi tìm kiếm -->
+  <%
+    String[] danhMucs = request.getParameterValues("danhmuc");
+    String[] gias = request.getParameterValues("gia");
+    String[] loais = request.getParameterValues("loai");
+    if (danhMucs != null)
+        for (String dm : danhMucs) {
+  %>
+      <input type="hidden" name="danhmuc" value="<%= dm %>">
+  <% } %>
+  <% if (gias != null)
+        for (String g : gias) {
+  %>
+      <input type="hidden" name="gia" value="<%= g %>">
+  <% } %>
+  <% if (loais != null)
+        for (String l : loais) {
+  %>
+      <input type="hidden" name="loai" value="<%= l %>">
+  <% } %>
 
   <div class="search-group">
     <input type="text" name="tuKhoa" class="input-search"

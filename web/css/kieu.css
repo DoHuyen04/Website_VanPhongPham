@@ -192,7 +192,57 @@ body {
 .add-cart:hover {
     background: #f9a11b;
 }
+.cart-header {
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+.empty-cart {
+    font-size: 18px;
+    color: #555;
+    margin-top: 20px;
+}
+
+.continue-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.continue-link:hover {
+    text-decoration: underline;
+}
+
+.cart-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.select-all {
+    font-size: 16px;
+    color: #333;
+}
+
+.btn-delete-selected {
+    background: #e74c3c;
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.btn-delete-selected:hover {
+    background: #c0392b;
+}
 /* ========== FOOTER ========== */
 .footer {
     background: linear-gradient(135deg, #74ABE2, #5563DE);
