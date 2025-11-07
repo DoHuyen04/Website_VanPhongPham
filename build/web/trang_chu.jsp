@@ -8,6 +8,18 @@
         return;
     }
 %>
+<%
+    String message = (String) session.getAttribute("message");
+    if (message != null) {
+%>
+    <div style="background-color:#f0f8ff; color:#333; padding:10px; margin:10px 0; border-left:5px solid #007bff;">
+        <%= message %>
+    </div>
+<%
+        session.removeAttribute("message"); // Xóa để không lặp lại
+    }
+%>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>

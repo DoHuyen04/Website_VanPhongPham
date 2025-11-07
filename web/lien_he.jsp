@@ -9,6 +9,7 @@
 <html>
 <head><meta charset="UTF-8"><title>Liên hệ</title></head>
 <body>
+    <jsp:include page="header.jsp" />
 <h2>Liên hệ</h2>
 <form action="lienhe" method="post">
     <label>Họ tên</label><br><input name="hoTen" required><br>
@@ -18,5 +19,6 @@
     <button type="submit">Gửi</button>
 </form>
 <p style="color:green"><%= request.getAttribute("thongbao") != null ? request.getAttribute("thongbao") : "" %></p>
+ <jsp:include page="footer.jsp" />
 </body>
 </html>

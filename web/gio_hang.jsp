@@ -15,6 +15,17 @@
     }
     session.setAttribute("tongTien", tongTien);
 %>
+<%
+    String message = (String) session.getAttribute("message");
+    if (message != null) {
+%>
+<div style="background-color:#f0f8ff; color:#333; padding:10px; margin:10px 0; border-left:5px solid #007bff;">
+    <%= message%>
+</div>
+<%
+        session.removeAttribute("message"); // Xóa để không lặp lại
+    }
+%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -72,58 +83,116 @@
                 text-align:center;
                 border:1px solid #ccc;
             }
-            .btn-delete {
-                color:#fff;
-                background:#e74c3c;
-                padding:6px 10px;
-                border:none;
-                border-radius:4px;
-                cursor:pointer;
-            }
+
             .total {
                 margin-top:20px;
                 text-align:right;
                 font-size:18px;
                 font-weight:bold;
             }
-            .btn-checkout {
-                background:#28a745;
-                color:white;
-                padding:10px 18px;
-                border:none;
-                border-radius:6px;
-                cursor:pointer;
-                font-size:16px;
+            a.continue-shopping {
+                display: inline-block;
+                padding: 8px 16px;
+                margin-bottom: 10px;
+                background: #17a2b8;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: 0.3s;
             }
+            a.continue-shopping:hover {
+                background: #138496;
+            }
+
             .select-all {
-                margin-bottom:10px;
+               display: inline-block;
+                padding: 8px 16px;
+                margin-bottom: 10px;
+               background-color: #9C27B0;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: 0.3s;
             }
+
+            .btn-delete-selected {
+                background: #e74c3c;
+                color: #fff;
+                padding: 8px 14px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+                transition: 0.3s;
+            }
+            .btn-delete-selected:hover {
+                background: #c0392b;
+            }
+
+            .btn-checkout {
+                background: #28a745;
+                color: white;
+                padding: 10px 18px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: 0.3s;
+            }
+            .btn-checkout:hover {
+                background: #218838;
+            }
+
+            input[type="checkbox"] {
+                transform: scale(1.2);
+                margin-right: 5px;
+                cursor: pointer;
+            }
+
+
         </style>
         <script>
-            function updateQuantity(id, change) {
+            function updateQuantity(id, change, max) {
                 const qtyInput = document.getElementById('qty-' + id);
                 let value = parseInt(qtyInput.value) + change;
-                if (value < 1) value = 1;
+
+                if (value < 1)
+                    value = 1;
+                if (value > max) {
+                    alert("⚠️ Số lượng sản phẩm không được vượt quá tồn kho (" + max + ")");
+                    value = max; // giữ nguyên số lượng tối đa
+                }
+
                 qtyInput.value = value;
 
+                // Cập nhật total từng sản phẩm
                 const price = parseFloat(document.querySelector('.product-check[value="' + id + '"]').dataset.price);
-                const thanhTien = price * value;
-                document.getElementById('total-' + id).innerText = thanhTien.toLocaleString() + " đ";
+                document.getElementById('total-' + id).innerText = (price * value).toLocaleString() + " đ";
+
                 calculateTotal();
             }
 
             function calculateTotal() {
                 let total = 0;
                 const checkboxes = document.querySelectorAll('.product-check:checked');
+
                 checkboxes.forEach(chk => {
+                    const id = chk.value;
+                    const qtyInput = document.getElementById('qty-' + id);
+                    const qty = parseInt(qtyInput.value);
+                    const max = parseInt(chk.dataset.stock); // data-stock là tồn kho của sản phẩm
                     const price = parseFloat(chk.dataset.price);
-                    const qty = parseInt(document.getElementById('qty-' + chk.value).value);
-                    total += price * qty;
+
+                    if (qty > max) {
+                        alert("⚠️ Số lượng sản phẩm " + id + " vượt tồn kho (" + max + ")");
+                        qtyInput.value = max; // giữ nguyên số lượng tối đa
+                        total += price * max;
+                    } else {
+                        total += price * qty;
+                    }
                 });
 
-                // 🧮 Hiển thị tổng tiền
                 document.getElementById('tongTien').innerText = total.toLocaleString() + " đ";
-                // ✅ Cập nhật input ẩn để gửi qua Servlet
                 document.getElementById('tongTienInput').value = total;
             }
 
@@ -142,29 +211,65 @@
 
                 // 🔹 Nếu người dùng không chọn gì, vẫn gửi tổng tất cả
                 if (document.getElementById('tongTienInput').value === "0") {
-                    const tong = <%= tongTien %>;
+                    const tong = <%= tongTien%>;
                     document.getElementById('tongTienInput').value = tong;
                 }
 
                 document.getElementById("checkoutForm").submit();
             }
+            function xoaChon() {
+    const selected = Array.from(document.querySelectorAll('.product-check:checked')).map(chk => chk.value);
+    if (selected.length === 0) {
+        alert("Chọn ít nhất 1 sản phẩm để xóa!");
+        return;
+    }
+
+    if (confirm("Bạn có chắc muốn xóa các sản phẩm đã chọn?")) {
+        const ids = selected.join(',');
+        fetch('GioHangServlet', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'action=xoaNhieu&ids=' + encodeURIComponent(ids)
+        })
+        .then(response => response.text())
+        .then(data => {
+            if(data.trim() === "OK"){
+                alert("Xóa thành công " + selected.length + " sản phẩm!");
+                location.reload(); // tải lại trang để hiển thị giỏ hàng mới
+            } else {
+                alert("Xảy ra lỗi khi xóa sản phẩm!");
+            }
+        })
+        .catch(err => {
+            alert("Xảy ra lỗi khi xóa sản phẩm!");
+            console.error(err);
+        });
+    }
+}
+
+            
+
         </script>
 
     </head>
     <body>
+        <jsp:include page="header.jsp" />
         <div class="cart-container">
             <h2>🛒 Giỏ hàng của bạn</h2>
 
             <% if (gioHang.isEmpty()) { %>
-            <p>Giỏ hàng trống. 
-                <a href="SanPhamServlet">Tiếp tục mua sắm</a></p>
-            <% } else { %>
+            <p>Giỏ hàng trống. </p>
+            <a href="SanPhamServlet" class="continue-shopping">Tiếp tục mua sắm</a>
+            <% } else {%>
             <form id="checkoutForm" action="ThanhToanServlet" method="post">
-                <input type="hidden" id="tongTienInput" name="tongTien" value="<%= tongTien %>">
-                <a href="SanPhamServlet">Tiếp tục mua sắm</a></br>
+                <input type="hidden" id="tongTienInput" name="tongTien" value="<%= tongTien%>">
+                <a href="SanPhamServlet" class="continue-shopping">Tiếp tục mua sắm</a>
                 <label class="select-all">
                     <input type="checkbox" onclick="toggleAll(this)"> Chọn tất cả
                 </label>
+                <button type="button" class="btn-delete-selected" onclick="xoaChon()">Xóa các mục đã chọn</button>
+
+
                 <table>
                     <tr>
                         <th>Chọn</th>
@@ -191,6 +296,7 @@
                             <input type="checkbox" class="product-check"
                                    name="chonSp" value="<%= sp.getId_sanpham()%>"
                                    data-price="<%= sp.getGia()%>"
+                                   data-stock="<%= sp.getSoLuong()%>"
                                    onchange="calculateTotal()">
                         </td>
                         <td>
@@ -200,26 +306,30 @@
                         <td><%= sp.getTen()%></td>
                         <td><%= String.format("%,.0f", sp.getGia())%> đ</td>
                         <td>
-                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, -1)">-</button>
-                            <input type="text" id="qty-<%= sp.getId_sanpham()%>" name="soLuong_<%= sp.getId_sanpham()%>" value="<%= soLuong%>" class="qty-input" onchange="calculateTotal()">
-                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, 1)">+</button>
+                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, -1,<%= sp.getSoLuong()%>)">-</button>
+                            <input type="text" id="qty-<%= sp.getId_sanpham()%>" 
+                                   name="soLuong_<%= sp.getId_sanpham()%>" 
+                                   value="<%= soLuong%>" class="qty-input" 
+                                   onchange="updateQuantity(<%= sp.getId_sanpham()%>, 0,<%= sp.getSoLuong()%>)">
+                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, 1,<%= sp.getSoLuong()%>)">+</button>
                         </td>
                         <td><span id="total-<%= sp.getId_sanpham()%>"><%= String.format("%,.0f", sp.getGia() * soLuong)%> đ</span></td>
                         <td><a href="GioHangServlet?action=xoa&id=<%= sp.getId_sanpham()%>" class="btn-delete">🗑️</a>
-</td>
+                        </td>
                     </tr>
-                    <% } %>
+                    <% }%>
                 </table>
                 <div class="total">
                     Tổng tiền: <span id="tongTien"><%= String.format("%,.0f", tongTien)%> đ</span>
-                    <input type="hidden" name="tongTien" id="tongTienInput" value="<%= tongTien %>">
+                    <input type="hidden" name="tongTien" id="tongTienInput" value="<%= tongTien%>">
 
                 </div>
                 <div style="text-align:right; margin-top:20px;">
                     <button type="button" class="btn-checkout" onclick="thanhToan()">Thanh toán</button>
                 </div>
             </form>
-            <% } %>
+            <% }%>
         </div>
+         <jsp:include page="footer.jsp" />
     </body>
 </html>

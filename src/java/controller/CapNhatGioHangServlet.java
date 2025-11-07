@@ -4,7 +4,7 @@
  */
 package controller;
 
-import jakarta.servlet.RequestDispatcher;
+import dao.SanPhamDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.SanPham;
@@ -22,8 +22,8 @@ import model.SanPham;
  *
  * @author asus
  */
-@WebServlet(name = "ThanhToanServlet", urlPatterns = {"/ThanhToanServlet"})
-public class ThanhToanServlet extends HttpServlet {
+@WebServlet(name = "CapNhatGioHangServlet", urlPatterns = {"/CapNhatGioHangServlet"})
+public class CapNhatGioHangServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -42,10 +42,10 @@ public class ThanhToanServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ThanhToanServlet</title>");
+            out.println("<title>Servlet CapNhatGioHangServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ThanhToanServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet CapNhatGioHangServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -75,56 +75,43 @@ public class ThanhToanServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    HttpSession session = request.getSession();
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+       response.setContentType("application/json;charset=UTF-8");
+        int id = Integer.parseInt(request.getParameter("id"));
+    int soLuong = Integer.parseInt(request.getParameter("soluong"));
 
-    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
-    if (gioHang == null || gioHang.isEmpty()) {
-        response.sendRedirect("gio_hang.jsp");
-        return;
-    }
-for (Map<String, Object> item : gioHang) {
-    SanPham sp = (SanPham) item.get("sanpham");
-    int soLuong = (int) item.get("soluong");
+    List<Map<String,Object>> gioHang = (List<Map<String,Object>>) request.getSession().getAttribute("gioHang");
 
-    if (soLuong > sp.getSoLuong()) {
-        request.setAttribute("error", "Sản phẩm " + sp.getTen() + " vượt quá tồn kho (" + sp.getSoLuong() + ")");
-        request.getRequestDispatcher("gio_hang.jsp").forward(request, response);
-        return;
-    }
-}
+    Map<String,Object> result = new HashMap<>();
+    boolean found = false;
 
-    String tongTienStr = request.getParameter("tongTien");
-    double tongTien = 0;
-    if (tongTienStr != null && !tongTienStr.isEmpty()) {
-        tongTien = Double.parseDouble(tongTienStr);
-    }
-
-    // ✅ Lưu tổng tiền vào session
-    session.setAttribute("tongTien", tongTien);
-
-    String[] chonSp = request.getParameterValues("chonSp");
-    List<SanPham> dsChon = new ArrayList<>();
-    if (chonSp != null) {
-        for (String idStr : chonSp) {
-            int id = Integer.parseInt(idStr);
-            for (Map<String, Object> item : gioHang) {
-                SanPham sp = (SanPham) item.get("sanpham");
-                if (sp.getId_sanpham() == id) {
-                    dsChon.add(sp);
-                }
+    for(Map<String,Object> item: gioHang) {
+        SanPham sp = (SanPham) item.get("sanpham");
+        if(sp.getId_sanpham() == id) {
+            found = true;
+            if(soLuong > sp.getSoLuong()) {
+                result.put("status", "warning");
+                result.put("message", "Số lượng bạn chọn vượt quá tồn kho (" + sp.getSoLuong()+ ")");
+            } else {
+                item.put("soluong", soLuong);
+                result.put("status", "success");
+                result.put("message", "Cập nhật thành công");
             }
+            break;
         }
     }
+    if(!found) {
+        result.put("status", "error");
+        result.put("message", "Sản phẩm không tồn tại trong giỏ hàng");
+    }
+    }
 
-    request.setAttribute("dsChon", dsChon);
-    request.setAttribute("tongTienHang", tongTien);
-
-    RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
-    rd.forward(request, response);
-}
-
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
     @Override
     public String getServletInfo() {
         return "Short description";

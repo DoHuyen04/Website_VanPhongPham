@@ -41,12 +41,13 @@ window.onload = startTimer;
 </script>
 </head>
 <body>
+   
 <h3>🔐 Nhập mã OTP thanh toán</h3>
 <form action="KiemTraOTPServlet" method="post">
     <input type="text" name="otp" maxlength="6" placeholder="Nhập mã OTP">
     <br>
     <button type="submit" class="btn">Xác nhận</button>
-    <button type="button" class="btn" onclick="window.location.href='GuiLaiOTPServlet'">Gửi lại mã</button>
+    <button type="button" class="btn" onclick="window.location.href='GuiLaiOTPServlet'">Gửi lại mã ( <span id="timer"></span> )</button>
 </form>
 
         <div class="timer">
@@ -56,5 +57,6 @@ window.onload = startTimer;
         <% if (request.getAttribute("thongBao") != null) { %>
             <div class="notice"><%= request.getAttribute("thongBao") %></div>
         <% } %>
+       
 </body>
 </html>
