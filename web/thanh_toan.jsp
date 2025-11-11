@@ -133,7 +133,7 @@
                 <hr>
                 <p><b>Tổng thanh toán:</b> <span style="color:red;"><%= df.format(tongThanhToan)%></span></p>
             </div>
-
+<input type="hidden" name="diaChi" id="diaChiDayDu">
             <button type="button" class="btn" onclick="hienThiBanDo()">Hiển thị trên bản đồ</button>
             <button type="submit" class="btn">Xác nhận & Đặt hàng</button>
         </form>
@@ -237,23 +237,30 @@
                   document.getElementById("taiKhoanNganHang").style.display =
                           document.getElementById("phuongThuc").value === "Bank" ? "block" : "none";
               }
-              const form = document.getElementById('payForm');
+const form = document.getElementById('payForm');
+        form.addEventListener('submit', function (e) {
+            const tinh = document.getElementById('tinh').value.trim();
+            const huyen = document.getElementById('huyen').value.trim();
+            const xa = document.getElementById('xa').value.trim();
+            const duong = document.getElementById('duong').value.trim();
 
-form.addEventListener('submit', function (e) {
-    let valid = true;
+            const phone = document.getElementById('soDienThoai').value.trim();
+            const error = document.getElementById('soDienThoaiError');
+            const fullAddress = `${duong}, ${xa}, ${huyen}, ${tinh}, Việt Nam`;
 
-    // Reset lỗi
-    document.getElementById('soDienThoaiError').textContent = '';
+            document.getElementById('diaChiDayDu').value = fullAddress;
+            error.textContent = '';
 
-    const phone = document.getElementById('soDienThoai').value.trim();
-
-    // Regex: bắt đầu bằng 0, 10 hoặc 11 số
-    if (!/^0\d{9,10}$/.test(phone)) {
-        document.getElementById('soDienThoaiError').textContent = 'SĐT phải bắt đầu bằng 0 và có 10 hoặc 11 số.';
-        valid = false;
-    }
-
-    if (!valid) e.preventDefault();
+            if (phone === "") {
+                error.textContent = 'Vui lòng nhập số điện thoại.';
+                e.preventDefault();
+                return;
+            }
+            if (!/^0\d{9,10}$/.test(phone)) {
+                error.textContent = 'SĐT phải bắt đầu bằng 0 và có 10 hoặc 11 số.';
+                e.preventDefault();
+                return;
+            }
 });
 
         </script>
@@ -261,3 +268,4 @@ form.addEventListener('submit', function (e) {
 
     </body>
 </html>
+]

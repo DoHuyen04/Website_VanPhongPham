@@ -87,7 +87,6 @@ public class KiemTraOTPServlet extends HttpServlet {
             request.getRequestDispatcher("xacnhan_otp.jsp").forward(request, response);
             return;
         }
-
         long now = System.currentTimeMillis();
         if (now > otpExpire) {
             request.setAttribute("error", "Mã OTP đã hết hạn, vui lòng yêu cầu mã mới.");
@@ -105,24 +104,16 @@ public class KiemTraOTPServlet extends HttpServlet {
         // ✅ OTP chính xác → tạo đơn hàng
         String tenNguoiNhan = (String) session.getAttribute("tenNguoiNhan");
         String diaChi = (String) session.getAttribute("diaChi");
-        String sdt = (String) session.getAttribute("sdt");
+        String sdt = (String) session.getAttribute("soDienThoai");
         String phuongThuc = (String) session.getAttribute("phuongThuc");
         String taiKhoan = (String) session.getAttribute("taiKhoan");
+         String email = (String) session.getAttribute("email");
         Double tongTien = (Double) session.getAttribute("tongTien");
 
         if (tongTien == null) tongTien = 0.0;
 
         // ✅ Ghi nhận thời gian tạo đơn
         Date ngayTao = new Date();
-
-        // 🟢 Nếu bạn có DAO thực tế thì ở đây bạn sẽ thêm:
-        // DonHangDAO donHangDAO = new DonHangDAO();
-        // DonHang donHang = new DonHang(tenNguoiNhan, diaChi, sdt, tongTien, phuongThuc, ngayTao);
-        // donHangDAO.themDonHang(donHang);
-        // (Sau đó xóa giỏ hàng khỏi session)
-        // session.removeAttribute("gioHang");
-
-        // 🟡 Nếu chưa có DAO → demo lưu trong session
         session.setAttribute("donHangGanNhat", ngayTao + " - " + tenNguoiNhan + " - " + tongTien + " VND");
 
         List<String> lichSu = (List<String>) session.getAttribute("lichSuDonHang");
@@ -137,7 +128,30 @@ public class KiemTraOTPServlet extends HttpServlet {
         // ✅ Xóa OTP sau khi dùng
         session.removeAttribute("otp");
         session.removeAttribute("otp_expire");
+if (email != null && !email.isEmpty()) {
+        try {
+            String subject = "Xác nhận đơn hàng từ Cửa hàng Văn Phòng Phẩm";
+            String messageText = "<h2>Xin chào " + tenNguoiNhan + ",</h2>"
+                    + "<p>Cảm ơn bạn đã đặt hàng tại <b>Cửa hàng Văn Phòng Phẩm</b>.</p>"
+                    + "<p><b>Thông tin đơn hàng:</b></p>"
+                    + "<ul>"
+                    + "<li>Người nhận: " + tenNguoiNhan + "</li>"
+                    + "<li>Địa chỉ: " + diaChi + "</li>"
+                    + "<li>Số điện thoại: " + sdt + "</li>"
+                    + "<li>Phương thức thanh toán: " + phuongThuc + "</li>"
+                    + "<li>Tổng tiền: " + tongTien + " VND</li>"
+                    + "<li>Thời gian đặt: " + ngayTao + "</li>"
+                    + "</ul>"
+                    + "<p>Đơn hàng của bạn đang được xử lý. Cảm ơn bạn đã tin tưởng mua sắm cùng chúng tôi!</p>"
+                    + "<br><p>Trân trọng,<br><b>Đội ngũ Văn Phòng Phẩm</b></p>";
 
+            utils.EmailUtility.sendEmail(email, subject, messageText);
+            System.out.println("📧 Đã gửi email xác nhận đơn hàng tới: " + email);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("❌ Gửi email thất bại: " + e.getMessage());
+        }
+    }
         // ✅ Chuyển đến trang thanh toán thành công
         request.setAttribute("thongBao", "Thanh toán thành công!");
         request.getRequestDispatcher("thanh_toan_thanh_cong.jsp").forward(request, response);

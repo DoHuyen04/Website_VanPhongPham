@@ -34,97 +34,70 @@ public class NguoiDungServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final NguoiDungDAO nguoiDungDAO = new NguoiDungDAO();
     private final DonHangDAO donHangDAO = new DonHangDAO();
+    // --- Ràng buộc email gmail ---
+    private static final String REGEX_GMAIL = "^[a-z0-9._%+-]+@gmail\\.com$";
+
+    private boolean isGmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        return email.trim().toLowerCase().matches(REGEX_GMAIL);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
         req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
 
-        HttpSession ses = req.getSession(false);
-
-        // nhận từ session: ưu tiên userId; fallback tenDangNhap
-        Integer userId = (ses != null) ? (Integer) ses.getAttribute("userId") : null;
-        String tenDangNhap = (ses != null) ? (String) ses.getAttribute("tenDangNhap") : null;
-
-        String hanhDong = req.getParameter("hanhDong");
-        if (!"hoso".equals(hanhDong)) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-
-        // nếu chưa đăng nhập -> chuyển về login
-        if (ses == null || (userId == null && (tenDangNhap == null || tenDangNhap.isBlank()))) {
+        // --- Kiểm tra đăng nhập ---
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("nguoiDung") == null) {
             resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
             return;
         }
 
-        // lấy hồ sơ
-        NguoiDung nd = null;
-        if (userId != null) {
-            nd = nguoiDungDAO.layTheoIdDayDu(userId);
-        } else if (tenDangNhap != null && !tenDangNhap.isBlank()) {
-            nd = nguoiDungDAO.layTheoTenDangNhap(tenDangNhap);
-        }
-
+        NguoiDung ndSession = (NguoiDung) session.getAttribute("nguoiDung");
+        NguoiDung nd = nguoiDungDAO.layTheoIdDayDu(ndSession.getId());
         if (nd == null) {
             resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
             return;
         }
 
+        // --- Lấy tham số ---
+        String tab = req.getParameter("tab");
+        if (tab == null) {
+            tab = "profile";
+        }
+
+        // --- Dữ liệu user ---
         String ngaySinhText = (nd.getNgaySinh() != null)
                 ? nd.getNgaySinh().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                 : "";
-
         req.setAttribute("nguoiDung", nd);
         req.setAttribute("ngaySinhText", ngaySinhText);
 
-        String tab = req.getParameter("tab");
-        if ("password".equals(tab)) {
-            req.setAttribute("active", "password");
-            req.setAttribute("tab", "password");
-            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
-            return;
-        }
-        if ("tknh".equals(tab)) {
-            java.util.List<model.TKNganHang> dsTKNH
-                    = new dao.TKNganHangDAO().listByUserId(nd.getId());
-            req.setAttribute("dsTKNH", dsTKNH);
-
-            req.setAttribute("active", "tknh");
-            req.setAttribute("tab", "tknh");
-
-            // ====== THÊM KHỐI NÀY ======
-        } else if ("orders".equals(tab)) {
-            // sub-tab đơn hàng: all | dadat | dahuy | hoantien
-            String otab = req.getParameter("otab");
-            String filter = ("dadat".equals(otab) || "dahuy".equals(otab) || "hoantien".equals(otab)) ? otab : null;
-
-            java.util.List<model.DonHang> dsDon
-                    = (filter == null)
-                            ? donHangDAO.layDonHangTheoNguoiDung(nd.getId())
-                            : donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
-
-            req.setAttribute("dsDonHang", dsDon);                 // danh sách đơn
-            req.setAttribute("activeOrderTab", (otab == null ? "all" : otab)); // sub-tab đang chọn
-            req.setAttribute("active", "orders");                 // để sidebar highlight
-            req.setAttribute("tab", "orders");
-            // ====== HẾT KHỐI THÊM ======
-
-        } else if ("address".equals(tab)) {
-            java.util.List<model.DiaChi> dsDiaChi
-                    = new dao.DiaChiDAO().listByUser(nd.getId());
-            req.setAttribute("dsDiaChi", dsDiaChi);
-            req.setAttribute("active", "address");
-            req.setAttribute("tab", "address");
-
-        } else if ("password".equals(tab)) {
-            req.setAttribute("active", "password");
-            req.setAttribute("tab", "password");
-
-        } else {
-            req.setAttribute("active", "profile");
-            req.setAttribute("tab", "profile");
+        // --- Xử lý tab ---
+        switch (tab) {
+            case "tknh" -> {
+                var dsTKNH = new dao.TKNganHangDAO().listByUserId(nd.getId());
+                req.setAttribute("dsTKNH", dsTKNH);
+                req.setAttribute("active", "tknh");
+            }
+            case "orders" -> {
+                var dsDon = donHangDAO.layDonHangTheoNguoiDung(nd.getId());
+                req.setAttribute("dsDonHang", dsDon);
+                req.setAttribute("active", "orders");
+            }
+            case "address" -> {
+                var dsDiaChi = new dao.DiaChiDAO().listByUser(nd.getId());
+                req.setAttribute("dsDiaChi", dsDiaChi);
+                req.setAttribute("active", "address");
+            }
+            case "password" ->
+                req.setAttribute("active", "password");
+            default ->
+                req.setAttribute("active", "profile");
         }
 
         req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
@@ -136,8 +109,8 @@ public class NguoiDungServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-
-        String hanhDong = request.getParameter("hanhDong");
+        String hanhDong = Optional.ofNullable(request.getParameter("hanhDong")).orElse("");
+        // String hanhDong = request.getParameter("hanhDong");
         if (hanhDong == null) {
             hanhDong = "";
         }
@@ -239,8 +212,6 @@ public class NguoiDungServlet extends HttpServlet {
 
         String tenDangNhap = request.getParameter("tenDangNhap");
         String matKhau = request.getParameter("matKhau");
-
-        // Mã hóa mật khẩu nhập vào để so sánh với DB
         String matKhauMaHoa = hashPassword(matKhau);
 
         try (Connection conn = DBUtil.getConnection()) {
@@ -251,24 +222,32 @@ public class NguoiDungServlet extends HttpServlet {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+                // Tạo session
                 HttpSession session = request.getSession();
-                session.setAttribute("tenDangNhap", rs.getString("tenDangNhap"));
-                session.setAttribute("hoTen", rs.getString("hoTen"));
-//                request.getSession().setAttribute("thongBaoDangNhap", "Đăng nhập thành công!");
-//               response.sendRedirect("TrangChuServlet?afterLogin=true");
-                session.setAttribute("id_nguoidung", rs.getInt("id_nguoidung"));
-                session.setAttribute("userId", rs.getInt("id_nguoidung"));
-                request.getSession().setAttribute("thongBaoDangNhap", "Đăng nhập thành công!");
+                session.setMaxInactiveInterval(60 * 60);
+
+                NguoiDung nguoiDung = new NguoiDung();
+                nguoiDung.setId(rs.getInt("id_nguoidung"));
+                nguoiDung.setTenDangNhap(rs.getString("tenDangNhap"));
+                nguoiDung.setHoTen(rs.getString("hoTen"));
+                nguoiDung.setEmail(rs.getString("email"));
+                nguoiDung.setSoDienThoai(rs.getString("soDienThoai"));
+                nguoiDung.setGioiTinh(rs.getString("gioiTinh"));
+                session.setAttribute("nguoiDung", nguoiDung);
+                session.setAttribute("userId", nguoiDung.getId());               // 🔹 thêm
+                session.setAttribute("tenDangNhap", nguoiDung.getTenDangNhap()); // 🔹 thêm
+                session.setAttribute("email", nguoiDung.getEmail());
+                // ✅ Chuyển về trang chủ (hoặc bất kỳ trang nào bạn muốn)
                 response.sendRedirect(request.getContextPath() + "/trang_chu.jsp");
                 return;
-
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
                 request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Lỗi hệ thống. Vui lòng thử lại sau!");
+            request.setAttribute("error", "Lỗi hệ thống, vui lòng thử lại sau!");
             request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
         }
     }
@@ -330,14 +309,15 @@ public class NguoiDungServlet extends HttpServlet {
         }
 
         if (ok) {
-            req.setAttribute("ok", "Đổi mật khẩu thành công.");
+            req.getSession().setAttribute("pw_ok", "Đổi mật khẩu thành công.");
+            resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&tab=password");
+            return;
         } else {
             req.setAttribute("err", "Đổi mật khẩu thất bại. Vui lòng thử lại.");
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
         }
-
-        req.setAttribute("active", "password");
-        req.setAttribute("tab", "password");
-        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
     }
 
     private void hienThiHoSo(HttpServletRequest req, HttpServletResponse resp)
@@ -395,6 +375,52 @@ public class NguoiDungServlet extends HttpServlet {
             }
         }
 
+        if (email == null || !isGmail(email)) {
+            req.setAttribute("loiEmail", "E-mail phải kết thúc bằng @gmail.com (ví dụ: ten@gmail.com).");
+            req.setAttribute("email", email);
+            req.setAttribute("hoTen", hoTen);
+            req.setAttribute("soDienThoai", soDienThoai);
+            req.setAttribute("gioiTinh", gioiTinh);
+            req.setAttribute("ngaySinh", ngaySinhStr);
+            req.getRequestDispatcher("/thong_tin_ca_nhan.jsp?tab=profile").forward(req, resp);
+            return;
+        }
+        email = email.trim().toLowerCase();
+
+        if (soDienThoai == null || !soDienThoai.matches("^[0-9]{9,11}$")) {
+            req.setAttribute("loiSoDienThoai", "Số điện thoại chỉ được chứa số (9–11 chữ số, ví dụ: 0987654321).");
+            req.setAttribute("email", email);
+            req.setAttribute("hoTen", hoTen);
+            req.setAttribute("soDienThoai", soDienThoai);
+            req.setAttribute("gioiTinh", gioiTinh);
+            req.setAttribute("ngaySinh", ngaySinhStr);
+
+            req.getRequestDispatcher("/thong_tin_ca_nhan.jsp?tab=profile").forward(req, resp);
+            return;
+        }
+
+        if (gioiTinh == null) {
+            gioiTinh = "";
+        }
+        String gt = gioiTinh.trim().toLowerCase();
+
+        if (!gt.equals("nam") && !gt.equals("nữ") && !gt.equals("khác")) {
+            req.setAttribute("loiGioiTinh", "Giới tính chỉ được chọn: Nam, Nữ hoặc Khác.");
+
+            // Giữ lại dữ liệu nhập
+            req.setAttribute("email", email);
+            req.setAttribute("hoTen", hoTen);
+            req.setAttribute("soDienThoai", soDienThoai);
+            req.setAttribute("gioiTinh", gioiTinh);
+            req.setAttribute("ngaySinh", ngaySinhStr);
+
+            req.getRequestDispatcher("/thong_tin_ca_nhan.jsp?tab=profile").forward(req, resp);
+            return;
+        }
+
+        // Chuẩn hoá trước khi lưu
+        gioiTinh = gt;
+
         // Đóng gói model để update
         NguoiDung nd = new NguoiDung();
         nd.setId(userId);
@@ -416,7 +442,6 @@ public class NguoiDungServlet extends HttpServlet {
             req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
         }
     }
-// ✨ Hàm xử lý upload avatar
 
     private void uploadAvatar(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

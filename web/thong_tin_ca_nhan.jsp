@@ -245,6 +245,9 @@
             <c:when test="${active == 'address'}">
                 <jsp:include page="tk_dia_chi.jsp"/>
             </c:when>
+            <c:when test="${active == 'password'}">
+                <jsp:include page="tk_doi_mat_khau.jsp"/>
+            </c:when>
             <c:otherwise>
                 <h2 class="profile-title">Hồ Sơ Của Tôi</h2>
                 <div class="profile-sub">Quản lý thông tin hồ sơ để bảo mật tài khoản</div>
@@ -270,55 +273,97 @@
                             </div>
 
                             <div class="row" id="rowEmail">
-                                <label>E-mail</label>
-                                <input id="inpEmail" name="email" class="inp"
-                                       value="${nguoiDung.email}" disabled/>
+                                <label for="inpEmail">E-mail</label>
+
+                                <input id="inpEmail"
+                                       name="email"
+                                       class="inp"
+                                       type="email"
+                                       value="${nguoiDung.email}"
+                                       pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+                                       title="Chỉ chấp nhận địa chỉ kết thúc bằng @gmail.com (ví dụ: ten@gmail.com)"
+                                       required
+                                       oninput="this.value=this.value.trim().toLowerCase()"
+                                       disabled />
+
                                 <a href="#" class="action"
                                    onclick="toggleEdit('inpEmail', 'rowEmail', this);return false;">Thay đổi</a>
+
+                                <!-- thông báo lỗi từ server (nếu có) -->
+                                <c:if test="${not empty loiEmail}">
+                                    <div class="field-error" style="color:#ef4444;margin-top:6px;font-size:13px">
+                                        ${loiEmail}
+                                    </div>
+                                </c:if>
                             </div>
 
-                            <div class="row" id="rowSDT">
-                                <label>Số điện thoại</label>
-                                <input id="inpSDT" name="soDienThoai" class="inp"
-                                       value="${nguoiDung.soDienThoai}" disabled/>
+                            <div class="row" id="rowPhone">
+                                <label for="inpPhone">Số điện thoại</label>
+
+                                <input id="inpPhone"
+                                       name="soDienThoai"
+                                       class="inp"
+                                       type="text"
+                                       inputmode="numeric"
+                                       value="${nguoiDung.soDienThoai}"
+                                       pattern="^[0-9]{9,11}$"
+                                       title="Chỉ nhập số (9–11 chữ số, ví dụ: 0987654321)"
+                                       required
+                                       disabled />
+
                                 <a href="#" class="action"
-                                   onclick="toggleEdit('inpSDT', 'rowSDT', this);return false;">Thay đổi</a>
+                                   onclick="toggleEdit('inpPhone', 'rowPhone', this);return false;">Thay đổi</a>
+
+                                <c:if test="${not empty loiSoDienThoai}">
+                                    <div style="color:#ef4444;margin-top:6px;font-size:13px">${loiSoDienThoai}</div>
+                                </c:if>
                             </div>
 
-                            <div class="row" id="rowGioiTinh">
-                                <label>Giới tính</label>
-                                <input id="inpGioiTinh" name="gioiTinh" class="inp"
-                                       value="${nguoiDung.gioiTinh}" disabled/>
-                                <a href="#" class="action"
-                                   onclick="toggleEdit('inpGioiTinh', 'rowGioiTinh', this);return false;">Thay đổi</a>
+                            <div class="row" id="rowGender">
+                                <label for="selGender">Giới tính</label>
+
+                                <select id="selGender" name="gioiTinh" class="inp" disabled required>
+                                    <option value="">-- Chọn giới tính --</option>
+                                    <option value="nam"  <c:if test="${nguoiDung.gioiTinh eq 'nam'}">selected</c:if>>Nam</option>
+                                    <option value="nữ"   <c:if test="${nguoiDung.gioiTinh eq 'nữ'}">selected</c:if>>Nữ</option>
+                                    <option value="khác" <c:if test="${nguoiDung.gioiTinh eq 'khác'}">selected</c:if>>Khác</option>
+                                    </select>
+
+                                    <a href="#" class="action"
+                                       onclick="toggleEdit('selGender', 'rowGender', this);return false;">Thay đổi</a>
+
+                                <c:if test="${not empty loiGioiTinh}">
+                                    <div style="color:#ef4444;margin-top:6px;font-size:13px">${loiGioiTinh}</div>
+                                </c:if>
                             </div>
 
-                            <div class="row" id="rowNgaySinh">
-                                <label>Ngày sinh</label>
-                                <input id="inpNgaySinh" name="ngaySinh" class="inp"
-                                       value="${ngaySinhText}" disabled/>
+                            <div class="row" id="rowDob">
+                                <label for="inpDob">Ngày sinh</label>
+
+                                <input id="inpDob"
+                                       name="ngaySinh"
+                                       class="inp"
+                                       type="text"
+                                       value="${nguoiDung.ngaySinh}" 
+                                       pattern="^(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})$"
+                                       title="Nhập theo dd/MM/yyyy (ví dụ: 12/10/2001) hoặc yyyy-MM-dd"
+                                       required
+                                       disabled />
+
                                 <a href="#" class="action"
-                                   onclick="toggleEdit('inpNgaySinh', 'rowNgaySinh', this);return false;">Thay đổi</a>
+                                   onclick="toggleEdit('inpDob', 'rowDob', this);return false;">Thay đổi</a>
+
+                                <c:if test="${not empty loiNgaySinh}">
+                                    <div style="color:#ef4444;margin-top:6px;font-size:13px">${loiNgaySinh}</div>
+                                </c:if>
                             </div>
+
 
                             <div class="row">
                                 <label></label>
                                 <button id="saveBtn" class="save-btn" type="submit" disabled>Lưu</button>
                             </div>
                         </div>
-                        <form id="profileForm" action="${pageContext.request.contextPath}/nguoidung" method="post">
-                            <input type="hidden" name="hanhDong" value="capnhat_hoso"/>
-
-                            <div class="profile-card">
-                                <div class="profile-left">
-                                    <!-- ...các input hồ sơ... -->
-                                    <div class="row">
-                                        <label></label>
-                                        <button id="saveBtn" class="save-btn" type="submit" disabled>Lưu</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
 
                         <div class="profile-right">
                             <img src="${pageContext.request.contextPath}${ava}?v=${pageContext.session.id}"
@@ -410,3 +455,20 @@
             }
         });
     </script>
+    <script>
+        document.getElementById('frmHoSo')?.addEventListener('submit', function (e) {
+            const ip = document.getElementById('inpEmail');
+            if (!ip || ip.disabled)
+                return; // chưa bật sửa -> bỏ qua
+            const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+            const v = (ip.value || '').trim();
+            if (!re.test(v)) {
+                e.preventDefault();
+                alert('E-mail phải có dạng ...@gmail.com (ví dụ: ten@gmail.com).');
+                ip.focus();
+            } else {
+                ip.value = v.toLowerCase(); // chuẩn hóa trước khi gửi
+            }
+        });
+    </script>
+

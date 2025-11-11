@@ -1,5 +1,5 @@
 <%-- 
-    Document   : lich_su_don_hang
+    Document   : don_hang
     Created on : Oct 11, 2025, 1:56:26 PM
     Author     : asus
 --%>
@@ -134,7 +134,6 @@
         <div class="container">
             <h2>📜 Lịch sử đơn hàng</h2>
             <%
-                // nhận activeTab từ servlet (null -> all)
                 String activeTab = (String) request.getAttribute("activeTab");
                 if (activeTab == null || activeTab.isBlank()) {
                     activeTab = "all";
@@ -153,7 +152,6 @@
                     for (DonHang don : lichSu) {
             %>
             <div class="order">
-                <h3>🛒 Đơn hàng #<%= don.getIdDonHang()%></h3>
                 <h3>🛒 Đơn hàng #<%= don.getIdDonHang()%>
                     <span class="badge">
                         <%
@@ -167,6 +165,7 @@
                         <%= text%>
                     </span>
                 </h3>
+
 
                 <p><b>Địa chỉ:</b> <%= don.getDiaChi()%></p>
                 <p><b>Số điện thoại:</b> <%= don.getSoDienThoai()%></p>
@@ -231,7 +230,6 @@
             <% }%>
 
             <div class="back-btn">
-                <!--<a href="index.jsp">⬅ Quay lại trang chủ</a>-->
                 <a href="<%= request.getContextPath()%>/index.jsp">⬅ Quay lại trang chủ</a>
 
             </div>

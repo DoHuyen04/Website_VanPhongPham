@@ -4,10 +4,11 @@
     Author     : asus
 --%>
 <!DOCTYPE html>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Xác nhận OTP</title>
+<title>XÁC NHẬN OTP</title>
 <style>
 body { text-align:center; font-family:Arial; }
 input { padding:8px; width:150px; text-align:center; margin:10px; }
@@ -18,7 +19,6 @@ input { padding:8px; width:150px; text-align:center; margin:10px; }
 .btn:hover { background-color:#388e3c; }
 </style>
 <script>
-// Đếm ngược 5 phút (300 giây)
 let timeLeft = 300;
 
 function startTimer() {
@@ -31,7 +31,7 @@ function startTimer() {
 
         if (timeLeft < 0) {
             clearInterval(countdown);
-            timerDisplay.innerText = "⛔ Mã OTP đã hết hạn! Vui lòng gửi lại.";
+            timerDisplay.innerText = "MÃ OTP ĐÃ HẾT THỜI GIAN HIỆU LỰC! VUI LÒNG NHẬP MÃ MỚI";
             document.getElementById("otpInput").disabled = true;
         }
     }, 1000);
@@ -41,7 +41,7 @@ window.onload = startTimer;
 </script>
 </head>
 <body>
-<h3>🔐 Nhập mã OTP thanh toán</h3>
+<h3>Nhập mã OTP thanh toán</h3>
 <form action="KiemTraOTPServlet" method="post">
     <input type="text" name="otp" maxlength="6" placeholder="Nhập mã OTP">
     <br>
@@ -50,7 +50,7 @@ window.onload = startTimer;
 </form>
 
         <div class="timer">
-            ⏳ Thời gian hiệu lực: <span id="timer"></span>
+            Thời gian hiệu lực: <span id="timer"></span>
         </div>
 
         <% if (request.getAttribute("thongBao") != null) { %>

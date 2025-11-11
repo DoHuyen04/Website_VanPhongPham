@@ -61,7 +61,7 @@ public class XacNhanOTPServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        response.sendRedirect("thanh_toan.jsp");
     }
 
     /**
@@ -84,12 +84,23 @@ public class XacNhanOTPServlet extends HttpServlet {
         // Lấy thông tin người dùng từ form thanh toán
         String tenNguoiNhan = request.getParameter("tenNguoiNhan");
         String diaChi = request.getParameter("diaChi");
-        String sdt = request.getParameter("sdt");
+        String sdt = request.getParameter("soDienThoai");
         String email = (String) session.getAttribute("email"); // email đã đăng ký
         if (email == null) {
-            email = "dohuyen34204@gmail.com"; // test mặc định nếu chưa đăng nhập
+            email = request.getParameter("email");
+        }
+        if (email == null || email.isEmpty()) {
+            request.setAttribute("error", "Vui lòng đăng nhập để thanh toán!");
+            request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
+            return;
         }
 
+        if (tenNguoiNhan == null || diaChi == null || sdt == null
+                || tenNguoiNhan.isEmpty() || diaChi.isEmpty() || sdt.isEmpty()) {
+            request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin nhận hàng!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+            return;
+        }
         // 🔹 Lấy tổng tiền từ session
         double tongTien = 0;
         if (session.getAttribute("tongTien") != null) {
@@ -105,8 +116,8 @@ public class XacNhanOTPServlet extends HttpServlet {
         session.setAttribute("otp_expire", thoiGianHetHan);
         session.setAttribute("tenNguoiNhan", tenNguoiNhan);
         session.setAttribute("diaChi", diaChi);
-        session.setAttribute("sdt", sdt);
-
+        session.setAttribute("soDienThoai", sdt);
+        session.setAttribute("email", email);
         // Gửi mail OTP
         String subject = "Mã xác nhận thanh toán đơn hàng của bạn";
         String message
