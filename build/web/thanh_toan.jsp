@@ -269,3 +269,4 @@ const form = document.getElementById('payForm');
  <jsp:include page="footer.jsp" />
     </body>
 </html>
+]

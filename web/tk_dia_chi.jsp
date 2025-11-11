@@ -1,6 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <html>
     <head>
         <title>Địa chỉ của tôi</title>
@@ -123,7 +122,6 @@
         </style>
     </head>
     <body>
-
         <div class="account-content">
             <div class="row-between">
                 <h2>Địa chỉ của tôi</h2>
@@ -175,7 +173,6 @@
             </c:forEach>
         </div>
 
-        <!-- ===== MODAL THÊM ĐỊA CHỈ ===== -->
         <div id="modalAddr" class="modal hidden">
             <div class="modal-body">
                 <div class="modal-title">Thêm địa chỉ mới</div>
@@ -189,16 +186,21 @@
                     </div>
 
                     <div class="grid3">
-                        <select id="selTinh" name="tinhThanh" required>
+                        <select id="selTinh" required>
                             <option value="">Tỉnh/Thành phố</option>
                         </select>
-                        <select id="selHuyen" name="quanHuyen" required disabled>
+                        <select id="selHuyen" required disabled>
                             <option value="">Quận/Huyện</option>
                         </select>
-                        <select id="selXa" name="xaPhuong" required disabled>
+                        <select id="selXa" required disabled>
                             <option value="">Phường/Xã</option>
                         </select>
+
+                        <input type="hidden" name="tinhThanh" id="hidTinh">
+                        <input type="hidden" name="quanHuyen" id="hidHuyen">
+                        <input type="hidden" name="xaPhuong"  id="hidXa">
                     </div>
+
 
                     <input name="diaChiDuong" placeholder="Địa chỉ cụ thể (số nhà, đường...)" required>
 
@@ -217,6 +219,7 @@
                 </form>
             </div>
         </div>
+
         <script>
             const DEFAULT_MAP_URL = 'https://www.google.com/maps/@21.0015,105.8157,16z';
 
@@ -233,7 +236,7 @@
             function renderFixedMap(url) {
                 const hidden = document.getElementById('mapUrl');
                 const box = document.getElementById('mapPreviewBox');
-                hidden.value = url;           
+                hidden.value = url;
                 box.innerHTML = '';
 
                 const ll = extractLatLng(url);
@@ -255,85 +258,22 @@
                     box.appendChild(a);
                 }
             }
-            document.getElementById('btnAddAddr')?.addEventListener('click', () => {
-                renderFixedMap(DEFAULT_MAP_URL);
-            });
 
+            // Tự render map mặc định khi trang sẵn sàng
             document.addEventListener('DOMContentLoaded', () => {
                 if (document.getElementById('mapPreviewBox')) {
                     renderFixedMap(DEFAULT_MAP_URL);
                 }
             });
         </script>
-
         <script>
             const modal = document.getElementById('modalAddr');
-            document.getElementById('btnAdd').onclick = () => modal.classList.remove('hidden');
+            document.getElementById('btnAdd').onclick = () => {
+                modal.classList.remove('hidden');
+                renderFixedMap(DEFAULT_MAP_URL);
+            };
             document.getElementById('btnClose').onclick = () => modal.classList.add('hidden');
-
-            const selTinh = document.getElementById('selTinh');
-            const selHuyen = document.getElementById('selHuyen');
-            const selXa = document.getElementById('selXa');
-
-            let HC = null;
-            (async function () {
-                const res = await fetch('js/data/hanhChinhVN.json');
-                HC = await res.json();
-                HC.tinh.forEach(t => {
-                    const op = document.createElement('option');
-                    op.value = t.name;
-                    op.textContent = t.name;
-                    op.dataset.code = t.code;
-                    selTinh.appendChild(op);
-                });
-            })();
-
-            selTinh.addEventListener('change', () => {
-                selHuyen.innerHTML = '<option value="">Quận/Huyện</option>';
-                selXa.innerHTML = '<option value="">Phường/Xã</option>';
-                selHuyen.disabled = true;
-                selXa.disabled = true;
-                const t = HC?.tinh.find(x => x.name === selTinh.value);
-                if (!t)
-                    return;
-                t.huyen.forEach(h => {
-                    const op = document.createElement('option');
-                    op.value = h.name;
-                    op.textContent = h.name;
-                    selHuyen.appendChild(op);
-                });
-                selHuyen.disabled = false;
-            });
-
-            selHuyen.addEventListener('change', () => {
-                selXa.innerHTML = '<option value="">Phường/Xã</option>';
-                selXa.disabled = true;
-                const t = HC?.tinh.find(x => x.name === selTinh.value);
-                const h = t?.huyen.find(x => x.name === selHuyen.value);
-                if (!h)
-                    return;
-                h.xa.forEach(x => {
-                    const op = document.createElement('option');
-                    op.value = x.name;
-                    op.textContent = x.name;
-                    selXa.appendChild(op);
-                });
-                selXa.disabled = false;
-            });
-
-        // Thêm vị trí: dán link Google Maps
-            const btnAddMap = document.getElementById('btnAddMap');
-            const mapPreview = document.getElementById('mapPreview');
-            btnAddMap.addEventListener('click', () => {
-                const link = prompt("https://www.google.com/maps/?hl=vi");
-                if (link && /^https?:\/\//i.test(link)) {
-                    mapPreview.innerHTML = `Đã gắn: <a href="${link}" target="_blank">Xem vị trí</a>`;
-                } else if (link !== null) {
-                    alert("Link không hợp lệ. Hãy dán URL Google Maps.");
-                }
-            });
         </script>
-        <!-- MODAL XÁC NHẬN XOÁ ĐỊA CHỈ -->
         <div id="addrConfirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:9999">
             <div style="background:#fff;border-radius:12px;max-width:420px;width:92%;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
                 <h3 style="margin:0 0 8px;font-size:18px">Xác nhận xoá địa chỉ</h3>
@@ -367,7 +307,7 @@
                     if (!btn)
                         return;
 
-                    e.preventDefault(); 
+                    e.preventDefault();
                     pendingId = btn.dataset.id;
 
                     const label = btn.dataset.label || '';
@@ -380,13 +320,11 @@
                     modal.style.display = 'flex';
                 });
 
-                // Huỷ
                 btnCan.addEventListener('click', function () {
                     pendingId = null;
                     modal.style.display = 'none';
                 });
 
-                // Xác nhận
                 btnOk.addEventListener('click', function () {
                     if (!pendingId)
                         return;
@@ -405,5 +343,143 @@
             })();
         </script>
 
+        <script>
+            (function () {
+                const CONTEXT = '/' + window.location.pathname.split('/')[1];
+                const DATA_URL = CONTEXT + '/data/hanhchinhvn.json';
+                console.log('Đang nạp:', DATA_URL);
+
+                const selProv = document.getElementById('selTinh');
+                const selDist = document.getElementById('selHuyen');
+                const selWard = document.getElementById('selXa');
+
+                if (!selProv || !selDist || !selWard)
+                    return;
+
+                let HC = null;
+                const reset = (sel, placeholder) => {
+                    sel.innerHTML = '';
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = placeholder;
+                    sel.appendChild(opt);
+                };
+
+                const fillProvinces = () => {
+                    reset(selProv, 'Tỉnh/Thành phố');
+                    Object.entries(HC).forEach(([code, p]) => {
+                        const opt = document.createElement('option');
+                        opt.value = code;
+                        opt.textContent = p.name;
+                        selProv.appendChild(opt);
+                    });
+                    selProv.disabled = false;
+                };
+
+                const fillDistricts = (provCode) => {
+                    reset(selDist, 'Quận/Huyện');
+                    reset(selWard, 'Phường/Xã');
+                    selDist.disabled = true;
+                    selWard.disabled = true;
+
+                    if (!provCode || !HC[provCode]) {
+                        return;
+                    }
+
+                    const p = HC[provCode];
+                    const districts = p['quan-huyen'] || p.districts || p.huyen || {};
+                    const list = Array.isArray(districts)
+                            ? districts
+                            : Object.entries(districts).map(([code, d]) => ({code, name: d.name, wards: d.wards || d.xa}));
+
+                    list.forEach(d => {
+                        const code = d.code || d.ma || d.id;
+                        const name = d.name;
+                        if (code && name)
+                            selDist.add(new Option(name, String(code)));
+                    });
+
+                    selDist.disabled = false;
+                };
+
+                const fillWards = (provCode, distCode) => {
+                    reset(selWard, 'Phường/Xã');
+                    selWard.disabled = true;
+                    if (!provCode || !distCode)
+                        return;
+
+                    const p = HC[provCode];
+                    if (!p)
+                        return;
+
+                    // 1) Lấy danh sách quận/huyện đúng khóa 'quan-huyen'
+                    const dists = p['quan-huyen'] || p.districts || p.huyen || {};
+
+                    let distObj = null;
+                    if (Array.isArray(dists)) {
+                        distObj = dists.find(d => String(d.code || d.ma || d.id) === String(distCode));
+                    } else {
+                        distObj = dists[distCode];
+                    }
+                    if (!distObj)
+                        return;
+
+                    // 2) Lấy phường/xã đúng khóa 'xa-phuong'
+                    const wards = distObj['xa-phuong'] || distObj.wards || distObj.xa || {};
+                    const list = Array.isArray(wards)
+                            ? wards
+                            : Object.entries(wards).map(([code, w]) => ({code, name: w.name}));
+
+                    list.forEach(w => {
+                        const code = w.code || w.ma || w.id;
+                        const name = w.name;
+                        if (code && name)
+                            selWard.add(new Option(name, String(code)));
+                    });
+
+                    selWard.disabled = (selWard.options.length <= 1);
+                };
+
+                // events
+                selProv.addEventListener('change', () => {
+                    const pCode = selProv.value || '';
+                    fillDistricts(pCode);
+                    reset(selWard, 'Phường/Xã');
+                    selWard.disabled = true;
+                });
+
+                selDist.addEventListener('change', () => {
+                    const pCode = selProv.value || '';
+                    const dCode = selDist.value || '';
+                    fillWards(pCode, dCode);
+                });
+
+                // load json
+                fetch(DATA_URL, {cache: 'no-store'})
+                        .then(r => {
+                            console.log('Fetch status:', r.status, r.headers.get('content-type'));
+                            if (!r.ok)
+                                throw new Error('Không tải được hanhchinhvn.json');
+                            return r.json();
+                        })
+                        .then(json => {
+                            HC = json;
+                            fillProvinces();
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            reset(selProv, 'Không tải được dữ liệu');
+                            selProv.disabled = true;
+                            selDist.disabled = true;
+                            selWard.disabled = true;
+                        });
+            })();
+            document.getElementById('formAddr').addEventListener('submit', function () {
+                const getText = (sel) => sel.options[sel.selectedIndex]?.text?.trim() || '';
+                document.getElementById('hidTinh').value = getText(document.getElementById('selTinh'));
+                document.getElementById('hidHuyen').value = getText(document.getElementById('selHuyen'));
+                document.getElementById('hidXa').value = getText(document.getElementById('selXa'));
+            });
+        </script>
     </body>
 </html>
