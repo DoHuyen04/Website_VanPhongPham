@@ -51,16 +51,29 @@
                 border-radius:6px;
                 border:1px solid #ddd;
                 background:#fff;
-                cursor:pointer
+                cursor:pointer;
+                font-weight: 600
             }
             .btn.primary{
                 background:#ee4d2d;
                 color:#fff;
                 border-color:#ee4d2d
             }
+            .btn.primary:hover{
+                opacity: .9;
+            }
             .btn.danger{
                 color:#ee4d2d;
                 border-color:#f3b1a6
+            }
+            .btn.cancel{
+                background:#3498db;
+                color:#fff;
+                border-color:#3498db;
+            }
+            .btn.cancel:hover{
+                background:#2c80c9;
+                border-color:#2c80c9;
             }
             .price{
                 font-size:18px;
@@ -131,7 +144,7 @@
         </style>
     </head>
     <body>
-      
+
         <div class="container">
             <h2>📜 Lịch sử đơn hàng</h2>
             <%
@@ -142,11 +155,19 @@
                 String base = request.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=";
             %>
             <div class="tabbar">
-                <a class="<%= "all".equals(activeTab) ? "active" : ""%>"      href="<%= base%>all">Tất cả</a>
-                <a class="<%= "dadat".equals(activeTab) ? "active" : ""%>"    href="<%= base%>dadat">Đơn hàng đã đặt</a>
-                <a class="<%= "dahuy".equals(activeTab) ? "active" : ""%>"    href="<%= base%>dahuy">Đơn hàng đã huỷ</a>
-                <a class="<%= "hoantien".equals(activeTab) ? "active" : ""%>" href="<%= base%>hoantien">Đơn hàng đã hoàn tiền</a>
+                <a class="<%= "all".equals(activeTab) ? "active" : ""%>"
+                   href="<%= base%>all">Tất cả</a>
+
+                <a class="<%= "dadat".equals(activeTab) ? "active" : ""%>"
+                   href="<%= base%>dadat">Đơn hàng đã đặt</a>
+
+                <a class="<%= "dahuy".equals(activeTab) ? "active" : ""%>"
+                   href="<%= base%>dahuy">Đơn hàng đã huỷ</a>
+
+                <a class="<%= "hoantien".equals(activeTab) ? "active" : ""%>"
+                   href="<%= base%>hoantien">Đơn hàng đã hoàn tiền</a>
             </div>
+
 
             <%
                 if (lichSu != null && !lichSu.isEmpty()) {
@@ -213,7 +234,7 @@
                     <form method="post" action="<%= request.getContextPath()%>/DonHangServlet" style="margin:0">
                         <input type="hidden" name="action" value="cancel"/>
                         <input type="hidden" name="id" value="<%= don.getIdDonHang()%>"/>
-                        <button class="btn danger" onclick="return confirm('Huỷ đơn hàng #<%= don.getIdDonHang()%>?')">
+                        <button class="btn cancel" onclick="return confirm('Huỷ đơn hàng #<%= don.getIdDonHang()%>?')">
                             Huỷ đơn hàng
                         </button>
                     </form>
@@ -235,6 +256,6 @@
 
             </div>
         </div>
-               
+
     </body>
 </html>

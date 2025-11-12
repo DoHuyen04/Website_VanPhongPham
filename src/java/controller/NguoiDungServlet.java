@@ -34,6 +34,15 @@ public class NguoiDungServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final NguoiDungDAO nguoiDungDAO = new NguoiDungDAO();
     private final DonHangDAO donHangDAO = new DonHangDAO();
+    // --- Ràng buộc email gmail ---
+    private static final String REGEX_GMAIL = "^[a-z0-9._%+-]+@gmail\\.com$";
+
+    private boolean isGmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        return email.trim().toLowerCase().matches(REGEX_GMAIL);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -300,14 +309,15 @@ public class NguoiDungServlet extends HttpServlet {
         }
 
         if (ok) {
-            req.setAttribute("ok", "Đổi mật khẩu thành công.");
+            req.getSession().setAttribute("pw_ok", "Đổi mật khẩu thành công.");
+            resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&tab=password");
+            return;
         } else {
             req.setAttribute("err", "Đổi mật khẩu thất bại. Vui lòng thử lại.");
+            req.setAttribute("active", "password");
+            req.setAttribute("tab", "password");
+            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
         }
-
-        req.setAttribute("active", "password");
-        req.setAttribute("tab", "password");
-        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
     }
 
     private void hienThiHoSo(HttpServletRequest req, HttpServletResponse resp)
@@ -365,6 +375,52 @@ public class NguoiDungServlet extends HttpServlet {
             }
         }
 
+        if (email == null || !isGmail(email)) {
+            req.setAttribute("loiEmail", "E-mail phải kết thúc bằng @gmail.com (ví dụ: ten@gmail.com).");
+            req.setAttribute("email", email);
+            req.setAttribute("hoTen", hoTen);
+            req.setAttribute("soDienThoai", soDienThoai);
+            req.setAttribute("gioiTinh", gioiTinh);
+            req.setAttribute("ngaySinh", ngaySinhStr);
+            req.getRequestDispatcher("/thong_tin_ca_nhan.jsp?tab=profile").forward(req, resp);
+            return;
+        }
+        email = email.trim().toLowerCase();
+
+        if (soDienThoai == null || !soDienThoai.matches("^[0-9]{9,11}$")) {
+            req.setAttribute("loiSoDienThoai", "Số điện thoại chỉ được chứa số (9–11 chữ số, ví dụ: 0987654321).");
+            req.setAttribute("email", email);
+            req.setAttribute("hoTen", hoTen);
+            req.setAttribute("soDienThoai", soDienThoai);
+            req.setAttribute("gioiTinh", gioiTinh);
+            req.setAttribute("ngaySinh", ngaySinhStr);
+
+            req.getRequestDispatcher("/thong_tin_ca_nhan.jsp?tab=profile").forward(req, resp);
+            return;
+        }
+
+        if (gioiTinh == null) {
+            gioiTinh = "";
+        }
+        String gt = gioiTinh.trim().toLowerCase();
+
+        if (!gt.equals("nam") && !gt.equals("nữ") && !gt.equals("khác")) {
+            req.setAttribute("loiGioiTinh", "Giới tính chỉ được chọn: Nam, Nữ hoặc Khác.");
+
+            // Giữ lại dữ liệu nhập
+            req.setAttribute("email", email);
+            req.setAttribute("hoTen", hoTen);
+            req.setAttribute("soDienThoai", soDienThoai);
+            req.setAttribute("gioiTinh", gioiTinh);
+            req.setAttribute("ngaySinh", ngaySinhStr);
+
+            req.getRequestDispatcher("/thong_tin_ca_nhan.jsp?tab=profile").forward(req, resp);
+            return;
+        }
+
+        // Chuẩn hoá trước khi lưu
+        gioiTinh = gt;
+
         // Đóng gói model để update
         NguoiDung nd = new NguoiDung();
         nd.setId(userId);
@@ -386,7 +442,6 @@ public class NguoiDungServlet extends HttpServlet {
             req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
         }
     }
-// ✨ Hàm xử lý upload avatar
 
     private void uploadAvatar(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {

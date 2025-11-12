@@ -229,6 +229,20 @@
             grid-template-columns:1fr;
         }
     }
+    .btn-danger{
+        background:#ef4444;
+        color:#fff;
+        border:0;
+        padding:10px 14px;
+        border-radius:12px;
+        font-weight:800;
+        cursor:pointer;
+        box-shadow:0 2px 10px rgba(239,68,68,.18);
+    }
+    .btn-danger:hover{
+        filter:brightness(1.03);
+    }
+
 
 </style>
 <h2>Tài Khoản Ngân Hàng Của Tôi</h2>
@@ -240,16 +254,16 @@
 </div>
 
 <div id="addBankBox" class="bank-cta">
-    <form method="post" action="bank">
-        <input type="hidden" name="act" value="add">
+    <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
+        <input type="hidden" name="action" value="add">
         <div class="grid2">
-            <input class="inp" name="tennganhang" placeholder="Tên ngân hàng (VD: BIDV)" required>
-            <input class="inp" name="chinhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
-            <input class="inp" name="chutaikhoan" placeholder="Chủ tài khoản" required>
-            <input class="inp" name="sotaikhoan" placeholder="Số tài khoản" required>
+            <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng (VD: BIDV)" required>
+            <input class="inp" name="chiNhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
+            <input class="inp" name="chuTaiKhoan" placeholder="Chủ tài khoản" required>
+            <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
         </div>
         <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
-            <input type="checkbox" name="macdinh" value="1"> Đặt làm mặc định
+            <input type="checkbox" name="macDinh" value="1"> Đặt làm mặc định
         </label>
         <div style="margin-top:10px">
             <button class="btn-add" type="submit">Lưu thẻ</button>
@@ -258,45 +272,56 @@
     </form>
 </div>
 
+
 <!-- Danh sách -->
 <% for (TKNganHang b : banks) {%>
 <div class="bank-item">
     <div class="bank-left">
-        <img src="hinh_anh/bank.png" style="width:44px;height:44px;border-radius:8px;border:1px solid #eee">
         <div>
             <div style="font-weight:700">
                 <%= b.getTenNganHang()%>
-                <% if ("approved".equals(b.getTrangThai())) { %>
-                <span style="color:#10b981;margin-left:10px">Đã duyệt</span>
+                <% if ("daduyet".equalsIgnoreCase(b.getTrangThai())) { %>
+                <span class="bank-badge approved">ĐÃ DUYỆT</span>
                 <% } %>
                 <% if (b.isMacDinh()) { %>
                 <span class="bank-badge">MẶC ĐỊNH</span>
-                <% } %>
-                <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
-                    <input type="hidden" name="action" value="add">
-                    <div class="grid2">
-                        <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng (VD: BIDV)" required>
-                        <input class="inp" name="chiNhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
-                        <input class="inp" name="chuTaiKhoan" placeholder="Chủ tài khoản" required>
-                        <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
-                    </div>
-                    <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
-                        <input type="checkbox" name="macDinh"> Đặt làm mặc định
-                    </label>
-                    <div style="margin-top:10px">
-                        <button class="btn-add" type="submit">Lưu thẻ</button>
-                        <button type="button" onclick="document.getElementById('addBankBox').style.display = 'none'">Hủy</button>
-                    </div>
-                </form>
+                <% }%>
             </div>
-        </div>   
-    </div>     
-</div>      
-<% } %>    
+
+            <!-- Hiển thị thông tin đã lưu -->
+            <div class="grid2" style="margin-top:10px">
+                <input class="inp" value="<%= b.getTenNganHang()%>"  placeholder="Tên ngân hàng"   readonly>
+                <input class="inp" value="<%= b.getChiNhanh()%>"     placeholder="Chi nhánh"       readonly>
+                <input class="inp" value="<%= b.getChuTaiKhoan()%>"  placeholder="Chủ tài khoản"   readonly>
+                <input class="inp" value="<%= b.getSoTaiKhoan()%>"   placeholder="Số tài khoản"    readonly>
+            </div>
+
+            <div class="bank-actions" style="margin-top:10px">
+                <!-- Đặt mặc định -->
+                <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
+                    <input type="hidden" name="action" value="setDefault">
+                    <input type="hidden" name="id" value="<%= b.getIdTkNganHang()%>">
+                    <button class="btn-set-default" <%= b.isMacDinh() ? "disabled" : ""%>>
+                        <%= b.isMacDinh() ? "Đang là mặc định" : "Đặt làm mặc định"%>
+                    </button>
+                </form>
+
+                <!-- Xoá -->
+                <button type="button"
+                        class="btn-danger btn-delete-bank"
+                        data-id="<%= b.getIdTkNganHang()%>">
+                    Xoá
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<% } %>
 
 <% if (banks.isEmpty()) { %>
 <div style="color:#6b7280">Bạn chưa liên kết tài khoản ngân hàng nào.</div>
 <% }%>
+
 <div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:9999">
     <div style="background:#fff;border-radius:12px;max-width:420px;width:92%;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
         <h3 style="margin:0 0 8px;font-size:18px">Xác nhận xoá thẻ</h3>

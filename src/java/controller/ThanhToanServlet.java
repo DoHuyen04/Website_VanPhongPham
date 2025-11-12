@@ -75,55 +75,66 @@ public class ThanhToanServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    HttpSession session = request.getSession();
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        //HttpSession session = request.getSession(); thêm phần dưới 
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("nguoiDung") == null) {
+            response.sendRedirect(request.getContextPath() + "/dang_nhap.jsp");
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+        if (gioHang == null || gioHang.isEmpty()) {
+            response.sendRedirect("gio_hang.jsp");
+            return;
+        }
 
-    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
-    if (gioHang == null || gioHang.isEmpty()) {
-        response.sendRedirect("gio_hang.jsp");
-        return;
-    }
-for (Map<String, Object> item : gioHang) {
-    SanPham sp = (SanPham) item.get("sanpham");
-    int soLuong = (int) item.get("soluong");
+        // ===== (HEAD) Kiểm tra tồn kho từng sản phẩm trong giỏ =====
+        for (Map<String, Object> item : gioHang) {
+            SanPham sp = (SanPham) item.get("sanpham");
+            int soLuong = (int) item.get("soluong");
 
-    if (soLuong > sp.getSoLuong()) {
-        request.setAttribute("error", "Sản phẩm " + sp.getTen() + " vượt quá tồn kho (" + sp.getSoLuong() + ")");
-        request.getRequestDispatcher("gio_hang.jsp").forward(request, response);
-        return;
-    }
-}
+            if (soLuong > sp.getSoLuong()) {
+                request.setAttribute("error", "Sản phẩm " + sp.getTen() + " vượt quá tồn kho (" + sp.getSoLuong() + ")");
+                request.getRequestDispatcher("gio_hang.jsp").forward(request, response);
+                return;
+            }
+        }
 
-    String tongTienStr = request.getParameter("tongTien");
-    double tongTien = 0;
-    if (tongTienStr != null && !tongTienStr.isEmpty()) {
-        tongTien = Double.parseDouble(tongTienStr);
-    }
+        // ===== (iamaine) Lấy tổng tiền từ request và lưu vào session =====
+        String tongTienStr = request.getParameter("tongTien");
+        double tongTien = 0;
+        if (tongTienStr != null && !tongTienStr.isEmpty()) {
+            try {
+                tongTien = Double.parseDouble(tongTienStr);
+            } catch (NumberFormatException e) {
+                tongTien = 0;
+            }
+        }
+        // ✅ Lưu tổng tiền vào session
+        session.setAttribute("tongTien", tongTien);
 
-    // ✅ Lưu tổng tiền vào session
-    session.setAttribute("tongTien", tongTien);
-
-    String[] chonSp = request.getParameterValues("chonSp");
-    List<SanPham> dsChon = new ArrayList<>();
-    if (chonSp != null) {
-        for (String idStr : chonSp) {
-            int id = Integer.parseInt(idStr);
-            for (Map<String, Object> item : gioHang) {
-                SanPham sp = (SanPham) item.get("sanpham");
-                if (sp.getId_sanpham() == id) {
-                    dsChon.add(sp);
+        String[] chonSp = request.getParameterValues("chonSp");
+        List<SanPham> dsChon = new ArrayList<>();
+        if (chonSp != null) {
+            for (String idStr : chonSp) {
+                int id = Integer.parseInt(idStr);
+                for (Map<String, Object> item : gioHang) {
+                    SanPham sp = (SanPham) item.get("sanpham");
+                    if (sp.getId_sanpham() == id) {
+                        dsChon.add(sp);
+                    }
                 }
             }
         }
+
+        request.setAttribute("dsChon", dsChon);
+        request.setAttribute("tongTienHang", tongTien);
+
+        RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
+        rd.forward(request, response);
     }
-
-    request.setAttribute("dsChon", dsChon);
-    request.setAttribute("tongTienHang", tongTien);
-
-    RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
-    rd.forward(request, response);
-}
 
     @Override
     public String getServletInfo() {
