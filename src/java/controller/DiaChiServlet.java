@@ -71,6 +71,8 @@ public class DiaChiServlet extends HttpServlet {
                         dao.clearDefault(userId);
                     }
                     dao.insert(d);
+                    putAddressToSession(session, d);
+
                     break;
                 }
                 case "update": {
@@ -80,6 +82,8 @@ public class DiaChiServlet extends HttpServlet {
                         dao.clearDefault(userId);
                     }
                     dao.update(d);
+                    putAddressToSession(session, d);
+
                     break;
                 }
                 case "delete": {
@@ -90,6 +94,8 @@ public class DiaChiServlet extends HttpServlet {
                 case "setDefault": {
                     int id = Integer.parseInt(req.getParameter("id"));
                     dao.setDefault(id, userId);
+                    DiaChi d = buildFromReq(req, userId);
+                    putAddressToSession(session, d);
                     break;
                 }
 
@@ -119,4 +125,30 @@ public class DiaChiServlet extends HttpServlet {
         d.setMacDinh("on".equals(req.getParameter("macDinh"))); // checkbox
         return d;
     }
+    // Ghép các phần không rỗng thành 1 chuỗi địa chỉ
+
+    private static String joinNonBlank(String... parts) {
+        StringBuilder b = new StringBuilder();
+        for (String p : parts) {
+            if (p != null && !p.trim().isEmpty()) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(p.trim());
+            }
+        }
+        return b.toString();
+    }
+
+// Đẩy địa chỉ vào session theo đúng các key mà luồng thanh toán đang dùng
+    private static void putAddressToSession(HttpSession session, DiaChi d) {
+        String full = joinNonBlank(d.getDiaChiDuong(), d.getXaPhuong(), d.getQuanHuyen(), d.getTinhThanh());
+        session.setAttribute("duong", d.getDiaChiDuong());
+        session.setAttribute("xa", d.getXaPhuong());
+        session.setAttribute("huyen", d.getQuanHuyen());
+        session.setAttribute("tinh", d.getTinhThanh());
+        session.setAttribute("soDienThoai", d.getSoDienThoai());
+        session.setAttribute("diaChi", full.isEmpty() ? "Chưa cập nhật" : full);
+    }
+
 }

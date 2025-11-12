@@ -219,7 +219,6 @@
             <a class="tab-btn ${active=='profile' ? 'active' : ''}"
                href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">👤 Hồ sơ</a>
 
-            <!-- NEW: đơn hàng như 1 tab -->
             <a class="tab-btn"
                href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=all">🧾 Đơn hàng</a>
 
@@ -471,4 +470,19 @@
             }
         });
     </script>
+    <script>
+        (function () {
+            const HOME_URL = '${pageContext.request.contextPath}/trang_chu'; // đổi cho đúng URL trang chủ
+
+            // Đặt lại state hiện tại rồi thêm 1 state giả để bắt sự kiện back
+            history.replaceState({p: 'profile'}, '', location.href);
+            history.pushState({p: 'profile'}, '', location.href);
+
+            // Khi người dùng bấm Back -> luôn điều hướng về Trang chủ
+            window.addEventListener('popstate', function () {
+                location.href = HOME_URL;
+            });
+        })();
+    </script>
+
 

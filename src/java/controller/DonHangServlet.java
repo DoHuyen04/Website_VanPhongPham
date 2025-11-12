@@ -35,18 +35,17 @@ public class DonHangServlet extends HttpServlet {
 
         if ("lichsu".equals(hanhDong)) {
             String tab = req.getParameter("tab");
-            List<DonHang> ds;
-            if (tab != null) {
-                ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId(), tab);
-            } else {
-                ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId());
-            }
-            req.setAttribute("activeTab", (tab == null ? "all" : tab));
+            String filter = ("dadat".equals(tab) || "dahuy".equals(tab) || "hoantien".equals(tab)) ? tab : null;
+
+            List<DonHang> ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
+            req.setAttribute("activeTab", filter == null ? "all" : filter); // để tô active tab
             req.setAttribute("dsDonHang", ds);
             req.getRequestDispatcher("don_hang.jsp").forward(req, resp);
             return;
         }
-        resp.sendRedirect("trang_chu.jsp");
+    resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=all");
+
+        // resp.sendRedirect("trang_chu.jsp");
     }
 
     @Override
@@ -116,19 +115,33 @@ public class DonHangServlet extends HttpServlet {
 
             // Ưu tiên địa chỉ ghép từ các phần; nếu rỗng thì dùng diaChi từ session
             StringBuilder sb = new StringBuilder();
-            if (duong != null && !duong.isEmpty()) sb.append(duong).append(", ");
-            if (xa != null && !xa.isEmpty()) sb.append(xa).append(", ");
-            if (huyen != null && !huyen.isEmpty()) sb.append(huyen).append(", ");
-            if (tinh != null && !tinh.isEmpty()) sb.append(tinh);
+            if (duong != null && !duong.isEmpty()) {
+                sb.append(duong).append(", ");
+            }
+            if (xa != null && !xa.isEmpty()) {
+                sb.append(xa).append(", ");
+            }
+            if (huyen != null && !huyen.isEmpty()) {
+                sb.append(huyen).append(", ");
+            }
+            if (tinh != null && !tinh.isEmpty()) {
+                sb.append(tinh);
+            }
             String diaChiFromParts = sb.toString().replaceAll(",\\s*$", "");
 
-            String diaChi = (diaChiFromParts != null && !diaChiFromParts.isEmpty())
-                    ? diaChiFromParts
-                    : (diaChiFromSession != null ? diaChiFromSession : "");
+            String baseParts = normalizeAddr(diaChiFromParts);
+            String baseSess = normalizeAddr(diaChiFromSession);
+
+            String baseAddr = !baseParts.isEmpty() ? baseParts : baseSess;
+            String diaChi = ensureSuffixVN(baseAddr);
 
             // Ưu tiên giá trị từ form; nếu trống thì dùng session
-            if (sdtReq != null && !sdtReq.isEmpty()) sdt = sdtReq;
-            if (phuongThucReq != null && !phuongThucReq.isEmpty()) phuongThuc = phuongThucReq;
+            if (sdtReq != null && !sdtReq.isEmpty()) {
+                sdt = sdtReq;
+            }
+            if (phuongThucReq != null && !phuongThucReq.isEmpty()) {
+                phuongThuc = phuongThucReq;
+            }
 
             // Nếu giỏ hàng null/thấy rỗng → về giỏ
             if (gioHang == null || gioHang.isEmpty()) {
@@ -173,5 +186,38 @@ public class DonHangServlet extends HttpServlet {
             return;
         }
         resp.sendRedirect(req.getContextPath() + "/trang_chu.jsp");
+
     }
+    // Ghép các phần không rỗng: "đường, xã, huyện, tỉnh"
+
+    private static String joinNonBlank(String... parts) {
+        StringBuilder b = new StringBuilder();
+        for (String p : parts) {
+            if (p != null && !p.trim().isEmpty()) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(p.trim());
+            }
+        }
+        return b.toString();
+    }
+
+// Chuẩn hoá chuỗi địa chỉ: bỏ ", Việt Nam" nếu đã có, gộp/phủi dấu phẩy thừa
+    private static String normalizeAddr(String s) {
+        if (s == null) {
+            return "";
+        }
+        s = s.replaceAll("(?i),\\s*việt\\s*nam$", "");
+        s = s.replaceAll("(\\s*,\\s*)+", ", ");
+        s = s.replaceAll("^,\\s*|,\\s*$", "");
+        return s.trim();
+    }
+
+// Bảo đảm chắc chắn có đuôi "Việt Nam"
+    private static String ensureSuffixVN(String base) {
+        base = normalizeAddr(base);
+        return base.isEmpty() ? "Việt Nam" : base + ", Việt Nam";
+    }
+
 }

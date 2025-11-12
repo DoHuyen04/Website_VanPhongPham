@@ -1,5 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@page import="java.util.*"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:url var="ordersUrl" value="/DonHangServlet">
+    <c:param name="hanhDong" value="lichsu"/>
+    <c:param name="tab" value="all"/>
+</c:url>
 
 
 <%
@@ -36,14 +42,17 @@
                 <%= tenDangNhap%>
             </button>
             <div class="account-menu" id="accountMenu">
-<!--                <a href="thong_tin_ca_nhan.jsp">Tài khoản của tôi </a>-->
                 <a href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">
                     Tài khoản của tôi
                 </a>
 
-                <a href="don_hang.jsp">Đơn hàng</a>
-                <a href="${pageContext.request.contextPath}/DangXuatServlet">Đăng xuất</a>
+                <a href="${ordersUrl}">Đơn hàng</a>
+
+                <a href="${pageContext.request.contextPath}/DangXuatServlet">
+                    Đăng xuất
+                </a>
             </div>
+
         </div>
         <% } else { %>
         <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>

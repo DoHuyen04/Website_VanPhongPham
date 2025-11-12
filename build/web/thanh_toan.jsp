@@ -134,7 +134,7 @@
                 <hr>
                 <p><b>Tổng thanh toán:</b> <span style="color:red;"><%= df.format(tongThanhToan)%></span></p>
             </div>
-<input type="hidden" name="diaChi" id="diaChiDayDu">
+            <input type="hidden" name="diaChi" id="diaChiDayDu">
             <button type="button" class="btn" onclick="hienThiBanDo()">Hiển thị trên bản đồ</button>
             <button type="submit" class="btn">Xác nhận & Đặt hàng</button>
         </form>
@@ -144,129 +144,128 @@
 
         <!-- ====== Dữ liệu hành chính Việt Nam đầy đủ ====== -->
         <script>
-              let dataVN = {};
+                let dataVN = {};
 
-              // 1️⃣ Đọc dữ liệu hành chính Việt Nam
-              fetch('data/hanhchinhvn.json')
-                      .then(res => res.json())
-                      .then(data => {
-                          dataVN = data;
-                          const tinhSelect = document.getElementById('dsTinh');
-                          Object.keys(dataVN).forEach(k => {
-                              const opt = document.createElement('option');
-                              opt.value = dataVN[k].name_with_type;
-                              tinhSelect.appendChild(opt);
-                          });
-                      });
+                // 1️⃣ Đọc dữ liệu hành chính Việt Nam
+                fetch('data/hanhchinhvn.json')
+                        .then(res => res.json())
+                        .then(data => {
+                            dataVN = data;
+                            const tinhSelect = document.getElementById('dsTinh');
+                            Object.keys(dataVN).forEach(k => {
+                                const opt = document.createElement('option');
+                                opt.value = dataVN[k].name_with_type;
+                                tinhSelect.appendChild(opt);
+                            });
+                        });
 
-              // 2️⃣ Khi chọn tỉnh → hiện huyện
-              document.getElementById('tinh').addEventListener('input', e => {
-                  const tinhTen = e.target.value;
-                  const huyenList = document.getElementById('dsHuyen');
-                  const xaList = document.getElementById('dsXa');
-                  huyenList.innerHTML = '';
-                  xaList.innerHTML = '';
+                // 2️⃣ Khi chọn tỉnh → hiện huyện
+                document.getElementById('tinh').addEventListener('input', e => {
+                    const tinhTen = e.target.value;
+                    const huyenList = document.getElementById('dsHuyen');
+                    const xaList = document.getElementById('dsXa');
+                    huyenList.innerHTML = '';
+                    xaList.innerHTML = '';
 
-                  const maTinh = Object.keys(dataVN).find(
-                          k => dataVN[k].name_with_type === tinhTen || dataVN[k].name === tinhTen
-                  );
-                  if (!maTinh)
-                      return;
+                    const maTinh = Object.keys(dataVN).find(
+                            k => dataVN[k].name_with_type === tinhTen || dataVN[k].name === tinhTen
+                    );
+                    if (!maTinh)
+                        return;
 
-                  const dsHuyen = dataVN[maTinh]['quan-huyen'];
-                  Object.keys(dsHuyen).forEach(k => {
-                      const opt = document.createElement('option');
-                      opt.value = dsHuyen[k].name_with_type;
-                      huyenList.appendChild(opt);
-                  });
-              });
+                    const dsHuyen = dataVN[maTinh]['quan-huyen'];
+                    Object.keys(dsHuyen).forEach(k => {
+                        const opt = document.createElement('option');
+                        opt.value = dsHuyen[k].name_with_type;
+                        huyenList.appendChild(opt);
+                    });
+                });
 
-              // 3️⃣ Khi chọn huyện → hiện xã
-              document.getElementById('huyen').addEventListener('input', e => {
-                  const tinhTen = document.getElementById('tinh').value;
-                  const huyenTen = e.target.value;
-                  const xaList = document.getElementById('dsXa');
-                  xaList.innerHTML = '';
+                // 3️⃣ Khi chọn huyện → hiện xã
+                document.getElementById('huyen').addEventListener('input', e => {
+                    const tinhTen = document.getElementById('tinh').value;
+                    const huyenTen = e.target.value;
+                    const xaList = document.getElementById('dsXa');
+                    xaList.innerHTML = '';
 
-                  const maTinh = Object.keys(dataVN).find(
-                          k => dataVN[k].name_with_type === tinhTen || dataVN[k].name === tinhTen
-                  );
-                  if (!maTinh)
-                      return;
+                    const maTinh = Object.keys(dataVN).find(
+                            k => dataVN[k].name_with_type === tinhTen || dataVN[k].name === tinhTen
+                    );
+                    if (!maTinh)
+                        return;
 
-                  const dsHuyen = dataVN[maTinh]['quan-huyen'];
-                  const maHuyen = Object.keys(dsHuyen).find(
-                          k => dsHuyen[k].name_with_type === huyenTen || dsHuyen[k].name === huyenTen
-                  );
-                  if (!maHuyen)
-                      return;
+                    const dsHuyen = dataVN[maTinh]['quan-huyen'];
+                    const maHuyen = Object.keys(dsHuyen).find(
+                            k => dsHuyen[k].name_with_type === huyenTen || dsHuyen[k].name === huyenTen
+                    );
+                    if (!maHuyen)
+                        return;
 
-                  const dsXa = dsHuyen[maHuyen]['xa-phuong'];
-                  Object.keys(dsXa).forEach(x => {
-                      const opt = document.createElement('option');
-                      opt.value = dsXa[x].name_with_type;
-                      xaList.appendChild(opt);
-                  });
-              });
+                    const dsXa = dsHuyen[maHuyen]['xa-phuong'];
+                    Object.keys(dsXa).forEach(x => {
+                        const opt = document.createElement('option');
+                        opt.value = dsXa[x].name_with_type;
+                        xaList.appendChild(opt);
+                    });
+                });
 
-              // ====== Google Map ======
-              let map, marker;
-              function initMap() {
-                  map = new google.maps.Map(document.getElementById("map"), {
-                      center: {lat: 21.0285, lng: 105.8542},
-                      zoom: 13
-                  });
-                  marker = new google.maps.Marker({map});
-              }
-              window.onload = initMap;
+                // ====== Google Map ======
+                let map, marker;
+                function initMap() {
+                    map = new google.maps.Map(document.getElementById("map"), {
+                        center: {lat: 21.0285, lng: 105.8542},
+                        zoom: 13
+                    });
+                    marker = new google.maps.Marker({map});
+                }
+                window.onload = initMap;
 
-              function hienThiBanDo() {
-                  const diaChi = `${document.getElementById("duong").value}, ${document.getElementById("xa").value}, ${document.getElementById("huyen").value}, ${document.getElementById("tinh").value}, Việt Nam`;
-                  const geocoder = new google.maps.Geocoder();
-                  geocoder.geocode({address: diaChi}, (results, status) => {
-                      if (status === "OK") {
-                          map.setCenter(results[0].geometry.location);
-                          map.setZoom(16);
-                          marker.setPosition(results[0].geometry.location);
-                      } else {
-                          alert("Không tìm thấy địa chỉ: " + status);
-                      }
-                  });
-              }
+                function hienThiBanDo() {
+                    const diaChi = `${document.getElementById("duong").value}, ${document.getElementById("xa").value}, ${document.getElementById("huyen").value}, ${document.getElementById("tinh").value}, Việt Nam`;
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({address: diaChi}, (results, status) => {
+                        if (status === "OK") {
+                            map.setCenter(results[0].geometry.location);
+                            map.setZoom(16);
+                            marker.setPosition(results[0].geometry.location);
+                        } else {
+                            alert("Không tìm thấy địa chỉ: " + status);
+                        }
+                    });
+                }
 
-              function toggleTaiKhoan() {
-                  document.getElementById("taiKhoanNganHang").style.display =
-                          document.getElementById("phuongThuc").value === "Bank" ? "block" : "none";
-              }
-const form = document.getElementById('payForm');
-        form.addEventListener('submit', function (e) {
-            const tinh = document.getElementById('tinh').value.trim();
-            const huyen = document.getElementById('huyen').value.trim();
-            const xa = document.getElementById('xa').value.trim();
-            const duong = document.getElementById('duong').value.trim();
+                function toggleTaiKhoan() {
+                    document.getElementById("taiKhoanNganHang").style.display =
+                            document.getElementById("phuongThuc").value === "Bank" ? "block" : "none";
+                }
+                const form = document.getElementById('payForm');
+                form.addEventListener('submit', function (e) {
+                    const tinh = document.getElementById('tinh').value.trim();
+                    const huyen = document.getElementById('huyen').value.trim();
+                    const xa = document.getElementById('xa').value.trim();
+                    const duong = document.getElementById('duong').value.trim();
 
-            const phone = document.getElementById('soDienThoai').value.trim();
-            const error = document.getElementById('soDienThoaiError');
-            const fullAddress = `${duong}, ${xa}, ${huyen}, ${tinh}, Việt Nam`;
+                    const phone = document.getElementById('soDienThoai').value.trim();
+                    const error = document.getElementById('soDienThoaiError');
+                    const fullAddress = `${duong}, ${xa}, ${huyen}, ${tinh}, Việt Nam`;
 
-            document.getElementById('diaChiDayDu').value = fullAddress;
-            error.textContent = '';
+                    document.getElementById('diaChiDayDu').value = fullAddress;
+                    error.textContent = '';
 
-            if (phone === "") {
-                error.textContent = 'Vui lòng nhập số điện thoại.';
-                e.preventDefault();
-                return;
-            }
-            if (!/^0\d{9,10}$/.test(phone)) {
-                error.textContent = 'SĐT phải bắt đầu bằng 0 và có 10 hoặc 11 số.';
-                e.preventDefault();
-                return;
-            }
-});
-
+                    if (phone === "") {
+                        error.textContent = 'Vui lòng nhập số điện thoại.';
+                        e.preventDefault();
+                        return;
+                    }
+                    if (!/^0\d{9,10}$/.test(phone)) {
+                        error.textContent = 'SĐT phải bắt đầu bằng 0 và có 10 hoặc 11 số.';
+                        e.preventDefault();
+                        return;
+                    }
+                });
         </script>
-       
- <jsp:include page="footer.jsp" />
+
+        <jsp:include page="footer.jsp" />
     </body>
 </html>
 ]

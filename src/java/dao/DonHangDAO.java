@@ -71,79 +71,52 @@ public class DonHangDAO {
 
         return -1;
     }
-
-    // ➤ Lấy danh sách đơn hàng theo người dùng
-//    public List<DonHang> layDonHangTheoNguoiDung(int idNguoiDung) {
-//        List<DonHang> ds = new ArrayList<>();
-//        String sql = "SELECT * FROM donhang WHERE id_nguoidung=? ORDER BY ngaydat DESC";
-//
-//        try (Connection cn = DBUtil.getConnection();
-//             PreparedStatement ps = cn.prepareStatement(sql)) {
-//
-//            ps.setInt(1, idNguoiDung);
-//            try (ResultSet rs = ps.executeQuery()) {
-//                while (rs.next()) {
-//                    DonHang dh = new DonHang();
-//                    dh.setIdDonHang(rs.getInt("id_donhang"));
-//                    dh.setIdNguoiDung(rs.getInt("id_nguoidung"));
-//                    dh.setDiaChi(rs.getString("diachi"));
-//                    dh.setSoDienThoai(rs.getString("sodienthoai"));
-//                    dh.setPhuongThuc(rs.getString("phuongthuc"));
-//                    dh.setTongTien(rs.getDouble("tongtien"));
-//                    dh.setNgayDat(rs.getDate("ngaydat"));
-//                    // ➤ Lấy chi tiết đơn hàng
-//                    dh.setChiTiet(layChiTietDonHang(dh.getIdDonHang()));
-//                    ds.add(dh);
-//                }
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return ds;
-//    }
-// ➤ Lấy danh sách đơn hàng theo người dùng (giữ hàm cũ, gọi sang hàm mới)
     public List<DonHang> layDonHangTheoNguoiDung(int idNguoiDung) {
         return layDonHangTheoNguoiDung(idNguoiDung, null);
     }
 
 // ➤ HÀM MỚI: có filter theo trạng thái (null = tất cả)
     public List<DonHang> layDonHangTheoNguoiDung(int idNguoiDung, String trangThai) {
-        List<DonHang> ds = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM donhang WHERE id_nguoidung=?");
-        boolean hasFilter = (trangThai != null && !trangThai.isBlank());
-        if (hasFilter) {
-            sql.append(" AND trangthai=?");
-        }
-        sql.append(" ORDER BY ngaydat DESC");
+    List<DonHang> ds = new ArrayList<>();
 
-        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+    // chỉ chấp nhận 3 giá trị hợp lệ
+    boolean valid = "dadat".equalsIgnoreCase(trangThai)
+                 || "dahuy".equalsIgnoreCase(trangThai)
+                 || "hoantien".equalsIgnoreCase(trangThai);
 
-            ps.setInt(1, idNguoiDung);
-            if (hasFilter) {
-                ps.setString(2, trangThai);
+    StringBuilder sql = new StringBuilder(
+        "SELECT * FROM donhang WHERE id_nguoidung=?"
+    );
+    if (valid) sql.append(" AND trangthai=?");
+    sql.append(" ORDER BY ngaydat DESC");
+
+    try (Connection cn = DBUtil.getConnection();
+         PreparedStatement ps = cn.prepareStatement(sql.toString())) {
+
+        ps.setInt(1, idNguoiDung);
+        if (valid) ps.setString(2, trangThai.toLowerCase());
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                DonHang dh = new DonHang();
+                dh.setIdDonHang(rs.getInt("id_donhang"));
+                dh.setIdNguoiDung(rs.getInt("id_nguoidung"));
+                dh.setDiaChi(rs.getString("diachi"));
+                dh.setSoDienThoai(rs.getString("sodienthoai"));
+                dh.setPhuongThuc(rs.getString("phuongthuc"));
+                dh.setTongTien(rs.getDouble("tongtien"));
+                dh.setNgayDat(rs.getDate("ngaydat"));
+                dh.setTrangthai(rs.getString("trangthai"));
+                dh.setChiTiet(layChiTietDonHang(dh.getIdDonHang()));
+                ds.add(dh);
             }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    DonHang dh = new DonHang();
-                    dh.setIdDonHang(rs.getInt("id_donhang"));
-                    dh.setIdNguoiDung(rs.getInt("id_nguoidung"));
-                    dh.setDiaChi(rs.getString("diachi"));
-                    dh.setSoDienThoai(rs.getString("sodienthoai"));
-                    dh.setPhuongThuc(rs.getString("phuongthuc"));
-                    dh.setTongTien(rs.getDouble("tongtien"));
-                    dh.setNgayDat(rs.getDate("ngaydat"));
-                    dh.setTrangthai(rs.getString("trangthai")); // <-- nhớ set trạng thái
-
-                    dh.setChiTiet(layChiTietDonHang(dh.getIdDonHang()));
-                    ds.add(dh);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return ds;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return ds;
+}
+
 
     // ➤ Lấy chi tiết đơn hàng
     private List<DonHangChiTiet> layChiTietDonHang(int idDonHang) {
