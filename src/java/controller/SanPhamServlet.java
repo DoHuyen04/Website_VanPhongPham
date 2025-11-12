@@ -36,17 +36,15 @@ public class SanPhamServlet extends HttpServlet {
 
         // 🔹 Lấy toàn bộ sản phẩm
    
-        List<SanPham> ds;
+        List<SanPham> ds = sanPhamDAO.layTatCa();
 
         // ✅ ƯU TIÊN TỪ KHÓA
         if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
-            ds = sanPhamDAO.layTatCa().stream()
+            ds = ds.stream()
                     .filter(sp -> sp.getTen().toLowerCase().contains(tuKhoa.toLowerCase()))
                     .collect(Collectors.toList());
 
-        } else {
-            // 🔹 Không có từ khóa → mới lọc
-            ds = sanPhamDAO.layTatCa();
+        } 
 
             // --- Lọc theo danh mục ---
             if (danhMucs != null && danhMucs.length > 0) {
@@ -91,7 +89,7 @@ public class SanPhamServlet extends HttpServlet {
                     case "za": ds.sort(Comparator.comparing(SanPham::getTen, String.CASE_INSENSITIVE_ORDER).reversed()); break;
                 }
             }
-        }
+        
 
         // --- Trả về JSP ---
         req.setAttribute("danhSachSanPham", ds);

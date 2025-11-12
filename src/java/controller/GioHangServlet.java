@@ -133,6 +133,7 @@ HttpSession session = request.getSession();
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             int soLuongMoi = Integer.parseInt(req.getParameter("soLuong"));
+            
             for (Map<String, Object> item : gioHang) {
                 SanPham s = (SanPham) item.get("sanpham");
                 if (s.getId_sanpham() == id) {           // đổi getId()
@@ -173,7 +174,14 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.getWriter().write("OK"); // trả về "OK" cho JS biết đã xóa xong
         return;
     }
-   
+    if ("capnhat".equals(action)) {
+        int id = Integer.parseInt(request.getParameter("idSanPham"));
+        int soLuongMoi = Integer.parseInt(request.getParameter("soLuong"));
+        capNhatSoLuong(request, gioHang);
+        session.setAttribute("gioHang", gioHang);
+        response.sendRedirect("GioHangServlet");
+        return;
+    }
     String tenDangNhap = (session != null) ? (String) session.getAttribute("tenDangNhap") : null;
 
     if (tenDangNhap == null) {

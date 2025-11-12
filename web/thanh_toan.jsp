@@ -1,22 +1,6 @@
 <%@page import="java.text.DecimalFormat"%>  
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%
-    DecimalFormat df = new DecimalFormat("#,### VNĐ");
-
-    double tongTienHang = 0;
-    if (request.getAttribute("tongTienHang") != null) {
-        tongTienHang = (double) request.getAttribute("tongTienHang");
-    } else if (session.getAttribute("tongTienHang") != null) {
-        tongTienHang = (double) session.getAttribute("tongTienHang");
-    }
-
-    double phiVanChuyen = 15000;
-    double tongThanhToan = tongTienHang + phiVanChuyen;
-
-    session.setAttribute("tongTienHang", tongTienHang);
-    session.setAttribute("tongThanhToan", tongThanhToan);
-%>
-
+<%@ page import="java.util.*, model.SanPham" %>
 <html>
     <head>
         <title>Thanh toán đơn hàng</title>
@@ -129,6 +113,57 @@
             </div>
 
             <div class="summary">
+                
+<%
+    DecimalFormat df = new DecimalFormat("#,### VNĐ");
+
+    // Giỏ hàng có thể là danh sách SanPham hoặc Map chứa {sanpham, soluong}
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+
+    double tongTienHang = 0;
+    double phiVanChuyen = 15000; // Phí cố định
+    double tongThanhToan = 0;
+%>
+
+<% if (gioHang != null && !gioHang.isEmpty()) { %>
+    <table border="1" cellpadding="8" cellspacing="0" width="100%" style="margin-top:20px; border-collapse:collapse;">
+        <tr style="background-color:#f2f2f2;">
+            <th>Tên sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+        <% 
+            for (Map<String, Object> item : gioHang) {
+                SanPham sp = (SanPham) item.get("sanpham");
+                int soLuong = (int) item.get("soluong");
+                double thanhTien = sp.getGia() * soLuong;
+                tongTienHang += thanhTien;
+        %>
+        <tr>
+            <td><%= sp.getTen() %></td>
+            <td align="center"><%= soLuong %></td>
+            <td align="right"><%= df.format(sp.getGia()) %></td>
+            <td align="right"><%= df.format(thanhTien) %></td>
+        </tr>
+        <% } %>
+       
+    </table>
+
+    <%
+        // Tính tổng thanh toán cuối cùng
+        tongThanhToan = tongTienHang + phiVanChuyen;
+
+        // Lưu vào session (phục vụ cho bước OTP/thanh toán)
+        session.setAttribute("tongTienHang", tongTienHang);
+        session.setAttribute("phiVanChuyen", phiVanChuyen);
+        session.setAttribute("tongThanhToan", tongThanhToan);
+    %>
+
+<% } else { %>
+    <p style="color:red;">Không có sản phẩm nào trong giỏ hàng!</p>
+<% } %>
+
                 <p><b>Tổng tiền hàng:</b> <%= df.format(tongTienHang)%></p>
                 <p><b>Phí vận chuyển:</b> <%= df.format(phiVanChuyen)%></p>
                 <hr>

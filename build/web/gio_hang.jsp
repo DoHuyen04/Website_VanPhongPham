@@ -325,7 +325,7 @@
 
                 </div>
                 <div style="text-align:right; margin-top:20px;">
-                    <button type="button" class="btn-checkout" onclick="thanhToan()">Thanh toán</button>
+                    <button type="button" class="btn-checkout" onclick="thanhToan()">Đặt hàng</button>
                 </div>
             </form>
             <% }%>
