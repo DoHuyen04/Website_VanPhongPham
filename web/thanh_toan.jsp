@@ -1,22 +1,9 @@
+<%@page import="model.SanPham"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.Map"%>
+<%@page import="java.util.List"%>
 <%@page import="java.text.DecimalFormat"%>  
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%
-    DecimalFormat df = new DecimalFormat("#,### VNĐ");
-
-    double tongTienHang = 0;
-    if (request.getAttribute("tongTienHang") != null) {
-        tongTienHang = (double) request.getAttribute("tongTienHang");
-    } else if (session.getAttribute("tongTienHang") != null) {
-        tongTienHang = (double) session.getAttribute("tongTienHang");
-    }
-
-    double phiVanChuyen = 15000;
-    double tongThanhToan = tongTienHang + phiVanChuyen;
-
-    session.setAttribute("tongTienHang", tongTienHang);
-    session.setAttribute("tongThanhToan", tongThanhToan);
-%>
-
 <html>
     <head>
         <title>Thanh toán đơn hàng</title>
@@ -105,7 +92,7 @@
             </div>
 
             <label>Tìm địa chỉ trên Google Maps (tùy chọn):</label>
-            <input type="text" id="diaChi" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
+            <input type="text" id="diaChiMap" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
             <div id="map"></div>
 
             <label>Số điện thoại</label>
@@ -129,11 +116,62 @@
             </div>
 
             <div class="summary">
-                <p><b>Tổng tiền hàng:</b> <%= df.format(tongTienHang)%></p>
-                <p><b>Phí vận chuyển:</b> <%= df.format(phiVanChuyen)%></p>
+                <%
+                    DecimalFormat df = new DecimalFormat("#,### VNĐ");
+                    List<Map<String, Object>> gioHangChon = (List<Map<String, Object>>) session.getAttribute("gioHangChon");
+                    if (gioHangChon == null) {
+                        gioHangChon = new ArrayList<>();
+                    }
+                    double tongTienHang = 0;
+                    double phiVanChuyen = 15000;
+                %>
+                <h3>Sản phẩm thanh toán</h3>
+
+                <!-- Nếu không có sản phẩm nào -->
+                <% if (gioHangChon.isEmpty()) { %>
+                <p style="color:red; font-weight:bold;">Không có sản phẩm nào được chọn để thanh toán.</p>
+                <% } else { %>
+                <table border="1" cellpadding="5" cellspacing="0" width="100%">
+                    <tr>
+                        <th>Chọn</th>
+                        <th>Sản phẩm</th>
+                        <th>SL</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                    <%
+                        for (Map<String, Object> item : gioHangChon) {
+                            SanPham sp = (SanPham) item.get("sanpham");
+                            int sl = (Integer) item.get("soluong");
+                            double thanhTien = sp.getGia() * sl;
+                            tongTienHang += thanhTien;
+                    %>
+                    <tr>
+                        <td>
+                            <input type="checkbox"
+                                   name="chonSP"
+                                   value="<%= sp.getId_sanpham()%>"
+                                   class="chonSP"
+                                   data-id="<%= sp.getId_sanpham()%>"
+                                   <%= Boolean.TRUE.equals(item.get("daChon")) ? "checked" : ""%> >
+                        </td>
+
+                        <td><%=sp.getTen()%></td>
+                        <td><%=sl%></td>
+                        <td><%=df.format(sp.getGia())%></td>
+                        <td><%=df.format(thanhTien)%></td>
+                    </tr>
+                    <% }%>
+                </table>
+
+                <% }%>
+
+                <p><b>Tổng tiền hàng:</b> <%=df.format(tongTienHang)%></p>
+                <p><b>Phí vận chuyển:</b> <%=df.format(phiVanChuyen)%></p>
                 <hr>
-                <p><b>Tổng thanh toán:</b> <span style="color:red;"><%= df.format(tongThanhToan)%></span></p>
+                <p><b>Tổng thanh toán:</b> <span style="color:red;"><%=df.format(tongTienHang + phiVanChuyen)%></span></p>
             </div>
+
             <input type="hidden" name="diaChi" id="diaChiDayDu">
             <button type="button" class="btn" onclick="hienThiBanDo()">Hiển thị trên bản đồ</button>
             <button type="submit" class="btn">Xác nhận & Đặt hàng</button>
@@ -263,9 +301,33 @@
                         return;
                     }
                 });
+                function capNhatChonSP() {
+                    const formData = new FormData();
+                    document.querySelectorAll('.chonSP').forEach(cb => {
+                        if (cb.checked) {
+                            // append value (id)
+                            formData.append('chonSP', cb.value);
+                        }
+                    });
+
+                    fetch('CapNhatGioHangServlet', {
+                        method: 'POST',
+                        body: formData
+                    })
+                            .then(resp => resp.json())
+                            .then(data => {
+                                // optional: console.log(data);
+                                location.reload(); // tải lại để JSP lấy gioHangChon mới
+                            })
+                            .catch(err => console.error(err));
+                }
+
+                document.querySelectorAll('.chonSP').forEach(cb => {
+                    cb.addEventListener('change', capNhatChonSP);
+                });
+
         </script>
 
         <jsp:include page="footer.jsp" />
     </body>
 </html>
-]

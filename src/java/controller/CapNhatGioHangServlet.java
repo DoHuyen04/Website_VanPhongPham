@@ -13,7 +13,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import model.SanPham;
@@ -63,7 +65,7 @@ public class CapNhatGioHangServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        response.sendRedirect("giohang.jsp");
     }
 
     /**
@@ -77,34 +79,130 @@ public class CapNhatGioHangServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-       response.setContentType("application/json;charset=UTF-8");
-        int id = Integer.parseInt(request.getParameter("id"));
-    int soLuong = Integer.parseInt(request.getParameter("soluong"));
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        HttpSession session = request.getSession();
 
-    List<Map<String,Object>> gioHang = (List<Map<String,Object>>) request.getSession().getAttribute("gioHang");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
 
-    Map<String,Object> result = new HashMap<>();
-    boolean found = false;
+        Map<String, Object> result = new HashMap<>();
+        if (gioHang == null || gioHang.isEmpty()) {
+            result.put("status", "error");
+            result.put("message", "Giỏ hàng trống");
+            out.print(toJSON(result));
+            return;
+        }
 
-    for(Map<String,Object> item: gioHang) {
-        SanPham sp = (SanPham) item.get("sanpham");
-        if(sp.getId_sanpham() == id) {
-            found = true;
-            if(soLuong > sp.getSoLuong()) {
-                result.put("status", "warning");
-                result.put("message", "Số lượng bạn chọn vượt quá tồn kho (" + sp.getSoLuong()+ ")");
-            } else {
-                item.put("soluong", soLuong);
-                result.put("status", "success");
-                result.put("message", "Cập nhật thành công");
+        // 1️⃣ Update số lượng (nếu có)
+        String id_raw = request.getParameter("id");
+        String sl_raw = request.getParameter("soluong");
+        if (id_raw != null && sl_raw != null) {
+            try {
+                int id = Integer.parseInt(id_raw);
+                int soLuong = Integer.parseInt(sl_raw);
+
+                Iterator<Map<String, Object>> iter = gioHang.iterator();
+                boolean found = false;
+
+                while (iter.hasNext()) {
+                    Map<String, Object> item = iter.next();
+                    SanPham sp = (SanPham) item.get("sanpham");
+
+                    if (sp.getId_sanpham() == id) {
+                        found = true;
+
+                        if (soLuong <= 0) {
+                            iter.remove();
+                            result.put("status", "removed");
+                            result.put("message", "Đã xóa sản phẩm khỏi giỏ hàng");
+                        } else {
+                            item.put("soluong", soLuong);
+                            result.put("status", "success");
+                            result.put("message", "Đã cập nhật số lượng");
+                        }
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    result.put("status", "error");
+                    result.put("message", "Sản phẩm không tồn tại");
+                }
+
+            } catch (NumberFormatException e) {
+                result.put("status", "error");
+                result.put("message", "Tham số không hợp lệ");
             }
-            break;
+        }
+
+        // 2️⃣ Cập nhật tick chọn
+        for (Map<String, Object> item : gioHang) {
+            item.put("daChon", false);
+        }
+
+        String[] chonSP = request.getParameterValues("chonSP");
+
+        if (chonSP != null) {
+            for (String idStr : chonSP) {
+                try {
+                    int id = Integer.parseInt(idStr);
+                    for (Map<String, Object> item : gioHang) {
+                        SanPham sp = (SanPham) item.get("sanpham");
+                        if (sp.getId_sanpham() == id) {
+                            item.put("daChon", true);
+                            break;
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        // 3️⃣ Build danh sách gioHangChon
+       List<Map<String, Object>> gioHangChon = new ArrayList<>();
+    double tongTienHang = 0;
+    for (Map<String, Object> item : gioHang) {
+        if (Boolean.TRUE.equals(item.get("daChon"))) {
+            gioHangChon.add(item);
+            SanPham sp = (SanPham) item.get("sanpham");
+            int soLuong = (item.get("soluong") instanceof Integer) ? (Integer) item.get("soluong")
+                      : Integer.parseInt(item.get("soluong").toString());
+            tongTienHang += sp.getGia() * soLuong;
         }
     }
-    if(!found) {
-        result.put("status", "error");
-        result.put("message", "Sản phẩm không tồn tại trong giỏ hàng");
+
+    // 3.1 Nếu không có sản phẩm nào được chọn (mới truy cập checkout), bạn có thể
+    //     tự động chọn tất cả để tránh hiển thị rỗng — tùy bạn có muốn auto-select hay không.
+    if (gioHangChon.isEmpty()) {
+        // OPTION A: tự chọn tất cả (bỏ comment nếu muốn)
+        for (Map<String, Object> item : gioHang) {
+            item.put("daChon", true);
+            gioHangChon.add(item);
+            SanPham sp = (SanPham) item.get("sanpham");
+            int soLuong = (item.get("soluong") instanceof Integer) ? (Integer) item.get("soluong")
+                      : Integer.parseInt(item.get("soluong").toString());
+            tongTienHang += sp.getGia() * soLuong;
+        }
+        // result.put("autoSelected", true);
     }
+
+ // 4️⃣ Lưu lại session
+        session.setAttribute("gioHang", gioHang);
+        session.setAttribute("gioHangChon", gioHangChon);
+         session.setAttribute("tongTienHang", tongTienHang);
+        if (!result.containsKey("status")) {
+            result.put("status", "success");
+            result.put("message", "Cập nhật giỏ hàng thành công");
+        }
+        out.print(toJSON(result));
+    }
+
+    private String toJSON(Map<String, Object> map) {
+        return "{"
+                + "\"status\":\"" + map.get("status") + "\","
+                + "\"message\":\"" + map.get("message") + "\""
+                + "}";
     }
 
     /**

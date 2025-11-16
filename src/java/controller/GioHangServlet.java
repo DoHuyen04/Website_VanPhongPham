@@ -59,7 +59,7 @@ public class GioHangServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-HttpSession session = request.getSession();
+HttpSession session = request.getSession(false);
     String action = request.getParameter("action");
     String idParam = request.getParameter("id");
 

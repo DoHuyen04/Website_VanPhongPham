@@ -9,6 +9,8 @@
 <%
     DecimalFormat df = new DecimalFormat("#,### VNĐ");
     List<DonHang> lichSu = (List<DonHang>) request.getAttribute("dsDonHang");
+    if (lichSu == null)
+        lichSu = new ArrayList<>();
 %>
 
 <html>
@@ -177,12 +179,20 @@
                 <h3>🛒 Đơn hàng #<%= don.getIdDonHang()%>
                     <span class="badge">
                         <%
-                            String tt = don.getTrangthai(); // 'dadat' | 'dahuy' | 'hoantien'
-                            String text = "ĐÃ ĐẶT";
-                            if ("dahuy".equalsIgnoreCase(tt))
-                                text = "ĐÃ HUỶ";
-                            else if ("hoantien".equalsIgnoreCase(tt))
-                                text = "ĐÃ HOÀN TIỀN";
+                            String tt = don.getTrangthai();
+                            String text;
+                            switch (tt) {
+                                case "dahuy":
+                                    text = "ĐÃ HUỶ";
+                                    break;
+                                case "hoantien":
+                                    text = "ĐÃ HOÀN TIỀN";
+                                    break;
+                                default:
+                                    text = "ĐÃ ĐẶT";
+                                    break;
+                            }
+
                         %>
                         <%= text%>
                     </span>
@@ -202,6 +212,9 @@
                     </tr>
                     <%
                         List<DonHangChiTiet> chiTiet = don.getChiTiet();
+                        if (chiTiet == null) {
+                            chiTiet = Collections.emptyList();
+                        }
                         for (DonHangChiTiet ct : chiTiet) {
                     %>
                     <tr>

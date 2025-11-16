@@ -44,10 +44,24 @@ public class XacNhanOTPServlet extends HttpServlet {
         String diaChi = request.getParameter("diaChi");
         String sdt = request.getParameter("soDienThoai");
 
+        if (tenNguoiNhan == null || tenNguoiNhan.isEmpty()
+                || diaChi == null || diaChi.isEmpty()
+                || sdt == null || sdt.isEmpty()) {
+            request.setAttribute("error", "Không thể lấy địa chỉ nhận hàng. Vui lòng nhập lại!");
+            request.setAttribute("tenNguoiNhan", tenNguoiNhan);
+            request.setAttribute("diaChi", diaChi);
+            request.setAttribute("soDienThoai", sdt);
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+            return;
+        }
         // Email: ưu tiên từ tài khoản; nếu không có thì lấy từ session/param (iamaine)
         String email = (nd != null ? nd.getEmail() : null);
-        if (email == null) email = (String) session.getAttribute("email");
-        if (email == null) email = request.getParameter("email");
+        if (email == null) {
+            email = (String) session.getAttribute("email");
+        }
+        if (email == null) {
+            email = request.getParameter("email");
+        }
 
         // OTP người dùng nhập (nếu có) → GIAI ĐOẠN 2
         String otpNhap = request.getParameter("otp");
@@ -123,13 +137,7 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        // ===== GIAI ĐOẠN 2: XÁC NHẬN OTP (khi đã nhập otp) =====
-        // BẮT ĐĂNG NHẬP (HEAD giữ logic an toàn)
-        if (nd == null) {
-            response.sendRedirect("dang_nhap.jsp");
-            return;
-        }
-
+        // ===== GIAI ĐOẠN 2: XÁC NHẬN OTP =====
         String otpSession = (String) session.getAttribute("otp");
         Long otpExpire = (Long) session.getAttribute("otp_expire");
 
@@ -139,52 +147,65 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        if (otpNhap.equals(otpSession)) {
-            // OTP đúng → xóa dấu vết OTP
-            session.removeAttribute("otp");
-            session.removeAttribute("otp_expire");
+      if (otpNhap == null || !otpNhap.trim().equals(otpSession.trim())) {
+    request.setAttribute("error", "OTP không đúng! Vui lòng thử lại.");
+    request.getRequestDispatcher("xacnhan_otp.jsp").forward(request, response);
+    return;
+}
 
-            // TẠO ĐƠN HÀNG (HEAD)
-            DonHang dh = new DonHang();
-            dh.setIdNguoiDung(nd.getId());
-            dh.setDiaChi((String) session.getAttribute("diaChi"));
-            dh.setSoDienThoai((String) session.getAttribute("soDienThoai"));
-            dh.setPhuongThuc("Thanh toán trực tuyến");
 
-            double tongTien = 0.0;
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
-            if (gioHang != null) {
-                for (Map<String, Object> item : gioHang) {
-                    SanPham sp = (SanPham) item.get("sanpham");
-                    int sl = (int) item.get("soluong");
-                    DonHangChiTiet ct = new DonHangChiTiet();
-                    ct.setId_sanpham(sp.getId_sanpham());
-                    ct.setSoLuong(sl);
-                    ct.setGia(sp.getGia());
-                    dh.getChiTiet().add(ct);
-                    tongTien += sp.getGia() * sl;
-                }
-            }
-            dh.setTongTien(tongTien);
+// OTP đúng → xóa khỏi session
+        session.removeAttribute("otp");
+        session.removeAttribute("otp_expire");
 
-            int idDonHang = donHangDAO.themDonHang(dh);
-            if (idDonHang > 0) {
-                session.removeAttribute("gioHang");
-                session.setAttribute("lastDonHangId", idDonHang); // giữ key theo HEAD
-                response.sendRedirect("thanh_toan_thanh_cong.jsp");
-            } else {
-                request.setAttribute("error", "Lưu đơn hàng thất bại. Vui lòng thử lại!");
-                request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
-            }
-        } else {
-            request.setAttribute("error", "Mã OTP không đúng!");
-            request.getRequestDispatcher("xacnhan_otp.jsp").forward(request, response);
+// TẠO ĐƠN HÀNG
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHangChon");
+        String[] chonSanPham = request.getParameterValues("chonSP");
+
+        if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
+            request.setAttribute("error", "Không có sản phẩm nào được chọn để đặt!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+            return;
         }
-    }
 
+        DonHang dh = new DonHang();
+        dh.setIdNguoiDung(nd.getId());
+        dh.setDiaChi((String) session.getAttribute("diaChi"));
+        dh.setSoDienThoai((String) session.getAttribute("soDienThoai"));
+        dh.setPhuongThuc(request.getParameter("phuongThuc") != null ? request.getParameter("phuongThuc") : "COD");
+
+        double tongTien = 0.0;
+        for (Map<String, Object> item : gioHang) {
+            SanPham sp = (SanPham) item.get("sanpham");
+            int sl = (int) item.get("soluong");
+            boolean duocChon = false;
+            for (String id : chonSanPham) {
+           
+            DonHangChiTiet ct = new DonHangChiTiet();
+            ct.setId_sanpham(sp.getId_sanpham());
+            ct.setSoLuong(sl);
+            ct.setGia(sp.getGia());
+
+            dh.getChiTiet().add(ct);
+            tongTien += sp.getGia() * sl;
+        }
+        dh.setTongTien(tongTien);
+
+        int idDonHang = donHangDAO.themDonHang(dh);
+        if (idDonHang > 0) {
+            session.removeAttribute("gioHangChon");
+            session.setAttribute("lastDonHangId", idDonHang);
+            response.sendRedirect("thanh_toan_thanh_cong.jsp");
+        } else {
+            request.setAttribute("error", "Lưu đơn hàng thất bại. Vui lòng thử lại!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+        }
+
+    }
+    }
     @Override
     public String getServletInfo() {
         return "Servlet xác nhận OTP và lưu đơn hàng";
     }
-}
+    }
