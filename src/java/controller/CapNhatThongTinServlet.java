@@ -35,7 +35,9 @@ public class CapNhatThongTinServlet extends HttpServlet {
 
         if (tenDangNhap == null || tenDangNhap.isBlank()) {
             if (ses != null) ses.setAttribute("msgCapNhat", "Phiên đăng nhập hết hạn.");
-            response.sendRedirect("dang_nhap.jsp");
+           RequestDispatcher rd = request.getRequestDispatcher("thong_tin_ca_nhan.jsp");
+rd.forward(request, response);
+
             return;
         }
 
@@ -50,7 +52,9 @@ public class CapNhatThongTinServlet extends HttpServlet {
 
         if (email.length() > 150 || hoTen.length() > 150 || sdt.length() > 20) {
             if (ses != null) ses.setAttribute("msgCapNhat", "Dữ liệu quá dài, vui lòng kiểm tra lại.");
-            response.sendRedirect("thong_tin_ca_nhan.jsp");
+          RequestDispatcher rd = request.getRequestDispatcher("thong_tin_ca_nhan.jsp");
+rd.forward(request, response);
+
             return;
         }
 
@@ -77,7 +81,9 @@ public class CapNhatThongTinServlet extends HttpServlet {
         }
 
         // Quay lại trang thông tin để load dữ liệu mới
-        response.sendRedirect("thong_tin_ca_nhan.jsp");
+       RequestDispatcher rd = request.getRequestDispatcher("thong_tin_ca_nhan.jsp");
+rd.forward(request, response);
+
     }
 
     // Nếu ai đó truy cập GET nhầm, đưa về trang thông tin

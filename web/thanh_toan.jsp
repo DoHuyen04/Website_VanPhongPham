@@ -1,25 +1,38 @@
+
+<%@page import="model.SanPham"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.Map"%>
+<%@page import="java.util.List"%>
 <%@page import="java.text.DecimalFormat"%>  
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%
-    DecimalFormat df = new DecimalFormat("#,### VNĐ");
-
-    double tongTienHang = 0;
-    if (request.getAttribute("tongTienHang") != null) {
-        tongTienHang = (double) request.getAttribute("tongTienHang");
-    } else if (session.getAttribute("tongTienHang") != null) {
-        tongTienHang = (double) session.getAttribute("tongTienHang");
-    }
-
-    double phiVanChuyen = 15000;
-    double tongThanhToan = tongTienHang + phiVanChuyen;
-
-    session.setAttribute("tongTienHang", tongTienHang);
-    session.setAttribute("tongThanhToan", tongThanhToan);
-%>
-
 <html>
     <head>
         <title>Thanh toán đơn hàng</title>
+        <%
+            // Không cần: HttpSession session = request.getSession();
+            @SuppressWarnings(
+           
+            "unchecked")
+     List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+
+            List<Map<String, Object>> gioHangChon = (List<Map<String, Object>>) session.getAttribute("gioHangChon");
+
+            if (gioHangChon == null) {
+                gioHangChon = new ArrayList<>();
+                if (gioHang != null) {
+                    for (Map<String, Object> item : gioHang) {
+                        item.put("daChon", true);
+                        gioHangChon.add(item);
+                    }
+                    session.setAttribute("gioHangChon", gioHangChon);
+                }
+            }
+
+            double tongTienHang = 0;
+            double phiVanChuyen = 15000;
+            java.text.DecimalFormat df = new java.text.DecimalFormat("#,### VNĐ");
+
+        %>
         <link rel="stylesheet" href="css/kieu.css">
         <style>
             body {
@@ -86,7 +99,13 @@
         <jsp:include page="header.jsp" />
         <h2>Thanh toán đơn hàng</h2>
 
-        <form id="payForm" action="XacNhanOTPServlet" method="post" class="pay-form">
+        <form id="payForm" action="${pageContext.request.contextPath}/XacNhanOTPServlet" method="post" class="pay-form">
+            <input type="hidden" name="xacNhan" value="1">
+            <%-- Gửi danh sách sản phẩm đã chọn để servlet tính lại --%>
+            <% for (Map<String, Object> item : gioHangChon) {
+                    SanPham sp = (SanPham) item.get("sanpham");%>
+            <input type="hidden" name="chonSP" value="<%= sp.getId_sanpham()%>">
+            <% } %>
             <label>Họ tên người nhận:</label>
             <input type="text" name="tenNguoiNhan" required>
 
@@ -105,7 +124,7 @@
             </div>
 
             <label>Tìm địa chỉ trên Google Maps (tùy chọn):</label>
-            <input type="text" id="diaChi" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
+            <input type="text" id="diaChiMap" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
             <div id="map"></div>
 
             <label>Số điện thoại</label>
@@ -123,26 +142,63 @@
                 <%
                     String taiKhoan = (String) session.getAttribute("taiKhoanNganHang");
                     if (taiKhoan == null)
-                        taiKhoan = "123456789 - Vietcombank";
+                        taiKhoan = "0337949703 - Vietcombank";
                 %>
                 <input type="text" name="taiKhoan" value="<%= taiKhoan%>" readonly>
             </div>
 
             <div class="summary">
-                <p><b>Tổng tiền hàng:</b> <%= df.format(tongTienHang)%></p>
-                <p><b>Phí vận chuyển:</b> <%= df.format(phiVanChuyen)%></p>
-                <hr>
-                <p><b>Tổng thanh toán:</b> <span style="color:red;"><%= df.format(tongThanhToan)%></span></p>
+
+                <h3>Sản phẩm thanh toán</h3>
+
+                <% if (gioHangChon.isEmpty()) { %>
+                <p style="color:red; font-weight:bold;">Không có sản phẩm nào được chọn để thanh toán.</p>
+                <% } else { %>
+                <table border="1" cellpadding="5" cellspacing="0" width="100%">
+                    <tr>
+                        <th>STT</th>
+                        <th>Sản phẩm</th>
+                        <th>SL</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                    <%
+                        int stt = 1;
+
+                        for (Map<String, Object> item : gioHangChon) {
+                            SanPham sp = (SanPham) item.get("sanpham");
+                            int sl = (Integer) item.get("soluong");
+                            double thanhTien = sp.getGia() * sl;
+                            tongTienHang += thanhTien;
+                    %>
+                    <tr>
+                        <td>
+                            <%= stt++%>
+                        </td>
+
+                        <td><%=sp.getTen()%></td>
+                        <td><%=sl%></td>
+                        <td><%=df.format(sp.getGia())%></td>
+                        <td><%=df.format(thanhTien)%></td>
+                    </tr>
+                    <% }%>
+                </table>
+
+                <% }%>
+
+                <p><b>Tổng tiền hàng:</b> <%=df.format(tongTienHang)%></p>
+                <p><b>Phí vận chuyển:</b> <%=df.format(phiVanChuyen)%></p>
+
+                <p><b>Tổng thanh toán:</b> <span style="color:red;"><%=df.format(tongTienHang + phiVanChuyen)%></span></p>
             </div>
+
             <input type="hidden" name="diaChi" id="diaChiDayDu">
             <button type="button" class="btn" onclick="hienThiBanDo()">Hiển thị trên bản đồ</button>
             <button type="submit" class="btn">Xác nhận & Đặt hàng</button>
         </form>
 
-        <!-- Google Maps -->
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyk-_EMKXoUykzkL5nmg9OzJidA6cRW4A&libraries=places"></script>
 
-        <!-- ====== Dữ liệu hành chính Việt Nam đầy đủ ====== -->
         <script>
                 let dataVN = {};
 
@@ -233,13 +289,20 @@
                         }
                     });
                 }
-
+                function capNhatDiaChi() {
+                    const duong = document.getElementById('duong').value;
+                    const xa = document.getElementById('xa').value;
+                    const huyen = document.getElementById('huyen').value;
+                    const tinh = document.getElementById('tinh').value;
+                    document.getElementById('diaChiDayDu').value = `${duong}, ${xa}, ${huyen}, ${tinh}, Việt Nam`;
+                }
                 function toggleTaiKhoan() {
                     document.getElementById("taiKhoanNganHang").style.display =
                             document.getElementById("phuongThuc").value === "Bank" ? "block" : "none";
                 }
                 const form = document.getElementById('payForm');
                 form.addEventListener('submit', function (e) {
+                    capNhatDiaChi();
                     const tinh = document.getElementById('tinh').value.trim();
                     const huyen = document.getElementById('huyen').value.trim();
                     const xa = document.getElementById('xa').value.trim();
@@ -263,9 +326,33 @@
                         return;
                     }
                 });
+                function capNhatChonSP() {
+                    const formData = new FormData();
+                    document.querySelectorAll('.chonSP').forEach(cb => {
+                        if (cb.checked) {
+                            // append value (id)
+                            formData.append('chonSP', cb.value);
+                        }
+                    });
+
+                    fetch('CapNhatGioHangServlet', {
+                        method: 'POST',
+                        body: formData
+                    })
+                            .then(resp => resp.json())
+                            .then(data => {
+                                // optional: console.log(data);
+                                location.reload(); // tải lại để JSP lấy gioHangChon mới
+                            })
+                            .catch(err => console.error(err));
+                }
+
+                document.querySelectorAll('.chonSP').forEach(cb => {
+                    cb.addEventListener('change', capNhatChonSP);
+                });
+
         </script>
 
         <jsp:include page="footer.jsp" />
     </body>
 </html>
-]

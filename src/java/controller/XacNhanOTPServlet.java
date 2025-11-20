@@ -2,6 +2,7 @@ package controller;
 
 import dao.DonHangDAO;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import model.DonHang;
 import model.DonHangChiTiet;
 import model.NguoiDung;
@@ -37,60 +39,81 @@ public class XacNhanOTPServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         HttpSession session = request.getSession();
 
-        // LẤY NGƯỜI DÙNG ĐÃ ĐĂNG NHẬP (HEAD)
+        // LẤY NGƯỜI DÙNG ĐÃ ĐĂNG NHẬP
         NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
-        // DỮ LIỆU TỪ FORM (iamaine + HEAD)
+
+        // DỮ LIỆU TỪ FORM
         String tenNguoiNhan = request.getParameter("tenNguoiNhan");
-        String diaChi = request.getParameter("diaChi");
+        //String diaChi = request.getParameter("diaChi");
         String sdt = request.getParameter("soDienThoai");
+        String tinh = request.getParameter("tinh");
+        String huyen = request.getParameter("huyen");
+        String xa = request.getParameter("xa");
+        String duong = request.getParameter("duong");
+        String diaChi = duong + ", " + xa + ", " + huyen + ", " + tinh;
+        String phuongThuc = request.getParameter("phuongThuc");
+        session.setAttribute("phuongThuc", phuongThuc);
 
-        // Email: ưu tiên từ tài khoản; nếu không có thì lấy từ session/param (iamaine)
+        // KIỂM TRA THÔNG TIN NHẬN HÀNG
+        if (tenNguoiNhan == null || tenNguoiNhan.isEmpty()
+                || diaChi == null || diaChi.isEmpty()
+                || sdt == null || sdt.isEmpty()) {
+            request.setAttribute("error", "Không thể lấy địa chỉ nhận hàng. Vui lòng nhập lại!");
+            request.setAttribute("tenNguoiNhan", tenNguoiNhan);
+            request.setAttribute("diaChi", diaChi);
+            request.setAttribute("soDienThoai", sdt);
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+            return;
+        }
+
+        // Email ưu tiên từ tài khoản
         String email = (nd != null ? nd.getEmail() : null);
-        if (email == null) email = (String) session.getAttribute("email");
-        if (email == null) email = request.getParameter("email");
+        if (email == null) {
+            email = (String) session.getAttribute("email");
+        }
+        if (email == null) {
+            email = request.getParameter("email");
+        }
 
-        // OTP người dùng nhập (nếu có) → GIAI ĐOẠN 2
+        // Lấy OTP người dùng nhập (nếu có)
         String otpNhap = request.getParameter("otp");
 
-        // ===== GIAI ĐOẠN 1: GỬI OTP (khi chưa nhập otp) =====
+        // ===== GIAI ĐOẠN 1: GỬI OTP =====
         if (otpNhap == null || otpNhap.isEmpty()) {
-            // Nếu chưa đăng nhập và cũng không có email → bắt đăng nhập (giữ logic an toàn của HEAD)
+
             if (nd == null && (email == null || email.isEmpty())) {
                 request.setAttribute("error", "Vui lòng đăng nhập để thanh toán!");
                 request.getRequestDispatcher("dang_nhap.jsp").forward(request, response);
                 return;
             }
 
-            // Validate đủ thông tin nhận hàng (HEAD + iamaine)
-            if (tenNguoiNhan == null || diaChi == null || sdt == null
-                    || tenNguoiNhan.isEmpty() || diaChi.isEmpty() || sdt.isEmpty()) {
-                request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin nhận hàng!");
+            // Lưu thông tin nhận hàng và email vào session
+            session.setAttribute("tenNguoiNhan", tenNguoiNhan);
+            session.setAttribute("diaChi", diaChi);
+            session.setAttribute("soDienThoai", sdt);
+            session.setAttribute("email", email);
+            session.setAttribute("emailThanhToan", email);
+
+            // Lấy giỏ hàng và sản phẩm đã chọn trước khi gửi OTP
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+            String[] chonSanPham = request.getParameterValues("chonSP");
+            if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
+                request.setAttribute("error", "Không có sản phẩm nào được chọn để thanh toán!");
                 request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
                 return;
             }
 
-            // Lấy tổng tiền từ session (iamaine có đọc, không bắt buộc dùng ở đây)
-            double tongTien = 0;
-            Object tongTienObj = session.getAttribute("tongTien");
-            if (tongTienObj instanceof Double) {
-                tongTien = (Double) tongTienObj;
-            }
+            session.setAttribute("gioHangChon", gioHang);
+            session.setAttribute("chonSP", chonSanPham);
 
-            // LƯU TẠM THÔNG TIN ĐỂ QUA BƯỚC OTP
-            session.setAttribute("tenNguoiNhan", tenNguoiNhan);
-            session.setAttribute("diaChi", diaChi);
-            session.setAttribute("soDienThoai", sdt);
-            // giữ cả hai key email để tương thích 2 nhánh
-            session.setAttribute("email", email);
-            session.setAttribute("emailThanhToan", email);
-
-            // TẠO OTP 6 SỐ & HẾT HẠN 5 PHÚT (HEAD + iamaine)
+            // Tạo OTP 6 số, hết hạn 5 phút
             String otp = String.format("%06d", new Random().nextInt(999999));
-            long thoiGianHetHan = System.currentTimeMillis() + 5 * 60 * 1000; // 5 phút
+            long otpExpire = System.currentTimeMillis() + 5 * 60 * 1000;
             session.setAttribute("otp", otp);
-            session.setAttribute("otp_expire", thoiGianHetHan);
+            session.setAttribute("otp_expire", otpExpire);
 
-            // GỬI MAIL OTP — mẫu HTML “đẹp” (iamaine)
+            // Gửi email OTP
             String subject = "Mã xác nhận thanh toán đơn hàng của bạn";
             String message
                     = "<html>"
@@ -98,19 +121,13 @@ public class XacNhanOTPServlet extends HttpServlet {
                     + "<div style='max-width:600px; margin:auto; background-color:#ffffff; border-radius:10px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);'>"
                     + "<h2 style='color:#4A90E2; text-align:center;'>Xác nhận thanh toán đơn hàng</h2>"
                     + "<p>Xin chào <b>" + tenNguoiNhan + "</b>,</p>"
-                    + "<p>Cảm ơn bạn đã mua sắm tại <b>WEB Văn Phòng Phẩm</b>! <br>"
-                    + "Dưới đây là mã xác nhận (OTP) để hoàn tất thanh toán đơn hàng của bạn:</p>"
+                    + "<p>Mã OTP để hoàn tất thanh toán:</p>"
                     + "<div style='text-align:center; margin:25px 0;'>"
                     + "<span style='font-size:26px; font-weight:bold; color:#ffffff; background:linear-gradient(135deg, #74ABE2, #5563DE); padding:12px 30px; border-radius:8px; letter-spacing:3px;'>" + otp + "</span>"
                     + "</div>"
-                    + "<p>Mã OTP có hiệu lực trong <b>5 phút</b>. Vui lòng không chia sẻ mã này với bất kỳ ai để đảm bảo an toàn tài khoản của bạn.</p>"
-                    + "<p style='margin-top:25px;'>Trân trọng,<br>"
-                    + "<b>Đội ngũ hỗ trợ - WEB Văn Phòng Phẩm</b></p>"
-                    + "<hr style='margin-top:30px; border:none; border-top:1px solid #ddd;'>"
-                    + "<p style='font-size:12px; color:#777; text-align:center;'>Đây là email tự động, vui lòng không phản hồi lại email này.</p>"
-                    + "</div>"
-                    + "</body>"
-                    + "</html>";
+                    + "<p>Mã OTP có hiệu lực 5 phút. Không chia sẻ mã này với người khác.</p>"
+                    + "<p style='margin-top:25px;'>Trân trọng,<br><b>Đội ngũ WEB Văn Phòng Phẩm</b></p>"
+                    + "</div></body></html>";
             try {
                 EmailUtility.sendEmail(email, subject, message);
                 request.setAttribute("thongBao", "Mã OTP đã được gửi đến email " + email);
@@ -123,13 +140,7 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        // ===== GIAI ĐOẠN 2: XÁC NHẬN OTP (khi đã nhập otp) =====
-        // BẮT ĐĂNG NHẬP (HEAD giữ logic an toàn)
-        if (nd == null) {
-            response.sendRedirect("dang_nhap.jsp");
-            return;
-        }
-
+        // ===== GIAI ĐOẠN 2: XÁC NHẬN OTP =====
         String otpSession = (String) session.getAttribute("otp");
         Long otpExpire = (Long) session.getAttribute("otp_expire");
 
@@ -139,47 +150,114 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        if (otpNhap.equals(otpSession)) {
-            // OTP đúng → xóa dấu vết OTP
-            session.removeAttribute("otp");
-            session.removeAttribute("otp_expire");
-
-            // TẠO ĐƠN HÀNG (HEAD)
-            DonHang dh = new DonHang();
-            dh.setIdNguoiDung(nd.getId());
-            dh.setDiaChi((String) session.getAttribute("diaChi"));
-            dh.setSoDienThoai((String) session.getAttribute("soDienThoai"));
-            dh.setPhuongThuc("Thanh toán trực tuyến");
-
-            double tongTien = 0.0;
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
-            if (gioHang != null) {
-                for (Map<String, Object> item : gioHang) {
-                    SanPham sp = (SanPham) item.get("sanpham");
-                    int sl = (int) item.get("soluong");
-                    DonHangChiTiet ct = new DonHangChiTiet();
-                    ct.setId_sanpham(sp.getId_sanpham());
-                    ct.setSoLuong(sl);
-                    ct.setGia(sp.getGia());
-                    dh.getChiTiet().add(ct);
-                    tongTien += sp.getGia() * sl;
-                }
-            }
-            dh.setTongTien(tongTien);
-
-            int idDonHang = donHangDAO.themDonHang(dh);
-            if (idDonHang > 0) {
-                session.removeAttribute("gioHang");
-                session.setAttribute("lastDonHangId", idDonHang); // giữ key theo HEAD
-                response.sendRedirect("thanh_toan_thanh_cong.jsp");
-            } else {
-                request.setAttribute("error", "Lưu đơn hàng thất bại. Vui lòng thử lại!");
-                request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
-            }
-        } else {
-            request.setAttribute("error", "Mã OTP không đúng!");
+        if (!otpNhap.trim().equals(otpSession.trim())) {
+            request.setAttribute("error", "OTP không đúng! Vui lòng thử lại.");
             request.getRequestDispatcher("xacnhan_otp.jsp").forward(request, response);
+            return;
+        }
+
+        // OTP đúng → xóa session
+        session.removeAttribute("otp");
+        session.removeAttribute("otp_expire");
+
+        // LẤY GIỎ HÀNG VÀ SẢN PHẨM ĐÃ CHỌN
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHangChon");
+        String[] chonSanPham = (String[]) session.getAttribute("chonSP");
+
+        if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
+            request.setAttribute("error", "Không có sản phẩm nào được chọn để đặt!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+            return;
+        }
+
+        // TẠO ĐƠN HÀNG
+        DonHang dh = new DonHang();
+        dh.setIdNguoiDung(nd.getId());
+        dh.setDiaChi((String) session.getAttribute("diaChi"));
+        dh.setSoDienThoai((String) session.getAttribute("soDienThoai"));
+        dh.setPhuongThuc(request.getParameter("phuongThuc") != null ? request.getParameter("phuongThuc") : "COD");
+//if (phuongThuc == null) phuongThuc = "COD";
+//dh.setPhuongThuc(phuongThuc);
+
+        double tongTien = 0.0;
+        List<String> chonSPList = Arrays.asList(chonSanPham);
+
+        for (Map<String, Object> item : gioHang) {
+            SanPham sp = (SanPham) item.get("sanpham");
+            int sl = (int) item.get("soluong");
+
+            if (chonSPList.contains(String.valueOf(sp.getId_sanpham()))) {
+                DonHangChiTiet ct = new DonHangChiTiet();
+                ct.setId_sanpham(sp.getId_sanpham());
+                ct.setSoLuong(sl);
+                ct.setGia(sp.getGia());
+                dh.getChiTiet().add(ct);
+                tongTien += sp.getGia() * sl;
+            }
+        }
+        dh.setTongTien(tongTien);
+
+        // LƯU ĐƠN HÀNG
+        int idDonHang = donHangDAO.themDonHang(dh);
+        if (idDonHang > 0) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> gioHangHienTai = (List<Map<String, Object>>) session.getAttribute("gioHang");
+            if (gioHangHienTai != null) {
+                gioHangHienTai.removeIf(item -> {
+                    SanPham sp = (SanPham) item.get("sanpham");
+                    return chonSPList.contains(String.valueOf(sp.getId_sanpham()));
+                });
+                session.setAttribute("gioHang", gioHangHienTai);
+            }
+            session.removeAttribute("gioHangChon");
+            session.removeAttribute("chonSP");
+            session.setAttribute("lastDonHangId", idDonHang);
+            // ----- GỬI EMAIL THÔNG BÁO ĐƠN HÀNG -----
+            double phiVanChuyen = 15000;
+            double tongThanhToan = dh.getTongTien() + phiVanChuyen;
+
+            Map<Integer, String> sanPhamMap = new HashMap<>();
+            for (Map<String, Object> item : gioHang) {
+                SanPham sp = (SanPham) item.get("sanpham");
+                sanPhamMap.put(sp.getId_sanpham(), sp.getTen());
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html><body>");
+            sb.append("<h2>WEB Văn Phòng Phẩm - Xác nhận đơn hàng</h2>");
+            sb.append("<p>Xin chào <b>").append(nd.getHoTen()).append("</b>,</p>");
+            sb.append("<p>Cảm ơn bạn đã đặt hàng. Chi tiết đơn hàng của bạn (ID: ").append(idDonHang).append(") như sau:</p>");
+            sb.append("<table border='1' cellpadding='8' cellspacing='0' style='border-collapse:collapse;'>");
+            sb.append("<tr><th>Mã sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr>");
+
+            for (DonHangChiTiet ct : dh.getChiTiet()) {
+               
+                sb.append("<tr>");
+                sb.append("<td>").append(ct.getId_sanpham()).append("</td>");
+                sb.append("<td>").append(ct.getSoLuong()).append("</td>");
+                sb.append("<td>").append(String.format("%,.0f VNĐ", ct.getGia())).append("</td>");
+                sb.append("<td>").append(String.format("%,.0f VNĐ", ct.getGia() * ct.getSoLuong())).append("</td>");
+                sb.append("</tr>");
+            }
+
+            sb.append("</table>");
+            sb.append("<p><b>Tổng tiền hàng:</b> ").append(String.format("%,.0f VNĐ", dh.getTongTien())).append("</p>");
+            sb.append("<p><b>Phí vận chuyển:</b> ").append(String.format("%,.0f VNĐ", phiVanChuyen)).append("</p>");
+            sb.append("<p><b>Tổng thanh toán:</b> ").append(String.format("%,.0f VNĐ", tongThanhToan)).append("</p>");
+            sb.append("<p>Địa chỉ nhận hàng: ").append(dh.getDiaChi()).append("</p>");
+            sb.append("<p>Phương thức thanh toán: ").append(dh.getPhuongThuc()).append("</p>");
+            sb.append("<p>Trân trọng,<br>Đội ngũ WEB Văn Phòng Phẩm</p>");
+            sb.append("</body></html>");
+
+            try {
+                EmailUtility.sendEmail(nd.getEmail(), "Xác nhận đơn hàng #" + idDonHang, sb.toString());
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+            response.sendRedirect("thanh_toan_thanh_cong.jsp");
+        } else {
+            request.setAttribute("error", "Lưu đơn hàng thất bại. Vui lòng thử lại!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
         }
     }
 

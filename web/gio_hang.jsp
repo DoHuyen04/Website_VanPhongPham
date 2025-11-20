@@ -105,10 +105,10 @@
             }
 
             .select-all {
-               display: inline-block;
+                display: inline-block;
                 padding: 8px 16px;
                 margin-bottom: 10px;
-               background-color: #9C27B0;
+                background-color: #9C27B0;
                 color: #fff;
                 text-decoration: none;
                 border-radius: 6px;
@@ -152,32 +152,56 @@
 
         </style>
         <script>
+            function capNhatSoLuong(id, soLuong) {
+                fetch('CapNhatGioHangServlet', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'id=' + id + '&soluong=' + soLuong
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                console.log("Cập nhật số lượng thành công");
+                            }
+                            if (data.status === 'removed') {
+                                alert("Sản phẩm đã bị xóa khỏi giỏ hàng!");
+                                location.reload();
+                            }
+                        })
+                        .catch(err => console.error("Lỗi cập nhật số lượng:", err));
+            }
             function updateQuantity(id, change, max) {
                 const qtyInput = document.getElementById('qty-' + id);
-                let value = parseInt(qtyInput.value) + change;
-
+                let value = parseInt(qtyInput.value);
+                if (isNaN(value))
+                    value = 1;
+                value += change;
                 if (value < 1)
                     value = 1;
-                if (value > max) {
-                    alert("⚠️ Số lượng sản phẩm không được vượt quá tồn kho (" + max + ")");
-                    value = max; // giữ nguyên số lượng tối đa
-                }
+                if (value > max)
+                    value = max;
 
                 qtyInput.value = value;
 
-                // Cập nhật total từng sản phẩm
-                const price = parseFloat(document.querySelector('.product-check[value="' + id + '"]').dataset.price);
+                // Cập nhật total sản phẩm
+                const chk = document.querySelector('.product-check[value="' + id + '"]');
+                const price = parseFloat(chk.dataset.price);
                 document.getElementById('total-' + id).innerText = (price * value).toLocaleString() + " đ";
 
+                // Cập nhật tổng tiền
                 calculateTotal();
+
+                // Gửi ajax cập nhật số lượng server
+                capNhatSoLuong(id, value);
             }
+
 
             function calculateTotal() {
                 let total = 0;
                 const checkboxes = document.querySelectorAll('.product-check:checked');
 
                 checkboxes.forEach(chk => {
-                    const id = chk.value;
+                    const id = chk.value.trim();
                     const qtyInput = document.getElementById('qty-' + id);
                     const qty = parseInt(qtyInput.value);
                     const max = parseInt(chk.dataset.stock); // data-stock là tồn kho của sản phẩm
@@ -218,37 +242,34 @@
                 document.getElementById("checkoutForm").submit();
             }
             function xoaChon() {
-    const selected = Array.from(document.querySelectorAll('.product-check:checked')).map(chk => chk.value);
-    if (selected.length === 0) {
-        alert("Chọn ít nhất 1 sản phẩm để xóa!");
-        return;
-    }
+                const selected = Array.from(document.querySelectorAll('.product-check:checked')).map(chk => chk.value);
+                if (selected.length === 0) {
+                    alert("Chọn ít nhất 1 sản phẩm để xóa!");
+                    return;
+                }
 
-    if (confirm("Bạn có chắc muốn xóa các sản phẩm đã chọn?")) {
-        const ids = selected.join(',');
-        fetch('GioHangServlet', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'action=xoaNhieu&ids=' + encodeURIComponent(ids)
-        })
-        .then(response => response.text())
-        .then(data => {
-            if(data.trim() === "OK"){
-                alert("Xóa thành công " + selected.length + " sản phẩm!");
-                location.reload(); // tải lại trang để hiển thị giỏ hàng mới
-            } else {
-                alert("Xảy ra lỗi khi xóa sản phẩm!");
+                if (confirm("Bạn có chắc muốn xóa các sản phẩm đã chọn?")) {
+                    const ids = selected.join(',');
+                    fetch('GioHangServlet', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'action=xoaNhieu&ids=' + encodeURIComponent(ids)
+                    })
+                            .then(response => response.text())
+                            .then(data => {
+                                if (data.trim() === "OK") {
+                                    alert("Xóa thành công " + selected.length + " sản phẩm!");
+                                    location.reload(); // tải lại trang để hiển thị giỏ hàng mới
+                                } else {
+                                    alert("Xảy ra lỗi khi xóa sản phẩm!");
+                                }
+                            })
+                            .catch(err => {
+                                alert("Xảy ra lỗi khi xóa sản phẩm!");
+                                console.error(err);
+                            });
+                }
             }
-        })
-        .catch(err => {
-            alert("Xảy ra lỗi khi xóa sản phẩm!");
-            console.error(err);
-        });
-    }
-}
-
-            
-
         </script>
 
     </head>
@@ -294,7 +315,7 @@
                     <tr>
                         <td>
                             <input type="checkbox" class="product-check"
-                                   name="chonSp" value="<%= sp.getId_sanpham()%>"
+                                   name="chonSP" value="<%= sp.getId_sanpham()%>" checked 
                                    data-price="<%= sp.getGia()%>"
                                    data-stock="<%= sp.getSoLuong()%>"
                                    onchange="calculateTotal()">
@@ -325,11 +346,11 @@
 
                 </div>
                 <div style="text-align:right; margin-top:20px;">
-                    <button type="button" class="btn-checkout" onclick="thanhToan()">Thanh toán</button>
+                    <button type="button" class="btn-checkout" onclick="thanhToan()">Đặt hàng</button>
                 </div>
             </form>
             <% }%>
         </div>
-         <jsp:include page="footer.jsp" />
+        <jsp:include page="footer.jsp" />
     </body>
 </html>

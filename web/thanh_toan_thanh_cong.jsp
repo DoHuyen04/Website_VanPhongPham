@@ -55,14 +55,14 @@
     </style>
 </head>
 <body>
-    <jsp:include page="header.jsp" />
+   
 <div class="container">
     <h2>✅ Thanh toán thành công!</h2>
     <p>Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được ghi nhận.</p>
 
     <div style="margin-top:25px;">
         <a href="trang_chu.jsp" class="btn">🏠 Quay lại trang chủ</a>
-        <a href="DonHangServlet?hanhDong=lichsu">Xem lịch sử đơn hàng</a>
+        <a href="DonHangServlet?hanhDong=lichsu"  class="btn">Xem lịch sử đơn hàng</a>
     </div>
 
     <% if (donHangMoi != null) { %>
@@ -77,6 +77,6 @@
       </div>
     <% } %>
 </div>
- <jsp:include page="footer.jsp" />
+ 
 </body>
 </html>
