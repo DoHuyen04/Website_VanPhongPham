@@ -133,6 +133,7 @@ HttpSession session = request.getSession(false);
         try {
             int id = Integer.parseInt(req.getParameter("id"));
             int soLuongMoi = Integer.parseInt(req.getParameter("soLuong"));
+            
             for (Map<String, Object> item : gioHang) {
                 SanPham s = (SanPham) item.get("sanpham");
                 if (s.getId_sanpham() == id) {           // đổi getId()
@@ -163,17 +164,26 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         gioHang = new ArrayList<>();
     }
 
-    if ("xoaNhieu".equals(action)) {
-        String ids = request.getParameter("ids"); // "1,3,5"
-        if (ids != null && !ids.isEmpty()) {
-            Set<String> setIds = new HashSet<>(Arrays.asList(ids.split(",")));
-            gioHang.removeIf(item -> setIds.contains(String.valueOf(((SanPham)item.get("sanpham")).getId_sanpham())));
-        }
+   if ("xoaNhieu".equals(action)) {
+    String ids = request.getParameter("ids");
+    if (ids != null && !ids.isEmpty()) {
+        Set<String> setIds = new HashSet<>();
+        for(String s : ids.split(",")) setIds.add(s.trim()); // ✅ trim
+        gioHang.removeIf(item -> setIds.contains(String.valueOf(((SanPham)item.get("sanpham")).getId_sanpham())));
+    }
+    session.setAttribute("gioHang", gioHang);
+    response.getWriter().write("OK");
+    return;
+}
+
+    if ("capnhat".equals(action)) {
+        int id = Integer.parseInt(request.getParameter("idSanPham"));
+        int soLuongMoi = Integer.parseInt(request.getParameter("soLuong"));
+        capNhatSoLuong(request, gioHang);
         session.setAttribute("gioHang", gioHang);
-        response.getWriter().write("OK"); // trả về "OK" cho JS biết đã xóa xong
+        response.sendRedirect("GioHangServlet");
         return;
     }
-   
     String tenDangNhap = (session != null) ? (String) session.getAttribute("tenDangNhap") : null;
 
     if (tenDangNhap == null) {

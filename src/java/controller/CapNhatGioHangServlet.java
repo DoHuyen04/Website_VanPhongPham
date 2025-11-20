@@ -15,9 +15,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import model.SanPham;
 
 /**
@@ -142,21 +144,14 @@ public class CapNhatGioHangServlet extends HttpServlet {
         }
 
         String[] chonSP = request.getParameterValues("chonSP");
-
-        if (chonSP != null) {
-            for (String idStr : chonSP) {
-                try {
-                    int id = Integer.parseInt(idStr);
-                    for (Map<String, Object> item : gioHang) {
-                        SanPham sp = (SanPham) item.get("sanpham");
-                        if (sp.getId_sanpham() == id) {
-                            item.put("daChon", true);
-                            break;
-                        }
-                    }
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
+ if (chonSP != null) {
+            Set<Integer> setChon = new HashSet<>();
+            for (String s : chonSP) {
+                try { setChon.add(Integer.parseInt(s)); } catch(Exception ignored) {}
+            }
+            for (Map<String, Object> item : gioHang) {
+                SanPham sp = (SanPham) item.get("sanpham");
+                item.put("daChon", setChon.contains(sp.getId_sanpham()));
             }
         }
         // 3️⃣ Build danh sách gioHangChon
@@ -171,22 +166,6 @@ public class CapNhatGioHangServlet extends HttpServlet {
             tongTienHang += sp.getGia() * soLuong;
         }
     }
-
-    // 3.1 Nếu không có sản phẩm nào được chọn (mới truy cập checkout), bạn có thể
-    //     tự động chọn tất cả để tránh hiển thị rỗng — tùy bạn có muốn auto-select hay không.
-    if (gioHangChon.isEmpty()) {
-        // OPTION A: tự chọn tất cả (bỏ comment nếu muốn)
-        for (Map<String, Object> item : gioHang) {
-            item.put("daChon", true);
-            gioHangChon.add(item);
-            SanPham sp = (SanPham) item.get("sanpham");
-            int soLuong = (item.get("soluong") instanceof Integer) ? (Integer) item.get("soluong")
-                      : Integer.parseInt(item.get("soluong").toString());
-            tongTienHang += sp.getGia() * soLuong;
-        }
-        // result.put("autoSelected", true);
-    }
-
  // 4️⃣ Lưu lại session
         session.setAttribute("gioHang", gioHang);
         session.setAttribute("gioHangChon", gioHangChon);

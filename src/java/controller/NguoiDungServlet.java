@@ -232,6 +232,7 @@ public class NguoiDungServlet extends HttpServlet {
                 nguoiDung.setSoDienThoai(rs.getString("soDienThoai"));
                 nguoiDung.setGioiTinh(rs.getString("gioiTinh"));
                 session.setAttribute("nguoiDung", nguoiDung);
+                session.setAttribute("idNguoiDung", nguoiDung.getId());
                 session.setAttribute("userId", nguoiDung.getId());               // 🔹 thêm
                 session.setAttribute("tenDangNhap", nguoiDung.getTenDangNhap()); // 🔹 thêm
                 session.setAttribute("email", nguoiDung.getEmail());

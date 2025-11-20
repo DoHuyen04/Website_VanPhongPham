@@ -98,7 +98,7 @@
         <input type="hidden" name="diaChi" value="<%= diaChi != null ? diaChi : "" %>">
         <input type="hidden" name="soDienThoai" value="<%= soDienThoai != null ? soDienThoai : "" %>">
         <input type="hidden" name="email" value="<%= email != null ? email : "" %>">
-
+<input type="hidden" name="phuongThuc" value="${phuongThuc}">
             <input id="otpInput" type="text" name="otp" maxlength="6" placeholder="Nhập mã OTP">
             <br>
             <button type="submit" class="btn">Xác nhận</button>

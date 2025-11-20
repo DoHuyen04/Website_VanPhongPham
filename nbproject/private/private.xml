@@ -17,6 +17,12 @@
             <file>file:/E:/Website_VanPhongPham/web/don_hang.jsp</file>
             <file>file:/E:/Website_VanPhongPham/src/java/controller/DonHangServlet.java</file>
             <file>file:/E:/Website_VanPhongPham/src/java/controller/CapNhatThongTinServlet.java</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/model/DonHang.java</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/controller/TaiKhoanServlet.java</file>
+            <file>file:/E:/Website_VanPhongPham/web/san_pham.jsp</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/model/DonHangChiTiet.java</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/dao/DonHangDAO.java</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/dao/NguoiDungDAO.java</file>
         </group>
     </open-files>
 </project-private>

@@ -3,14 +3,29 @@
     Created on : Oct 11, 2025, 1:56:26 PM
     Author     : asus
 --%>
+<%@page import="model.SanPham"%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*, java.text.DecimalFormat, model.DonHang, model.DonHangChiTiet" %>
+<%@ page import="java.util.Map" %>
 
 <%
     DecimalFormat df = new DecimalFormat("#,### VNĐ");
+
     List<DonHang> lichSu = (List<DonHang>) request.getAttribute("dsDonHang");
-    if (lichSu == null)
+    Map<Integer, SanPham> mapSP = (Map<Integer, SanPham>) request.getAttribute("mapSP");
+    if (mapSP == null) {
+        mapSP = new HashMap<>();
+    }
+
+    DonHang donMoi = (DonHang) session.getAttribute("donHangHienTai");
+    double phiVanChuyen = 15000;
+    if (lichSu == null) {
         lichSu = new ArrayList<>();
+    }
+    if (donMoi != null) {
+        lichSu.add(0, donMoi); // thêm đơn mới lên đầu
+        session.removeAttribute("donHangHienTai");
+    }
 %>
 
 <html>
@@ -43,6 +58,7 @@
                 margin-left:8px
             }
             .action-row{
+                text-align: right;
                 display:flex;
                 gap:10px;
                 justify-content:flex-end;
@@ -143,6 +159,14 @@
                 color: #888;
                 font-style: italic;
             }
+            .summary-right {
+                text-align: right;
+                width: 100%;
+                font-size: 16px;
+                font-weight: 600;
+                margin-top: 10px;
+            }
+
         </style>
     </head>
     <body>
@@ -197,8 +221,7 @@
                         <%= text%>
                     </span>
                 </h3>
-
-
+                <p><b>Mã đơn hàng:</b> <%= don.getIdDonHang()%></p>
                 <p><b>Địa chỉ:</b> <%= don.getDiaChi()%></p>
                 <p><b>Số điện thoại:</b> <%= don.getSoDienThoai()%></p>
                 <p><b>Phương thức thanh toán:</b> <%= don.getPhuongThuc()%></p>
@@ -207,6 +230,7 @@
                 <table>
                     <tr>
                         <th>Mã sản phẩm</th>
+                        <th>Tên sản phẩm</th>
                         <th>Số lượng</th>
                         <th>Giá</th>
                     </tr>
@@ -216,20 +240,26 @@
                             chiTiet = Collections.emptyList();
                         }
                         for (DonHangChiTiet ct : chiTiet) {
+                            SanPham sp = mapSP.get(ct.getId_sanpham());
                     %>
                     <tr>
                         <td><%= ct.getId_sanpham()%></td>
+                        <td><%= sp != null ? sp.getTen() : "Không tìm thấy"%></td>
                         <td><%= ct.getSoLuong()%></td>
                         <td><%= df.format(ct.getGia())%></td>
                     </tr>
                     <% }%>
-                    <tr>
-                        <td colspan="2"><b>Tổng tiền</b></td>
-                        <td><b><%= df.format(don.getTongTien())%></b></td>
-                    </tr>
+
                 </table>
+                <div class="summary-right">
+                    Tổng tiền hàng: <%= df.format(don.getTongTien())%><br>
+                    Phí vận chuyển: <%= df.format(phiVanChuyen)%><br>
+
+                    <div>Thành tiền: <span class="price"><%= df.format(don.getTongTien() + phiVanChuyen)%></span></div>
+
+                </div>
+
                 <div class="action-row">
-                    <div>Thành tiền: <span class="price"><%= df.format(don.getTongTien())%></span></div>
 
                     <%
                         if ("dadat".equalsIgnoreCase(don.getTrangthai())) {
