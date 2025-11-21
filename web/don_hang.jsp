@@ -222,26 +222,36 @@
                         if ("dadat".equalsIgnoreCase(don.getTrangthai())) {
                     %>
                     <!-- Hoàn tiền -->
-                    <form method="post" action="<%= request.getContextPath()%>/DonHangServlet" style="margin:0">
+                    <form method="post"
+                          action="<%= request.getContextPath()%>/DonHangServlet"
+                          style="margin:0"
+                          data-action="refund"
+                          data-id="<%= don.getIdDonHang()%>">
                         <input type="hidden" name="action" value="refund"/>
                         <input type="hidden" name="id" value="<%= don.getIdDonHang()%>"/>
-                        <button class="btn primary" onclick="return confirm('Xác nhận hoàn tiền đơn #<%= don.getIdDonHang()%>?')">
+                        <button type="button" class="btn primary" onclick="openRefundModal(<%= don.getIdDonHang()%>)">
                             Hoàn tiền
                         </button>
                     </form>
 
                     <!-- Huỷ đơn -->
-                    <form method="post" action="<%= request.getContextPath()%>/DonHangServlet" style="margin:0">
+                    <form method="post"
+                          action="<%= request.getContextPath()%>/DonHangServlet"
+                          style="margin:0"
+                          data-action="cancel"
+                          data-id="<%= don.getIdDonHang()%>">
                         <input type="hidden" name="action" value="cancel"/>
                         <input type="hidden" name="id" value="<%= don.getIdDonHang()%>"/>
-                        <button class="btn cancel" onclick="return confirm('Huỷ đơn hàng #<%= don.getIdDonHang()%>?')">
+                        <button type="button" class="btn cancel" onclick="openCancelModal(<%= don.getIdDonHang()%>)">
                             Huỷ đơn hàng
                         </button>
                     </form>
+
                     <%
                         } // end if dadat
                     %>
                 </div>
+
 
             </div>
             <%
@@ -256,6 +266,95 @@
 
             </div>
         </div>
+        <style>
+            .modal-overlay {
+                display:none;
+                position:fixed;
+                inset:0;
+                background:rgba(0,0,0,0.55);
+                justify-content:center;
+                align-items:center;
+                z-index:9999;
+            }
+            .modal-box {
+                background:#fff;
+                width:360px;
+                padding:20px;
+                border-radius:10px;
+                text-align:center;
+                box-shadow:0 4px 15px rgba(0,0,0,.2);
+                animation:fadeIn .15s ease-out
+            }
+            .modal-buttons {
+                margin-top:20px;
+                display:flex;
+                justify-content:flex-end;
+                gap:10px;
+            }
+            .btn-modal {
+                padding:8px 16px;
+                border-radius:6px;
+                border:none;
+                cursor:pointer;
+                font-weight:bold;
+            }
+            .btn-cancel {
+                background:#ddd;
+            }
+            .btn-ok {
+                background:#007bff;
+                color:white;
+            }
+        </style>
+
+        <div id="confirmModal" class="modal-overlay">
+            <div class="modal-box">
+                <div id="modalMessage" style="font-size:17px; margin-bottom:20px;"></div>
+                <div class="modal-buttons">
+                    <button class="btn-modal btn-cancel" onclick="closeModal()">Huỷ bỏ</button>
+                    <button class="btn-modal btn-ok" id="modalConfirmBtn">Đồng ý</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            let currentAction = null;
+            let currentId = null;
+
+            function openRefundModal(id) {
+                currentAction = "refund";
+                currentId = id;
+                document.getElementById("modalMessage").innerText =
+                        "Bạn có chắc chắn muốn hoàn tiền đơn #" + id + "?";
+                document.getElementById("confirmModal").style.display = "flex";
+            }
+
+            function openCancelModal(id) {
+                currentAction = "cancel";
+                currentId = id;
+                document.getElementById("modalMessage").innerText =
+                        "Bạn có chắc chắn muốn huỷ đơn hàng #" + id + "?";
+                document.getElementById("confirmModal").style.display = "flex";
+            }
+
+            function closeModal() {
+                document.getElementById("confirmModal").style.display = "none";
+            }
+
+            // Khi bấm OK trong popup
+            document.getElementById("modalConfirmBtn").onclick = function () {
+                if (!currentAction || !currentId)
+                    return;
+
+                const form = document.querySelector(
+                        'form[data-action="' + currentAction + '"][data-id="' + currentId + '"]'
+                        );
+
+                if (form) {
+                    form.submit();
+                }
+                closeModal();
+            };
+        </script>
 
     </body>
 </html>

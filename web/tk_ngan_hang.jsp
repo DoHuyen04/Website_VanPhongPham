@@ -145,6 +145,17 @@
         align-items:center;
         gap:16px;
     }
+    .bank-actions .action-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        height:42px;
+        padding:0 16px;
+        border-radius:12px;
+        font-weight:800;
+        cursor:pointer;
+        border:0;
+    }
     .bank-actions a,
     .bank-actions form button{
         margin-left:0;
@@ -172,23 +183,16 @@
     }
 
     .bank-actions .btn-set-default[disabled],
+    .bank-actions .btn-set-default[disabled],
     .bank-actions .btn-set-default.disabled{
         background:#f3f4f6;
         color:#9ca3af;
-        border:0;
-        padding:10px 14px;
-        border-radius:12px;
-        font-weight:800;
         cursor:not-allowed;
+        box-shadow:none;
     }
     .bank-actions .btn-set-default:not([disabled]):not(.disabled){
         background:#e8f1ff;
         color:#0b3cff;
-        border:0;
-        padding:10px 14px;
-        border-radius:12px;
-        font-weight:800;
-        cursor:pointer;
         box-shadow:0 2px 10px rgba(43,108,255,.15);
     }
     .bank-actions .btn-set-default:not([disabled]):not(.disabled):hover{
@@ -232,18 +236,22 @@
     .btn-danger{
         background:#ef4444;
         color:#fff;
-        border:0;
-        padding:10px 14px;
-        border-radius:12px;
-        font-weight:800;
-        cursor:pointer;
         box-shadow:0 2px 10px rgba(239,68,68,.18);
     }
     .btn-danger:hover{
         filter:brightness(1.03);
     }
+    .field-group{
+        display:flex;
+        flex-direction:column;
+    }
 
-
+    .err-msg{
+        color:#dc2626;
+        font-size:13px;
+        margin-top:4px;
+        min-height:18px;
+    }
 </style>
 <h2>Tài Khoản Ngân Hàng Của Tôi</h2>
 <div class="bank-header">
@@ -252,25 +260,72 @@
         ＋ Thêm Ngân Hàng Liên Kết
     </button>
 </div>
-
 <div id="addBankBox" class="bank-cta">
     <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
         <input type="hidden" name="action" value="add">
+
         <div class="grid2">
-            <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng (VD: BIDV)" required>
-            <input class="inp" name="chiNhanh" placeholder="Chi nhánh (VD: CN Nghệ An)">
-            <input class="inp" name="chuTaiKhoan" placeholder="Chủ tài khoản" required>
-            <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
+            <!-- TÊN NGÂN HÀNG -->
+            <div class="field-group">
+                <input class="inp"
+                       id="tenNganHang"
+                       name="tenNganHang"
+                       placeholder="Tên ngân hàng (VD: BIDV)"
+                       required
+                       data-validate="text"
+                       data-error-id="errTenNganHang">
+                <div class="err-msg" id="errTenNganHang"></div>
+            </div>
+
+            <!-- CHI NHÁNH -->
+            <div class="field-group">
+                <input class="inp"
+                       id="chiNhanh"
+                       name="chiNhanh"
+                       placeholder="Chi nhánh (VD: CN Nghệ An)"
+                       required
+                       data-validate="text"
+                       data-error-id="errChiNhanh">
+                <div class="err-msg" id="errChiNhanh"></div>
+            </div>
+
+            <!-- CHỦ TÀI KHOẢN -->
+            <div class="field-group">
+                <input class="inp"
+                       name="chuTaiKhoan"
+                       placeholder="Chủ tài khoản"
+                       required>
+                <div class="err-msg"></div>
+            </div>
+
+            <!-- SỐ TÀI KHOẢN -->
+            <div class="field-group">
+                <input class="inp"
+                       id="soTaiKhoan"
+                       name="soTaiKhoan"
+                       placeholder="Số tài khoản"
+                       required
+                       data-validate="number"
+                       data-error-id="errSoTaiKhoan"
+                       inputmode="numeric">
+                <div class="err-msg" id="errSoTaiKhoan"></div>
+            </div>
         </div>
+
         <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
             <input type="checkbox" name="macDinh" value="1"> Đặt làm mặc định
         </label>
+
         <div style="margin-top:10px">
             <button class="btn-add" type="submit">Lưu thẻ</button>
-            <button type="button" onclick="document.getElementById('addBankBox').style.display = 'none'">Hủy</button>
+            <button type="button"
+                    onclick="document.getElementById('addBankBox').style.display = 'none'">
+                Hủy
+            </button>
         </div>
     </form>
 </div>
+
 
 
 <!-- Danh sách -->
@@ -297,22 +352,27 @@
             </div>
 
             <div class="bank-actions" style="margin-top:10px">
+
                 <!-- Đặt mặc định -->
                 <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
                     <input type="hidden" name="action" value="setDefault">
                     <input type="hidden" name="id" value="<%= b.getIdTkNganHang()%>">
-                    <button class="btn-set-default" <%= b.isMacDinh() ? "disabled" : ""%>>
+
+                    <button class="btn-set-default action-btn"
+                            <%= b.isMacDinh() ? "disabled" : ""%>>
                         <%= b.isMacDinh() ? "Đang là mặc định" : "Đặt làm mặc định"%>
                     </button>
                 </form>
 
                 <!-- Xoá -->
                 <button type="button"
-                        class="btn-danger btn-delete-bank"
+                        class="btn-danger action-btn btn-delete-bank"
                         data-id="<%= b.getIdTkNganHang()%>">
                     Xoá
                 </button>
+
             </div>
+
         </div>
     </div>
 </div>
@@ -397,5 +457,121 @@
         });
     })();
 </script>
+<script>
+    (function () {
+        const nameRegex = /^[A-Za-zÀ-ỹ\s]+$/;  // chữ + khoảng trắng (có tiếng Việt)
+        const numberRegex = /^\d+$/;            // chỉ số
 
+        function showError(input, message) {
+            const errId = input.dataset.errorId;
+            if (!errId)
+                return;
+            const el = document.getElementById(errId);
+            if (el)
+                el.textContent = message || "";
+        }
 
+        // validate 1 ô, đồng thời update lỗi text
+        function validateInput(input) {
+            const type = input.dataset.validate;
+            const value = input.value.trim();
+            let ok = true;
+
+            if (!value) {
+                // required mà trống -> coi là chưa hợp lệ để chặn ô dưới
+                if (input.required)
+                    ok = false;
+                showError(input, "");
+            } else if (type === "text") {
+                if (!nameRegex.test(value)) {
+                    showError(input, "Chỉ được nhập chữ và khoảng trắng, không được nhập số hoặc ký tự đặc biệt.");
+                    ok = false;
+                } else {
+                    showError(input, "");
+                }
+            } else if (type === "number") {
+                if (!numberRegex.test(value)) {
+                    showError(input, "Chỉ được nhập số.");
+                    ok = false;
+                } else {
+                    showError(input, "");
+                }
+            } else {
+                showError(input, "");
+            }
+
+            updateLocking();
+            return ok;
+        }
+
+        // thứ tự các ô từ trên xuống
+        const orderedIds = ["tenNganHang", "chiNhanh", "chuTaiKhoan", "soTaiKhoan"];
+        const orderedInputs = orderedIds.map(id => document.getElementById(id));
+
+        // Hàm khoá/mở các ô bên dưới
+        function updateLocking() {
+            let previousValid = true;
+
+            orderedInputs.forEach((input, idx) => {
+                if (!input)
+                    return;
+
+                if (idx === 0) {
+                    // ô đầu luôn đc nhập
+                    input.disabled = false;
+                } else {
+                    input.disabled = !previousValid;
+                    if (input.disabled) {
+                        input.value = "";
+                        showError(input, "");
+                    }
+                }
+
+                // xác định xem ô hiện tại có "hợp lệ" để quyết định cho ô sau
+                if (previousValid) {
+                    const type = input.dataset.validate;
+                    const value = input.value.trim();
+                    let ok = true;
+
+                    if (!value) {
+                        if (input.required)
+                            ok = false;
+                    } else if (type === "text") {
+                        ok = nameRegex.test(value);
+                    } else if (type === "number") {
+                        ok = numberRegex.test(value);
+                    }
+
+                    previousValid = ok;
+                }
+            });
+        }
+
+        // gắn event realtime
+        document.querySelectorAll(".inp[data-validate]").forEach(function (inp) {
+            inp.addEventListener("input", function () {
+                validateInput(inp);
+            });
+            inp.addEventListener("blur", function () {
+                validateInput(inp);
+            });
+        });
+
+        // chặn submit nếu còn ô sai
+        const form = document.querySelector("#addBankBox form");
+        if (form) {
+            form.addEventListener("submit", function (e) {
+                let okAll = true;
+                orderedInputs.forEach(function (inp) {
+                    if (!inp)
+                        return;
+                    if (!validateInput(inp))
+                        okAll = false;
+                });
+                if (!okAll)
+                    e.preventDefault();
+            });
+        }
+        updateLocking();
+    })();
+</script>
