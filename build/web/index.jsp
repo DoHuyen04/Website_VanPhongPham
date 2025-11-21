@@ -18,6 +18,40 @@
 <%
         session.removeAttribute("message"); // Xóa để không lặp lại
     }
+// --- PHÂN TRANG ---
+    int pageSize = 12; // số sản phẩm mỗi trang
+
+    // Sản phẩm bán chạy
+    List<SanPham> dsBanChay = (List<SanPham>) request.getAttribute("spBanChay");
+    int pageBanChay = 1;
+    String pageBC = request.getParameter("pageBanChay");
+    if (pageBC != null) {
+        try {
+            pageBanChay = Integer.parseInt(pageBC);
+        } catch (Exception ignored) {
+        }
+    }
+    int totalBC = dsBanChay.size();
+    int totalPagesBC = (int) Math.ceil((double) totalBC / pageSize);
+    int startBC = (pageBanChay - 1) * pageSize;
+    int endBC = Math.min(startBC + pageSize, totalBC);
+    List<SanPham> sanPhamBanChayTrang = dsBanChay.subList(startBC, endBC);
+
+    // Sản phẩm khuyến mãi
+    List<SanPham> dsKhuyenMai = (List<SanPham>) request.getAttribute("spKhuyenMai");
+    int pageKhuyenMai = 1;
+    String pageKM = request.getParameter("pageKhuyenMai");
+    if (pageKM != null) {
+        try {
+            pageKhuyenMai = Integer.parseInt(pageKM);
+        } catch (Exception ignored) {
+        }
+    }
+    int totalKM = dsKhuyenMai.size();
+    int totalPagesKM = (int) Math.ceil((double) totalKM / pageSize);
+    int startKM = (pageKhuyenMai - 1) * pageSize;
+    int endKM = Math.min(startKM + pageSize, totalKM);
+    List<SanPham> sanPhamKhuyenMaiTrang = dsKhuyenMai.subList(startKM, endKM);
 %>
 
 <!DOCTYPE html>
@@ -133,6 +167,52 @@
                 transform: translateY(-2px);
                 box-shadow: 0 4px 10px rgba(255, 87, 34, 0.4);
             }
+            .pagination-container {
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .pagination {
+                list-style: none;
+                padding: 0;
+                display: inline-flex;
+                gap: 5px;
+            }
+
+            .pagination li {
+                display: inline-block;
+            }
+
+            .pagination li a {
+                display: block;
+                padding: 8px 12px;
+                text-decoration: none;
+                color: #007bff;
+                background-color: #f0f0f0;
+                border-radius: 6px;
+                border: 1px solid transparent;
+                transition: all 0.3s ease;
+            }
+
+            .pagination li a:hover {
+                background-color: #007bff;
+                color: #fff;
+                transform: scale(1.05);
+            }
+
+            .pagination li.active a {
+                background-color: #1e88e5;
+                color: #fff;
+                font-weight: 600;
+                border: 1px solid #1565c0;
+            }
+
+            .pagination li.disabled a {
+                pointer-events: none;
+                color: #aaa;
+                background-color: #e0e0e0;
+            }
+
         </style>
     </head>
     <body>
@@ -187,9 +267,8 @@
                     <h2 class="title-banchay">🔥 Sản phẩm bán chạy</h2>
                     <div class="product-grid">
                         <%
-                            List<SanPham> dsBanChay = (List<SanPham>) request.getAttribute("spBanChay");
-                            if (dsBanChay != null && !dsBanChay.isEmpty()) {
-                                for (SanPham sp : dsBanChay) {
+                            if (sanPhamBanChayTrang != null && !sanPhamBanChayTrang.isEmpty()) {
+                                for (SanPham sp : sanPhamBanChayTrang) {
                         %>
                         <div class="product-card">
                             <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
@@ -214,6 +293,30 @@
                             }
                         %>
                     </div>
+                    <div class="pagination-container">
+                        <ul class="pagination">
+                            <!-- Nút Previous -->
+                            <li class="<%= pageBanChay == 1 ? "disabled" : ""%>">
+                                <a href="TrangChuServlet?pageBanChay=<%= pageBanChay - 1%>&pageKhuyenMai=<%= pageKhuyenMai%>">«</a>
+                            </li>
+
+                            <!-- Danh sách trang -->
+                            <%
+                                for (int i = 1; i <= totalPagesBC; i++) {
+                                    String cls = (i == pageBanChay) ? "active" : "";
+                            %>
+                            <li class="<%= cls%>">
+                                <a href="TrangChuServlet?pageBanChay=<%= i%>&pageKhuyenMai=<%= pageKhuyenMai%>"><%= i%></a>
+                            </li>
+                            <% }%>
+
+                            <!-- Nút Next -->
+                            <li class="<%= pageBanChay == totalPagesBC ? "disabled" : ""%>">
+                                <a href="TrangChuServlet?pageBanChay=<%= pageBanChay + 1%>&pageKhuyenMai=<%= pageKhuyenMai%>">»</a>
+                            </li>
+                        </ul>
+                    </div>
+
                 </section>
 
                 <!-- KHU VỰC SẢN PHẨM KHUYẾN MẠI -->
@@ -221,9 +324,8 @@
                     <h2 class="title-km">🎁 Sản phẩm khuyến mại</h2>
                     <div class="product-grid">
                         <%
-                            List<SanPham> dsKhuyenMai = (List<SanPham>) request.getAttribute("spKhuyenMai");
-                            if (dsKhuyenMai != null && !dsKhuyenMai.isEmpty()) {
-                                for (SanPham sp : dsKhuyenMai) {
+                            if (sanPhamKhuyenMaiTrang != null && !sanPhamKhuyenMaiTrang.isEmpty()) {
+                                for (SanPham sp : sanPhamKhuyenMaiTrang) {
                         %>
                         <div class="product-card">
                             <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
@@ -248,6 +350,31 @@
                             }
                         %>
                     </div>
+
+                    <div class="pagination-container">
+                        <ul class="pagination">
+                            <!-- Nút Previous -->
+                            <li class="<%= pageKhuyenMai == 1 ? "disabled" : ""%>">
+                                <a href="TrangChuServlet?pageKhuyenMai=<%= pageKhuyenMai - 1%>&pageBanChay=<%= pageBanChay%>">«</a>
+                            </li>
+
+                            <!-- Danh sách trang -->
+                            <%
+                                for (int i = 1; i <= totalPagesKM; i++) {
+                                    String cls = (i == pageKhuyenMai) ? "active" : "";
+                            %>
+                            <li class="<%= cls%>">
+                                <a href="TrangChuServlet?pageKhuyenMai=<%= i%>&pageBanChay=<%= pageBanChay%>"><%= i%></a>
+                            </li>
+                            <% }%>
+
+                            <!-- Nút Next -->
+                            <li class="<%= pageKhuyenMai == totalPagesKM ? "disabled" : ""%>">
+                                <a href="TrangChuServlet?pageKhuyenMai=<%= pageKhuyenMai + 1%>&pageBanChay=<%= pageBanChay%>">»</a>
+                            </li>
+                        </ul>
+                    </div>
+
                 </section>
             </section>
         </main>
