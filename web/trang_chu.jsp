@@ -1,173 +1,208 @@
+<%@page import="model.SanPham"%>
+<%@page import="java.util.List"%>
+<%
+    // Nếu chưa có dữ liệu từ TrangChuServlet thì tự động forward
+    if (request.getAttribute("spBanChay") == null && request.getAttribute("spKhuyenMai") == null) {
+        RequestDispatcher rd = request.getRequestDispatcher("TrangChuServlet");
+        rd.forward(request, response);
+        return;
+    }
+%>
+<%
+    String message = (String) session.getAttribute("message");
+    if (message != null) {
+%>
+    <div style="background-color:#f0f8ff; color:#333; padding:10px; margin:10px 0; border-left:5px solid #007bff;">
+        <%= message %>
+    </div>
+<%
+        session.removeAttribute("message"); // Xóa để không lặp lại
+    }
+%>
+
 <!DOCTYPE html>
-<%@ page contentType="text/html;charset=UTF-8" %>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
+  <%@ page contentType="text/html; charset=UTF-8" %>
   <title>Trang chủ - Cửa hàng Văn phòng phẩm</title>
   <link rel="stylesheet" href="css/kieu.css">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+      /* --- Responsive layout cho phần sản phẩm --- */
+      .main-grid {
+          display: grid;
+          grid-template-columns: 250px 1fr;
+          gap: 20px;
+          align-items: start;
+      }
+
+      @media (max-width: 900px) {
+          .main-grid {
+              grid-template-columns: 1fr;
+          }
+          .left-menu {
+              order: 2;
+          }
+      }
+
+      .product-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          gap: 20px;
+          margin-top: 15px;
+      }
+
+      .product-card {
+          background: #fff;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          padding: 10px;
+          text-align: center;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .product-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+
+      .product-card img {
+          width: 100%;
+          height: 160px;
+          object-fit: contain;
+          border-radius: 8px;
+      }
+
+      .product-name {
+          font-size: 15px;
+          font-weight: 600;
+          color: #333;
+          margin: 8px 0 4px;
+      }
+
+      .product-price {
+          color: #d9534f;
+          font-weight: bold;
+      }
+      .best-seller-section, .sale-section {
+          margin-bottom: 40px;
+      }
+
+      .title-banchay, .title-km {
+          font-size: 20px;
+          color: #222;
+          margin-bottom: 10px;
+      }
+  </style>
 </head>
 <body>
-   <%-- ✅ Lấy tên đăng nhập từ session --%>
-  <%
-      HttpSession ses = request.getSession(false);
-      String tenDangNhap = null;
-      if (ses != null) {
-          tenDangNhap = (String) ses.getAttribute("tenDangNhap");
-      }
-  %>
+    <jsp:include page="header.jsp" />
 
-  <!-- 🟥 Banner -->
-  <header class="banner">
-    <div class="banner-left">
-      <img src="hinh_anh/logo.png" alt="Logo" class="logo-img">
-    </div>
-    <div class="banner-center">
-      <input type="text" placeholder="Tìm theo thương hiệu..." class="search-box">
-      <button class="search-btn">🔍</button>
-    </div>
-    <div class="banner-right">
-      <div class="hotline">📞 0968.715.858</div>
-<!-- 👤 Hiển thị tài khoản -->
-            <%
-                if (tenDangNhap != null) {
-            %>
-                <div class="account-dropdown">
-                    <button class="account-btn" onclick="toggleAccountMenu()">
-                        <span class="account-icon">👤</span>
-                        <%= tenDangNhap %>
-                    </button>
-                    <div class="account-menu" id="accountMenu">
-                        <a href="thong_tin_ca_nhan.jsp">Thông tin cá nhân</a>
-                        <a href="don_hang.jsp">Đơn hàng đã mua</a>
-                        <a href="nguoidung?hanhDong=dang_xuat">Đăng xuất</a>
-                    </div>
-                </div>
-            <%
-                } else {
-            %>
-                <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
-            <%
-                }
-            %>
-
-      <a href="gio_hang.jsp" class="cart">🛒 Giỏ hàng (0)</a>
-    </div>
-  </header>
-
-
-  <!-- 🟡 Menu ngang -->
-  <nav class="top-menu">
-    <a href="trang_chu.jsp">Trang chủ</a>
-    <a href="san_pham.jsp">Sản phẩm</a>
-    <a href="gioi_thieu.jsp">Giới thiệu</a>
-    <a href="lien_he.jsp">Liên hệ</a>
-  </nav>
   <!-- Main -->
   <main class="container main-grid">
+
    <!-- Left Menu -->
-<aside class="left-menu">
-  <form action="san_pham.jsp" method="get">
-    <h4>Danh mục sản phẩm</h4>
-    <ul>
-      <li><label><input type="checkbox" name="danhmuc" value="kynangsong"> Kỹ năng sống</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="sachtiengviet"> Sách tiếng Việt</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="sachgiaokhoa"> Sách giáo khoa - tham khảo</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="ngoai_ngu"> Sách ngoại ngữ</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="dungcu_hocsinh"> Dụng cụ học sinh</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="vanphongpham"> Văn phòng phẩm</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="quatang"> Quà tặng</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="dochoi"> Đồ chơi</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="tramhuong"> Sản phẩm trầm hương</label></li>
-      <li><label><input type="checkbox" name="danhmuc" value="vanhocnuocngoai"> Văn học nước ngoài</label></li>
-    </ul>
+   <aside class="left-menu">
+      <form action="SanPhamServlet" method="get">
+        <h4>Danh mục sản phẩm</h4>
+        <ul>
+          <li><label><input type="checkbox" name="danhmuc" value="kynangsong"> Kỹ năng sống</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="sachtiengviet"> Sách tiếng Việt</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="sachgiaokhoa"> Sách giáo khoa - tham khảo</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="ngoai_ngu"> Sách ngoại ngữ</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="dungcu_hocsinh"> Dụng cụ học sinh</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="vanphongpham"> Văn phòng phẩm</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="quatang"> Quà tặng</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="dochoi"> Đồ chơi</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="tramhuong"> Sản phẩm trầm hương</label></li>
+          <li><label><input type="checkbox" name="danhmuc" value="vanhocnuocngoai"> Văn học nước ngoài</label></li>
+        </ul>
 
-    <h4>Mức giá</h4>
-    <ul>
-      <li><label><input type="checkbox" name="gia" value="duoi100"> Dưới 100.000đ</label></li>
-      <li><label><input type="checkbox" name="gia" value="100-200"> 100.000đ - 200.000đ</label></li>
-      <li><label><input type="checkbox" name="gia" value="200-300"> 200.000đ - 300.000đ</label></li>
-      <li><label><input type="checkbox" name="gia" value="300-500"> 300.000đ - 500.000đ</label></li>
-      <li><label><input type="checkbox" name="gia" value="500-1000"> 500.000đ - 1.000.000đ</label></li>
-      <li><label><input type="checkbox" name="gia" value="tren1000"> Trên 1.000.000đ</label></li>
-    </ul>
+        <h4>Mức giá</h4>
+        <ul>
+          <li><label><input type="checkbox" name="gia" value="duoi100"> Dưới 100.000đ</label></li>
+          <li><label><input type="checkbox" name="gia" value="100-200"> 100.000đ - 200.000đ</label></li>
+          <li><label><input type="checkbox" name="gia" value="200-300"> 200.000đ - 300.000đ</label></li>
+          <li><label><input type="checkbox" name="gia" value="300-500"> 300.000đ - 500.000đ</label></li>
+          <li><label><input type="checkbox" name="gia" value="500-1000"> 500.000đ - 1.000.000đ</label></li>
+          <li><label><input type="checkbox" name="gia" value="tren1000"> Trên 1.000.000đ</label></li>
+        </ul>
 
-    <h4>Sản phẩm</h4>
-    <ul>
-      <li><label><input type="checkbox" name="loai" value="banchay"> Bán chạy</label></li>
-      <li><label><input type="checkbox" name="loai" value="giamgia"> Khuyến mại - Giảm giá</label></li>
-      <li><label><input type="checkbox" name="loai" value="magiamgia"> Mã giảm giá</label></li>
-    </ul>
+        <h4>Sản phẩm</h4>
+        <ul>
+          <li><label><input type="checkbox" name="loai" value="banchay"> Bán chạy</label></li>
+          <li><label><input type="checkbox" name="loai" value="khuyenmai"> Khuyến mại - Giảm giá</label></li>
+        </ul>
 
-    <button type="submit" class="btn-loc">Lọc sản phẩm</button>
-  </form>
-</aside>
+        <button type="submit" class="btn-loc">Lọc sản phẩm</button>
+      </form>
+    </aside>
 
+    <!-- Cột bên phải: khu vực sản phẩm -->
+    <section class="right-content">
+        <jsp:include page="thanh_timkiem.jsp" />
 
-    <!-- Content -->
-      <!-- Khu vực hiển thị sản phẩm -->
-    <section class="content">
-      <div class="sort-bar">
-        <label>Sắp xếp:</label>
-        <select>
-          <option>Theo giá tăng dần</option>
-          <option>Theo giá giảm dần</option>
-          <option>Tên A → Z</option>
-          <option>Tên Z → A</option>
-        </select>
-      </div>
+        <!-- KHU VỰC SẢN PHẨM BÁN CHẠY -->
+        <section class="best-seller-section">
+            <h2 class="title-banchay">🔥 Sản phẩm bán chạy</h2>
+            <div class="product-grid">
+                <%
+                    List<SanPham> dsBanChay = (List<SanPham>) request.getAttribute("spBanChay");
+                    if (dsBanChay != null && !dsBanChay.isEmpty()) {
+                        for (SanPham sp : dsBanChay) {
+                %>
+                <div class="product-card">
+                    <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
+                    <h3 class="product-name"><%= sp.getTen() %></h3>
+                    <p class="product-price"><%= sp.getGia() %> đ</p>
+                </div>
+                 <a href="ChiTietSanPhamServlet?id=<%= sp.getId_sanpham() %>" class="btn-xemchitiet">
+    Detail
+</a>
+                <%
+                        }
+                    } else {
+                %>
+                    <p class="nos-product">Không có sản phẩm bán chạy nào.</p>
+                <%
+                    }
+                %>
+            </div>
+        </section>
 
-      <div class="product-grid">
-        <div class="card">
-          <img src="hinh_anh/pen1.jpg" alt="Bút bi">
-          <h5>Bút bi Thiên Long</h5>
-          <div class="price">5.000 đ</div>
-          <button class="add-cart">+</button>
-        </div>
+        <!-- KHU VỰC SẢN PHẨM KHUYẾN MẠI -->
+        <section class="sale-section">
+            <h2 class="title-km">🎁 Sản phẩm khuyến mại</h2>
+            <div class="product-grid">
+                <%
+                    List<SanPham> dsKhuyenMai = (List<SanPham>) request.getAttribute("spKhuyenMai");
+                    if (dsKhuyenMai != null && !dsKhuyenMai.isEmpty()) {
+                        for (SanPham sp : dsKhuyenMai) {
+                %>
+                <div class="product-card">
+                    <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
+                    <h3 class="product-name"><%= sp.getTen() %></h3>
+                    <p class="product-price"><%= sp.getGia() %> đ</p>
+                </div>
+                <a href="ChiTietSanPhamServlet?id=<%= sp.getId_sanpham() %>" class="btn-xemchitiet">
+    Detail
+</a>
 
-        <div class="card">
-          <img src="hinh_anh/notebook1.jpg" alt="Sổ tay">
-          <h5>Sổ tay A5</h5>
-          <div class="price">15.000 đ</div>
-          <button class="add-cart">+</button>
-        </div>
-
-        <div class="card">
-          <img src="hinh_anh/ink1.jpg" alt="Mực in">
-          <h5>Mực in HP</h5>
-          <div class="price">350.000 đ</div>
-          <button class="add-cart">+</button>
-        </div>
-      </div>
+                <%
+                        }
+                    } else {
+                %>
+                    <p class="no-product">Không có sản phẩm khuyến mại nào.</p>
+                <%
+                    }
+                %>
+            </div>
+        </section>
     </section>
   </main>
-<!-- Footer -->
-<footer class="footer">
-  <div class="container footer-grid">
-    <div class="member">
-      <h4>Đỗ Thị Huyền</h4>
-      <p>📅 03/04/2004</p>
-      <p>📞 033 7949 703</p>
-      <p>✉️ dohuyen34204@gmail.com</p>
-    </div>
 
-    <div class="member">
-      <h4>Đậu Thị Mai</h4>
-      <p>📅 (chưa cập nhật)</p>
-      <p>📞 0123 456 789</p>
-      <p>✉️ mai@example.com</p>
-    </div>
-
-    <div class="member">
-      <h4>Nông Thị Mai Hương</h4>
-      <p>📅 03/03/2000</p>
-      <p>📞 0123 456 789</p>
-      <p>✉️ huong@example.com</p>
-    </div>
-  </div>
-</footer>
-
-<script src="js/script.js"></script>
-
+  <jsp:include page="footer.jsp" />
+  <script src="js/script.js"></script>
 </body>
 </html>

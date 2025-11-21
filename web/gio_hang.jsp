@@ -1,144 +1,356 @@
-<%-- 
-    Document   : gio_hang
-    Created on : Oct 11, 2025, 1:55:37 PM
-    Author     : asus
---%>
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" %>  
 <%@ page import="java.util.*, model.SanPham" %>
 
 <%
-    List<Map<String,Object>> gioHang = (List<Map<String,Object>>) session.getAttribute("gioHang");
-    if (gioHang == null) gioHang = new ArrayList<>();
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+    if (gioHang == null) {
+        gioHang = new ArrayList<>();
+    }
+
     double tongTien = 0;
+    for (Map<String, Object> item : gioHang) {
+        SanPham sp = (SanPham) item.get("sanpham");
+        int soLuong = (int) item.get("soluong");
+        tongTien += sp.getGia() * soLuong;
+    }
+    session.setAttribute("tongTien", tongTien);
+%>
+<%
+    String message = (String) session.getAttribute("message");
+    if (message != null) {
+%>
+<div style="background-color:#f0f8ff; color:#333; padding:10px; margin:10px 0; border-left:5px solid #007bff;">
+    <%= message%>
+</div>
+<%
+        session.removeAttribute("message"); // Xóa để không lặp lại
+    }
 %>
 
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>🛍️ Giỏ hàng</title>
-    <link rel="stylesheet" href="css/kieu.css">
-    <style>
-       body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background: #f0f0f0;
-        }
-        img {
-            border-radius: 6px;
-        }
-        .btn {
-            padding: 4px 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: #fff;
-        }
-        .btn-update {
-            background-color: #4CAF50;
-        }
-        .btn-delete {
-            background-color: #e74c3c;
-        }
-        .btn-delete:hover {
-            background-color: #c0392b;
-        }
-        .btn-update:hover {
-            background-color: #388e3c;
-        }
-        .total {
-            margin-top: 15px;
-            text-align: right;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .empty-cart {
-            color: #555;
-            font-size: 18px;
-        }
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 6px 10px;
-            border-radius: 4px;
-        }
-        .back-btn:hover {
-            background: #f8f8f8;
-        }
-    </style>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <title>Giỏ hàng</title>
+        <link rel="stylesheet" href="css/kieu.css">
+        <style>
+            body {
+                font-family: Arial;
+                background: #f8f8f8;
+                margin: 0;
+                padding: 20px;
+            }
+            .cart-container {
+                background: #fff;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            h2 {
+                color: #333;
+            }
+            table {
+                width:100%;
+                border-collapse:collapse;
+                margin-top:15px;
+            }
+            th,td {
+                border-bottom:1px solid #eee;
+                padding:10px;
+                text-align:center;
+                vertical-align: middle;
+            }
+            th {
+                background:#f5f5f5;
+            }
+            img {
+                border-radius:6px;
+                width:70px;
+                height:70px;
+                object-fit:cover;
+            }
+            .qty-btn {
+                background:#007bff;
+                color:white;
+                border:none;
+                border-radius:4px;
+                padding:4px 8px;
+                cursor:pointer;
+                font-size:16px;
+            }
+            .qty-input {
+                width:40px;
+                text-align:center;
+                border:1px solid #ccc;
+            }
 
-<body>
-    <h2>🛍️ Giỏ hàng của bạn</h2>
+            .total {
+                margin-top:20px;
+                text-align:right;
+                font-size:18px;
+                font-weight:bold;
+            }
+            a.continue-shopping {
+                display: inline-block;
+                padding: 8px 16px;
+                margin-bottom: 10px;
+                background: #17a2b8;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: 0.3s;
+            }
+            a.continue-shopping:hover {
+                background: #138496;
+            }
 
-    <% if (gioHang.isEmpty()) { %>
-        <p class="empty-cart">Giỏ hàng của bạn đang trống.</p>
-        <a href="content.jsp" class="back-btn">⬅️ Tiếp tục mua sắm</a>
-    <% } else { %>
-        <form action="giohang" method="get">
-            <input type="hidden" name="hanhDong" value="capnhatTatCa">
-            <table>
-                <tr>
-                    <th>Ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Thành tiền</th>
-                    <th>Hành động</th>
-                </tr>
+            .select-all {
+                display: inline-block;
+                padding: 8px 16px;
+                margin-bottom: 10px;
+                background-color: #9C27B0;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 6px;
+                transition: 0.3s;
+            }
 
-                <% for (Map<String,Object> item : gioHang) {
-                    SanPham sp = (SanPham) item.get("sanpham");
-                    int soLuong = (int) item.get("soluong");
-                    double thanhTien = sp.getGia() * soLuong;
-                    tongTien += thanhTien;
-                %>
-                <tr>
-                    <td><img src="<%= sp.getHinhAnh() %>" width="70"></td>
-                    <td><%= sp.getTen() %></td>
-                    <td><%= String.format("%,.0f", sp.getGia()) %> đ</td>
-                    <td>
-                        <form action="giohang" method="get" style="display:inline;">
-                            <input type="hidden" name="hanhDong" value="capnhat">
-                            <input type="hidden" name="id" value="<%= sp.getId() %>">
-                            <input type="number" name="soLuong" value="<%= soLuong %>" min="1" style="width:60px;">
-                            <button type="submit" class="btn btn-update">Cập nhật</button>
-                        </form>
-                    </td>
-                    <td><%= String.format("%,.0f", thanhTien) %> đ</td>
-                    <td>
-                        <a href="giohang?hanhDong=xoa&id=<%= sp.getId() %>" class="btn btn-delete">Xóa</a>
-                    </td>
-                </tr>
-                <% } %>
-            </table>
-        </form>
+            .btn-delete-selected {
+                background: #e74c3c;
+                color: #fff;
+                padding: 8px 14px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+                transition: 0.3s;
+            }
+            .btn-delete-selected:hover {
+                background: #c0392b;
+            }
 
-        <div class="total">
-            Tổng cộng: <%= String.format("%,.0f", tongTien) %> đ
+            .btn-checkout {
+                background: #28a745;
+                color: white;
+                padding: 10px 18px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: 0.3s;
+            }
+            .btn-checkout:hover {
+                background: #218838;
+            }
+
+            input[type="checkbox"] {
+                transform: scale(1.2);
+                margin-right: 5px;
+                cursor: pointer;
+            }
+
+
+        </style>
+        <script>
+            function capNhatSoLuong(id, soLuong) {
+                fetch('CapNhatGioHangServlet', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'id=' + id + '&soluong=' + soLuong
+                })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                console.log("Cập nhật số lượng thành công");
+                            }
+                            if (data.status === 'removed') {
+                                alert("Sản phẩm đã bị xóa khỏi giỏ hàng!");
+                                location.reload();
+                            }
+                        })
+                        .catch(err => console.error("Lỗi cập nhật số lượng:", err));
+            }
+            function updateQuantity(id, change, max) {
+                const qtyInput = document.getElementById('qty-' + id);
+                let value = parseInt(qtyInput.value);
+                if (isNaN(value))
+                    value = 1;
+                value += change;
+                if (value < 1)
+                    value = 1;
+                if (value > max)
+                    value = max;
+
+                qtyInput.value = value;
+
+                // Cập nhật total sản phẩm
+                const chk = document.querySelector('.product-check[value="' + id + '"]');
+                const price = parseFloat(chk.dataset.price);
+                document.getElementById('total-' + id).innerText = (price * value).toLocaleString() + " đ";
+
+                // Cập nhật tổng tiền
+                calculateTotal();
+
+                // Gửi ajax cập nhật số lượng server
+                capNhatSoLuong(id, value);
+            }
+
+
+            function calculateTotal() {
+                let total = 0;
+                const checkboxes = document.querySelectorAll('.product-check:checked');
+
+                checkboxes.forEach(chk => {
+                    const id = chk.value.trim();
+                    const qtyInput = document.getElementById('qty-' + id);
+                    const qty = parseInt(qtyInput.value);
+                    const max = parseInt(chk.dataset.stock); // data-stock là tồn kho của sản phẩm
+                    const price = parseFloat(chk.dataset.price);
+
+                    if (qty > max) {
+                        alert("⚠️ Số lượng sản phẩm " + id + " vượt tồn kho (" + max + ")");
+                        qtyInput.value = max; // giữ nguyên số lượng tối đa
+                        total += price * max;
+                    } else {
+                        total += price * qty;
+                    }
+                });
+
+                document.getElementById('tongTien').innerText = total.toLocaleString() + " đ";
+                document.getElementById('tongTienInput').value = total;
+            }
+
+            function toggleAll(source) {
+                const checkboxes = document.querySelectorAll('.product-check');
+                checkboxes.forEach(chk => chk.checked = source.checked);
+                calculateTotal();
+            }
+
+            function thanhToan() {
+                const selected = Array.from(document.querySelectorAll('.product-check:checked')).map(chk => chk.value);
+                if (selected.length === 0) {
+                    alert("Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!");
+                    return;
+                }
+
+                // 🔹 Nếu người dùng không chọn gì, vẫn gửi tổng tất cả
+                if (document.getElementById('tongTienInput').value === "0") {
+                    const tong = <%= tongTien%>;
+                    document.getElementById('tongTienInput').value = tong;
+                }
+
+                document.getElementById("checkoutForm").submit();
+            }
+            function xoaChon() {
+                const selected = Array.from(document.querySelectorAll('.product-check:checked')).map(chk => chk.value);
+                if (selected.length === 0) {
+                    alert("Chọn ít nhất 1 sản phẩm để xóa!");
+                    return;
+                }
+
+                if (confirm("Bạn có chắc muốn xóa các sản phẩm đã chọn?")) {
+                    const ids = selected.join(',');
+                    fetch('GioHangServlet', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'action=xoaNhieu&ids=' + encodeURIComponent(ids)
+                    })
+                            .then(response => response.text())
+                            .then(data => {
+                                if (data.trim() === "OK") {
+                                    alert("Xóa thành công " + selected.length + " sản phẩm!");
+                                    location.reload(); // tải lại trang để hiển thị giỏ hàng mới
+                                } else {
+                                    alert("Xảy ra lỗi khi xóa sản phẩm!");
+                                }
+                            })
+                            .catch(err => {
+                                alert("Xảy ra lỗi khi xóa sản phẩm!");
+                                console.error(err);
+                            });
+                }
+            }
+        </script>
+
+    </head>
+    <body>
+        <jsp:include page="header.jsp" />
+        <div class="cart-container">
+            <h2>🛒 Giỏ hàng của bạn</h2>
+
+            <% if (gioHang.isEmpty()) { %>
+            <p>Giỏ hàng trống. </p>
+            <a href="SanPhamServlet" class="continue-shopping">Tiếp tục mua sắm</a>
+            <% } else {%>
+            <form id="checkoutForm" action="ThanhToanServlet" method="post">
+                <input type="hidden" id="tongTienInput" name="tongTien" value="<%= tongTien%>">
+                <a href="SanPhamServlet" class="continue-shopping">Tiếp tục mua sắm</a>
+                <label class="select-all">
+                    <input type="checkbox" onclick="toggleAll(this)"> Chọn tất cả
+                </label>
+                <button type="button" class="btn-delete-selected" onclick="xoaChon()">Xóa các mục đã chọn</button>
+
+
+                <table>
+                    <tr>
+                        <th>Chọn</th>
+                        <th>Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                        <th>Hành động</th>
+                    </tr>
+
+                    <%
+                        for (Map<String, Object> item : gioHang) {
+                            SanPham sp = (SanPham) item.get("sanpham");
+                            int soLuong = (int) item.get("soluong");
+                            String hinh = sp.getHinhAnh();
+
+                            if (hinh != null && !hinh.startsWith("http")) {
+                                hinh = request.getContextPath() + "/hinh_anh/" + hinh;
+                            }
+                    %>
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="product-check"
+                                   name="chonSP" value="<%= sp.getId_sanpham()%>" checked 
+                                   data-price="<%= sp.getGia()%>"
+                                   data-stock="<%= sp.getSoLuong()%>"
+                                   onchange="calculateTotal()">
+                        </td>
+                        <td>
+                            <img src="<%= hinh%>" alt="Ảnh sản phẩm" width="80" height="80"
+                                 style="border-radius:6px; object-fit:cover;">
+                        </td>
+                        <td><%= sp.getTen()%></td>
+                        <td><%= String.format("%,.0f", sp.getGia())%> đ</td>
+                        <td>
+                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, -1,<%= sp.getSoLuong()%>)">-</button>
+                            <input type="text" id="qty-<%= sp.getId_sanpham()%>" 
+                                   name="soLuong_<%= sp.getId_sanpham()%>" 
+                                   value="<%= soLuong%>" class="qty-input" 
+                                   onchange="updateQuantity(<%= sp.getId_sanpham()%>, 0,<%= sp.getSoLuong()%>)">
+                            <button type="button" class="qty-btn" onclick="updateQuantity(<%= sp.getId_sanpham()%>, 1,<%= sp.getSoLuong()%>)">+</button>
+                        </td>
+                        <td><span id="total-<%= sp.getId_sanpham()%>"><%= String.format("%,.0f", sp.getGia() * soLuong)%> đ</span></td>
+                        <td><a href="GioHangServlet?action=xoa&id=<%= sp.getId_sanpham()%>" class="btn-delete">🗑️</a>
+                        </td>
+                    </tr>
+                    <% }%>
+                </table>
+                <div class="total">
+                    Tổng tiền: <span id="tongTien"><%= String.format("%,.0f", tongTien)%> đ</span>
+                    <input type="hidden" name="tongTien" id="tongTienInput" value="<%= tongTien%>">
+
+                </div>
+                <div style="text-align:right; margin-top:20px;">
+                    <button type="button" class="btn-checkout" onclick="thanhToan()">Đặt hàng</button>
+                </div>
+            </form>
+            <% }%>
         </div>
-
-        <a href="san_pham.jsp" class="back-btn">⬅️ Tiếp tục mua sắm</a>
-    <% } %>
-
-</body>
+        <jsp:include page="footer.jsp" />
+    </body>
 </html>

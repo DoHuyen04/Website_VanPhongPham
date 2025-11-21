@@ -1,7 +1,11 @@
 package model;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+
 public class NguoiDung {
-    private int id;
+    private int id_nguoidung;
     private String tenDangNhap;
     private String matKhau;
     private String hoTen;

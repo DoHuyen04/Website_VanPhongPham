@@ -15,16 +15,16 @@
 
     <div class="member">
       <h4>Đậu Thị Mai</h4>
-      <p>📅 (chưa cập nhật)</p>
-      <p>📞 0123 456 789</p>
-      <p>✉️ mai@example.com</p>
+      <p>📅 (26/12/2004)</p>
+      <p>📞 0966 478 623 </p>
+      <p>✉️ dauthimai2014@gmail.com</p>
     </div>
 
     <div class="member">
       <h4>Nông Thị Mai Hương</h4>
-      <p>📅 03/03/2000</p>
-      <p>📞 0123 456 789</p>
-      <p>✉️ huong@example.com</p>
+      <p>📅 14/03/2004</p>
+      <p>📞 0374 805 997</p>
+      <p>✉️ ntmhuong.dhti16a4hn@sv.uneti.vn.edu</p>
     </div>
   </div>
 </footer>

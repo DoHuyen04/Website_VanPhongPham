@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/kieu.css">
 </head>
 <body>
+    <jsp:include page="header.jsp" />
     <div class="login-page">
         <div class="login-container">
             <h2>Quên mật khẩu</h2>
@@ -24,5 +25,6 @@
             </form>
         </div>
     </div>
+                 <jsp:include page="footer.jsp" />
 </body>
 </html>

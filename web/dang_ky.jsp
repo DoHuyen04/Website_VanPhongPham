@@ -34,8 +34,17 @@
                 <label>Số điện thoại</label>
                 <input type="text" name="soDienThoai" id="soDienThoai">
 
-                <button type="submit">Đăng ký</button>
-            </form>
+                    <label>Email</label>
+                    <input type="text" name="email" id="email">
+                    <div class="error" id="emailError"></div>
+
+                    <label>Số điện thoại</label>
+                    <input type="text" name="soDienThoai" id="soDienThoai">
+                    <div class="error" id="soDienThoaiError"></div>
+
+                    <button type="submit">Đăng ký</button>
+                </form>
+            </div>
         </div>
     </div>
 </body>

@@ -15,6 +15,12 @@
     <div class="login-page">
         <div class="login-container">
             <h2>Đăng nhập</h2>
+             <%
+                String notLoggedIn = request.getParameter("error");
+                if ("notloggedin".equals(notLoggedIn)) {
+            %>
+                <div class="warning-msg">⚠️ Vui lòng đăng nhập để thêm sản phẩm.</div>
+            <% } %>
             <form action="nguoidung" method="post">
                 <input type="hidden" name="hanhDong" value="dangnhap">
 

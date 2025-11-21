@@ -1,10 +1,13 @@
  package dao;
 
+import static dao.DBUtil.getConnection;
 import model.NguoiDung;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Date;
+import java.time.LocalDate;
 
 public class NguoiDungDAO {
 
@@ -21,6 +24,7 @@ public class NguoiDungDAO {
             ResultSet rs = ps.executeQuery();
             return rs.next(); // nếu có dữ liệu => trùng
 
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -51,11 +55,25 @@ public class NguoiDungDAO {
 }
 
 
-    // ✅ Đăng nhập
+    public boolean kiemTraTonTai(String tenDangNhap, String email) {
+        String sql = "SELECT COUNT(*) FROM nguoidung WHERE tendangnhap = ? OR email = ?";
+        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, tenDangNhap);
+            ps.setString(2, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Đăng nhập
     public NguoiDung dangNhap(String tenDangNhap, String matKhau) {
-        String sql = "SELECT id, tendangnhap, hoten, email, sodienthoai FROM nguoidung WHERE tendangnhap=? AND matkhau=?";
-        try (Connection cn = DBUtil.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        String sql = "SELECT id_nguoidung, tendangnhap, hoten, email, sodienthoai, avatarurl FROM nguoidung WHERE tendangnhap=? AND matkhau=?";
+        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, tenDangNhap);
             ps.setString(2, matKhau);
@@ -63,11 +81,12 @@ public class NguoiDungDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     NguoiDung nd = new NguoiDung();
-                    nd.setId(rs.getInt("id"));
+                    nd.setId(rs.getInt("id_nguoidung"));
                     nd.setTenDangNhap(rs.getString("tendangnhap"));
                     nd.setHoTen(rs.getString("hoten"));
                     nd.setEmail(rs.getString("email"));
                     nd.setSoDienThoai(rs.getString("sodienthoai"));
+                    nd.setAvatarUrl(rs.getString("avatarurl"));
                     return nd;
                 }
             }
