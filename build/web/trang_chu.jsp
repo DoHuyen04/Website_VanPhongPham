@@ -19,7 +19,42 @@
         session.removeAttribute("message"); // Xóa để không lặp lại
     }
 %>
+<%
+    // --- PHÂN TRANG ---
+    int pageSize = 14;
 
+    // Sản phẩm bán chạy
+    List<SanPham> dsBanChay = (List<SanPham>) request.getAttribute("spBanChay");
+    int pageBanChay = 1;
+    String pageBC = request.getParameter("pageBanChay");
+    if (pageBC != null) {
+        try {
+            pageBanChay = Integer.parseInt(pageBC);
+        } catch (Exception ignored) {
+        }
+    }
+    int totalBC = dsBanChay.size();
+    int totalPagesBC = (int) Math.ceil((double) totalBC / pageSize);
+    int startBC = (pageBanChay - 1) * pageSize;
+    int endBC = Math.min(startBC + pageSize, totalBC);
+    List<SanPham> sanPhamBanChayTrang = dsBanChay.subList(startBC, endBC);
+
+    // Sản phẩm khuyến mãi
+    List<SanPham> dsKhuyenMai = (List<SanPham>) request.getAttribute("spKhuyenMai");
+    int pageKhuyenMai = 1;
+    String pageKM = request.getParameter("pageKhuyenMai");
+    if (pageKM != null) {
+        try {
+            pageKhuyenMai = Integer.parseInt(pageKM);
+        } catch (Exception ignored) {
+        }
+    }
+    int totalKM = dsKhuyenMai.size();
+    int totalPagesKM = (int) Math.ceil((double) totalKM / pageSize);
+    int startKM = (pageKhuyenMai - 1) * pageSize;
+    int endKM = Math.min(startKM + pageSize, totalKM);
+    List<SanPham> sanPhamKhuyenMaiTrang = dsKhuyenMai.subList(startKM, endKM);
+%>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -56,7 +91,15 @@
                     margin-bottom: 20px;
                 }
             }
-
+            .account-btn {
+                border-radius: 8px; /* bo tròn tương tự giỏ hàng */
+                padding: 8px 14px;
+                background-color: #fff9c4; /* vàng nhạt */
+                color: #111;
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+            }
             .product-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -127,9 +170,8 @@
                     <h2 class="title-banchay">🔥 Sản phẩm bán chạy</h2>
                     <div class="product-grid">
                         <%
-                            List<SanPham> dsBanChay = (List<SanPham>) request.getAttribute("spBanChay");
-                            if (dsBanChay != null && !dsBanChay.isEmpty()) {
-                                for (SanPham sp : dsBanChay) {
+                            if (sanPhamBanChayTrang != null && !sanPhamBanChayTrang.isEmpty()) {
+                                for (SanPham sp : sanPhamBanChayTrang) {
                         %>
                         <div class="product-card">
                             <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
@@ -148,6 +190,15 @@
                             }
                         %>
                     </div>
+                    <div class="pagination">
+                        <%
+                            for (int i = 1; i <= totalPagesBC; i++) {
+                        %>
+                        <a href="TrangChuServlet?pageBanChay=<%=i%>&pageKhuyenMai=<%=pageKhuyenMai%>"><%=i%></a>
+                        <%
+                            }
+                        %>
+                    </div>
                 </section>
 
                 <!-- KHU VỰC SẢN PHẨM KHUYẾN MẠI -->
@@ -155,9 +206,8 @@
                     <h2 class="title-km">🎁 Sản phẩm khuyến mại</h2>
                     <div class="product-grid">
                         <%
-                            List<SanPham> dsKhuyenMai = (List<SanPham>) request.getAttribute("spKhuyenMai");
-                            if (dsKhuyenMai != null && !dsKhuyenMai.isEmpty()) {
-                                for (SanPham sp : dsKhuyenMai) {
+                            if (sanPhamKhuyenMaiTrang != null && !sanPhamKhuyenMaiTrang.isEmpty()) {
+                                for (SanPham sp : sanPhamKhuyenMaiTrang) {
                         %>
                         <div class="product-card">
                             <img src="hinh_anh/<%= sp.getHinhAnh()%>" alt="<%= sp.getTen()%>">
@@ -173,6 +223,15 @@
                         } else {
                         %>
                         <p class="no-product">Không có sản phẩm khuyến mại nào.</p>
+                        <%
+                            }
+                        %>
+                    </div>
+                    <div class="pagination">
+                        <%
+                            for (int i = 1; i <= totalPagesKM; i++) {
+                        %>
+                        <a href="TrangChuServlet?pageKhuyenMai=<%=i%>&pageBanChay=<%=pageBanChay%>"><%=i%></a>
                         <%
                             }
                         %>
