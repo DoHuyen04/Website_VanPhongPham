@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.DonHangDAO;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,8 +15,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import model.DonHang;
+import model.DonHangChiTiet;
 import model.SanPham;
 
 /**
@@ -115,25 +121,100 @@ public class ThanhToanServlet extends HttpServlet {
         // ✅ Lưu tổng tiền vào session
         session.setAttribute("tongTien", tongTien);
 
-        String[] chonSp = request.getParameterValues("chonSp");
-        List<SanPham> dsChon = new ArrayList<>();
-        if (chonSp != null) {
-            for (String idStr : chonSp) {
-                int id = Integer.parseInt(idStr);
-                for (Map<String, Object> item : gioHang) {
-                    SanPham sp = (SanPham) item.get("sanpham");
-                    if (sp.getId_sanpham() == id) {
-                        dsChon.add(sp);
-                    }
+        String[] idsChon = request.getParameterValues("chonSP");
+        if (idsChon == null || idsChon.length == 0) {
+            session.setAttribute("message", "Vui lòng chọn ít nhất 1 sản phẩm!");
+            response.sendRedirect("gio_hang.jsp");
+            return;
+        }
+        List<Map<String, Object>> gioHangChon = new ArrayList<>();
+
+        if (idsChon != null && gioHang != null) {
+            Set<Integer> selectedIds = new HashSet<>();
+            for (String s : idsChon) {
+                selectedIds.add(Integer.parseInt(s.trim()));
+            }
+
+            for (Map<String, Object> item : gioHang) {
+                SanPham sp = (SanPham) item.get("sanpham");
+                if (selectedIds.contains(sp.getId_sanpham())) {
+                    item.put("daChon", true);
+                    gioHangChon.add(item);
+                } else {
+                    item.put("daChon", false);
                 }
             }
         }
 
-        request.setAttribute("dsChon", dsChon);
+        session.setAttribute("gioHangChon", gioHangChon);
         request.setAttribute("tongTienHang", tongTien);
+        String xacNhan = request.getParameter("xacNhan");
+        if (xacNhan == null) {
+            // ===== Chưa nhấn Xác nhận, chỉ hiển thị form =====
+            RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
+            rd.forward(request, response);
+            return;
+        }
 
-        RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
-        rd.forward(request, response);
+        // ===== Nhấn Xác nhận, xử lý lưu đơn hàng =====
+        Integer idNguoiDungObj = (Integer) session.getAttribute("idNguoiDung");
+// Lấy object người dùng từ session
+        model.NguoiDung nguoiDung = (model.NguoiDung) session.getAttribute("nguoiDung");
+
+        if (nguoiDung == null) {
+            response.sendRedirect("dang_nhap.jsp");
+            return;
+        }
+
+// Lấy id người dùng đúng chuẩn
+        int idNguoiDung = nguoiDung.getId();
+
+        String tenNguoiNhan = request.getParameter("tenNguoiNhan");
+        String soDienThoai = request.getParameter("soDienThoai");
+        String diaChi = request.getParameter("diaChi");
+        String phuongThuc = request.getParameter("phuongThuc");
+
+        if (phuongThuc == null || phuongThuc.trim().isEmpty()) {
+            phuongThuc = "COD"; // mặc định
+        }
+        request.setAttribute("diaChi", diaChi);
+        request.setAttribute("phuongThuc", phuongThuc);
+
+        DonHang dh = new DonHang();
+        dh.setId_nguoidung(idNguoiDung);
+        dh.setDiaChi(diaChi);
+        dh.setSoDienThoai(soDienThoai);
+        dh.setPhuongThuc(request.getParameter("phuongThuc") != null 
+                 ? request.getParameter("phuongThuc") 
+                 : "COD");
+
+        dh.setNgayDat(new Date());
+
+        List<DonHangChiTiet> chiTiets = new ArrayList<>();
+        for (Map<String, Object> item : gioHangChon) {
+            SanPham sp = (SanPham) item.get("sanpham");
+            int sl = (Integer) item.get("soluong");
+            double thanhTien = sp.getGia() * sl;
+            DonHangChiTiet ct = new DonHangChiTiet(0, sp.getId_sanpham(), sl, thanhTien);
+            chiTiets.add(ct);
+        }
+
+        dh.setChiTiet(chiTiets);
+        dh.setTongTien(tongTien);
+
+        DonHangDAO dhDAO = new DonHangDAO();
+        int idDonHang = dhDAO.themDonHang(dh);
+
+        if (idDonHang > 0) {
+            // Xóa sản phẩm đã đặt khỏi giỏ
+            gioHang.removeIf(item -> item.get("daChon") != null && (Boolean) item.get("daChon"));
+            session.setAttribute("gioHang", gioHang);
+            session.setAttribute("idDonHangMoi", idDonHang);
+            response.sendRedirect("don_hang.jsp");
+        } else {
+            session.setAttribute("message", "Đặt hàng thất bại!");
+            response.sendRedirect("gio_hang.jsp");
+        }
     }
 
     @Override

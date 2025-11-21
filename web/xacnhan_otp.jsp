@@ -1,6 +1,24 @@
 <%-- xac_thuc_ma.jsp (sửa) --%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
+     request.setCharacterEncoding("UTF-8");
+
+    // Lấy dữ liệu người nhận từ session hoặc request
+    String tenNguoiNhan = request.getAttribute("tenNguoiNhan") != null
+            ? (String) request.getAttribute("tenNguoiNhan")
+            : (String) session.getAttribute("tenNguoiNhan");
+
+    String diaChi = request.getAttribute("diaChi") != null
+            ? (String) request.getAttribute("diaChi")
+            : (String) session.getAttribute("diaChi");
+
+    String soDienThoai = request.getAttribute("soDienThoai") != null
+            ? (String) request.getAttribute("soDienThoai")
+            : (String) session.getAttribute("soDienThoai");
+
+    String email = request.getAttribute("email") != null
+            ? (String) request.getAttribute("email")
+            : (String) session.getAttribute("email");
     Long exp = (Long) session.getAttribute("otp_expire");
     long remain = 0;
     if (exp != null) {
@@ -76,6 +94,11 @@
 
         <!-- Form xác nhận OTP: POST về XacNhanOTPServlet -->
         <form method="post" action="${pageContext.request.contextPath}/XacNhanOTPServlet">
+            <input type="hidden" name="tenNguoiNhan" value="<%= tenNguoiNhan != null ? tenNguoiNhan : "" %>">
+        <input type="hidden" name="diaChi" value="<%= diaChi != null ? diaChi : "" %>">
+        <input type="hidden" name="soDienThoai" value="<%= soDienThoai != null ? soDienThoai : "" %>">
+        <input type="hidden" name="email" value="<%= email != null ? email : "" %>">
+<input type="hidden" name="phuongThuc" value="${phuongThuc}">
             <input id="otpInput" type="text" name="otp" maxlength="6" placeholder="Nhập mã OTP">
             <br>
             <button type="submit" class="btn">Xác nhận</button>
@@ -83,6 +106,11 @@
 
         <!-- Gửi lại mã: cũng POST về XacNhanOTPServlet nhưng KHÔNG gửi trường otp -->
         <form method="post" action="${pageContext.request.contextPath}/XacNhanOTPServlet" style="margin-top:8px;">
+            <input type="hidden" name="tenNguoiNhan" value="<%= tenNguoiNhan != null ? tenNguoiNhan : "" %>">
+        <input type="hidden" name="diaChi" value="<%= diaChi != null ? diaChi : "" %>">
+        <input type="hidden" name="soDienThoai" value="<%= soDienThoai != null ? soDienThoai : "" %>">
+        <input type="hidden" name="email" value="<%= email != null ? email : "" %>">
+
             <button type="submit" class="btn">Gửi lại mã</button>
         </form>
 

@@ -7,9 +7,10 @@
        value="${empty nguoiDung or empty nguoiDung.avatarUrl
                 ? '/hinh_anh/avatar-default.png'
                 : nguoiDung.avatarUrl}" />
-<c:if test="${empty sessionScope.userId}">
-    <c:redirect url="/dang_nhap.jsp"/>
+<c:if test="${empty sessionScope.nguoiDung}">
+    <c:redirect url="${pageContext.request.contextPath}/dang_nhap.jsp"/>
 </c:if>
+
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <jsp:include page="header.jsp"/>
 
@@ -180,7 +181,7 @@
                href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">👤 Hồ sơ</a>
 
             <a class="tab-btn"
-               href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=all">🧾 Đơn hàng</a>
+               href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
 
 
             <a class="tab-btn ${active=='tknh' ? 'active' : ''}"

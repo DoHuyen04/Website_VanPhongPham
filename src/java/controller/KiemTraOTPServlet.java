@@ -77,7 +77,7 @@ public class KiemTraOTPServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        HttpSession session = request.getSession();
+       HttpSession session = request.getSession(false);
         String otpNhap = request.getParameter("otp");
         String otpDung = (String) session.getAttribute("otp");
         Long otpExpire = (Long) session.getAttribute("otp_expire");

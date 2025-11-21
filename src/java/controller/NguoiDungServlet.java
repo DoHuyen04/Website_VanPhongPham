@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Part;
-
 @MultipartConfig(maxFileSize = 1024 * 1024) // 1MB
 @WebServlet("/nguoidung")
 public class NguoiDungServlet extends HttpServlet {
@@ -99,10 +98,9 @@ public class NguoiDungServlet extends HttpServlet {
             default ->
                 req.setAttribute("active", "profile");
         }
-
+        
         req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
     }
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -223,7 +221,7 @@ public class NguoiDungServlet extends HttpServlet {
 
             if (rs.next()) {
                 // Tạo session
-                HttpSession session = request.getSession();
+               HttpSession session = request.getSession(true);
                 session.setMaxInactiveInterval(60 * 60);
 
                 NguoiDung nguoiDung = new NguoiDung();
@@ -234,6 +232,7 @@ public class NguoiDungServlet extends HttpServlet {
                 nguoiDung.setSoDienThoai(rs.getString("soDienThoai"));
                 nguoiDung.setGioiTinh(rs.getString("gioiTinh"));
                 session.setAttribute("nguoiDung", nguoiDung);
+                session.setAttribute("idNguoiDung", nguoiDung.getId());
                 session.setAttribute("userId", nguoiDung.getId());               // 🔹 thêm
                 session.setAttribute("tenDangNhap", nguoiDung.getTenDangNhap()); // 🔹 thêm
                 session.setAttribute("email", nguoiDung.getEmail());

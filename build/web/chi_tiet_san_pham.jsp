@@ -122,7 +122,7 @@
         </style>
     </head>
     <body>
-        <jsp:include page="header.jsp" />
+       
         <form action="GioHangServlet" method="post" class="product-form">
             <input type="hidden" name="id" value="${sanpham.id_sanpham}">
             <input type="hidden" name="ten" value="${sanpham.ten}">
@@ -148,6 +148,6 @@
                 <button type="button" class="btn-back" onclick="history.back()">⬅ Quay lại</button>
             </div>
         </form>
- <jsp:include page="footer.jsp" />
+ 
     </body>
 </html>

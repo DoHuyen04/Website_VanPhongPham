@@ -33,7 +33,7 @@
         <button class="search-btn">🔍</button>
     </div>
     <div class="banner-right">
-        <div class="hotline">📞 0968.715.858</div>
+        
 
         <% if (tenDangNhap != null) {%>
         <div class="account-dropdown">
@@ -62,7 +62,7 @@
             List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
             int soLuongGH = (gioHang == null) ? 0 : gioHang.size();
         %>
-        <a href="GioHangServlet">🛒 Giỏ hàng (<%= soLuongGH%>)</a>
+        <a href="GioHangServlet">🛒(<%= soLuongGH%>)</a>
     </div>
 </header>
 
@@ -73,61 +73,161 @@
     <a href="lien_he.jsp">Liên hệ</a>
 </nav>
 <style>
-    /* Khung dropdown tài khoản */
-    .account-dropdown{
-        position:relative;
-        display:inline-block;
-    }
-    .account-btn{
-        background:transparent;
-        border:0;
-        cursor:pointer;
-        padding:.25rem .5rem;
-    }
+/* ================= HEADER ================= */
+body {
+    margin: 0;
+    padding: 0;
+}
 
-    /* Hộp menu */
-    .account-menu{
-        position:absolute;
-        right:0;
-        top:120%;
-        min-width:210px;
-        background:#fff;
-        border:1px solid #e5e7eb;
-        border-radius:6px;
-        box-shadow:0 10px 25px rgba(0,0,0,.12);
-        display:none;
-        z-index:1000;
-    }
-    .account-menu a{
-        display:block;
-        padding:.7rem 1rem;
-        text-decoration:none;
-        color:#111827;
-        font-weight:600;
-    }
-    .account-menu a:hover{
-        background:#f3f4f6;
-    }
+.banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background-color: #3498db; /* header cùng màu với menu */
+    height: 80px;
+}
 
-    /* Mũi nhọn nhỏ như hình */
-    .account-menu::before{
-        content:"";
-        position:absolute;
-        top:-8px;
-        right:20px;
-        width:14px;
-        height:14px;
-        background:#fff;
-        border-left:1px solid #e5e7eb;
-        border-top:1px solid #e5e7eb;
-        transform:rotate(45deg);
-    }
+.banner-left .logo-img {
+    height: 60px;
+}
 
-    /* Hiện menu khi rê chuột */
-    .account-dropdown:hover .account-menu{
-        display:block;
+.banner-center {
+    display: flex;
+    align-items: center;
+    width: 450px;
+    background: #fff;
+    border-radius: 30px;
+    overflow: hidden;
+    margin: 0; /* xóa khoảng trắng */
+}
+
+.search-box {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+}
+
+.search-btn {
+    border: none;
+    padding: 10px 20px;
+    background: #217dbb;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.banner-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account, .account-btn, .banner-right a[href="GioHangServlet"] {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #fff;
+    background-color: #217dbb;
+}
+
+.account:hover, .account-btn:hover, .banner-right a[href="GioHangServlet"]:hover {
+    background-color: #1e88e5;
+}
+
+/* Dropdown menu tài khoản */
+.account-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.account-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 2px);
+    min-width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 1000;
+}
+
+.account-dropdown:hover .account-menu,
+.account-dropdown:focus-within .account-menu,
+.account-menu:hover {
+    display: block;
+}
+
+.account-menu a {
+    display: block;
+    padding: 12px;
+    color: #111;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.account-menu a:hover {
+    background-color: #f3f4f6;
+}
+
+.account-menu::before {
+    content:"";
+    position: absolute;
+    top: -9px;
+    right: 22px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-left:1px solid #e5e7eb;
+    border-top:1px solid #e5e7eb;
+    transform: rotate(45deg);
+}
+
+/* ================= MENU CHÍNH ================= */
+.top-menu {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    background-color: #3498db; /* cùng màu header */
+    padding: 0;
+    margin: 0;
+}
+
+.top-menu a {
+    padding: 12px 18px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 0; /* xóa border-radius nếu muốn dính liền */
+}
+
+.top-menu a:hover {
+    background-color: #1e88e5;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 720px) {
+    .banner {
+        flex-direction: column;
+        gap: 8px;
+        height: auto;
+        padding: 10px 15px;
     }
+    .banner-center {
+        width: 95%;
+    }
+    .top-menu {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
 </style>
+
 <script>
     (function () {
         // Dùng cho nút onclick="toggleAccountMenu()" đã có trong HTML (hữu ích trên mobile)
