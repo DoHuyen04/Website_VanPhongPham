@@ -4,6 +4,8 @@
 <%@page import="java.util.Map"%>
 <%@page import="java.util.List"%>
 <%@page import="java.text.DecimalFormat"%>  
+<%@page import="model.TKNganHang"%>
+
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
     <head>
@@ -11,9 +13,10 @@
         <%
             // Không cần: HttpSession session = request.getSession();
             @SuppressWarnings(
-           
+                    
+            
             "unchecked")
-     List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+    List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
 
             List<Map<String, Object>> gioHangChon = (List<Map<String, Object>>) session.getAttribute("gioHangChon");
 
@@ -32,7 +35,28 @@
             double phiVanChuyen = 15000;
             java.text.DecimalFormat df = new java.text.DecimalFormat("#,### VNĐ");
 
+            // ==========================
+            // 🔹 LẤY DANH SÁCH ĐỊA CHỈ USER
+            // ==========================
+            // Danh sách địa chỉ đã truyền từ ThanhToanServlet
+            List<model.DiaChi> dsDiaChi = (List<model.DiaChi>) request.getAttribute("dsDiaChi");
+
+            model.DiaChi diaChiMacDinh = null;
+
+            if (dsDiaChi != null && !dsDiaChi.isEmpty()) {
+                for (model.DiaChi d : dsDiaChi) {
+                    if (d.isMacDinh()) {
+                        diaChiMacDinh = d;
+                        break;
+                    }
+                }
+                // Nếu không có mặc định → lấy cái đầu tiên
+                if (diaChiMacDinh == null) {
+                    diaChiMacDinh = dsDiaChi.get(0);
+                }
+            }
         %>
+
         <link rel="stylesheet" href="css/kieu.css">
         <style>
             body {
@@ -105,11 +129,52 @@
             <% for (Map<String, Object> item : gioHangChon) {
                     SanPham sp = (SanPham) item.get("sanpham");%>
             <input type="hidden" name="chonSP" value="<%= sp.getId_sanpham()%>">
-            <% } %>
+            <% }%>
+            <!-- HỌ TÊN NGƯỜI NHẬN -->
             <label>Họ tên người nhận:</label>
-            <input type="text" name="tenNguoiNhan" required>
+            <input type="text" name="tenNguoiNhan" id="tenNguoiNhan" required>
 
-            <label>Địa chỉ nhận hàng:</label>
+            <!-- CHẾ ĐỘ ĐỊA CHỈ -->
+            <div class="address-mode" style="margin:6px 0 10px; display:flex; gap:24px;">
+                <label>
+                    <input type="radio" name="addressMode" value="saved"
+                           <%= (dsDiaChi != null && !dsDiaChi.isEmpty()) ? "checked" : ""%> />
+                    Địa chỉ từ hồ sơ
+                </label>
+
+                <label>
+                    <input type="radio" name="addressMode" value="new"
+                           <%= (dsDiaChi == null || dsDiaChi.isEmpty()) ? "checked" : ""%> />
+                    Địa chỉ khác
+                </label>
+            </div>
+
+            <% if (dsDiaChi != null && !dsDiaChi.isEmpty()) { %>
+            <div id="savedAddressBox" style="margin-bottom:10px;">
+                <select name="selectedDiaChiId" id="selectedDiaChiId"
+                        style="width:100%; padding:8px; border:1px solid #ccc; border-radius:5px; margin-top:5px;">
+                    <% for (model.DiaChi d : dsDiaChi) {%>
+                    <option value="<%= d.getId()%>"
+                            data-hotennhan="<%= d.getHoTen()%>"
+                            data-sdt="<%= d.getSoDienThoai()%>"
+                            data-tinh="<%= d.getTinhThanh()%>"
+                            data-huyen="<%= d.getQuanHuyen()%>"
+                            data-xa="<%= d.getXaPhuong()%>"
+                            data-duong="<%= d.getDiaChiDuong()%>"
+                            <%= (diaChiMacDinh != null && diaChiMacDinh.getId() == d.getId()) ? "selected" : ""%>>
+                        <%= d.isMacDinh() ? "[Mặc định] " : ""%>
+                        <%= d.getHoTen()%> - <%= d.getDiaChiDuong()%>, <%= d.getXaPhuong()%>, <%= d.getQuanHuyen()%>, <%= d.getTinhThanh()%>
+                    </option>
+                    <% } %>
+                </select>
+            </div>
+            <% } else { %>
+            <p style="font-size:13px; color:#777;">Bạn chưa có địa chỉ nào trong hồ sơ. Vui lòng nhập địa chỉ mới.</p>
+            <% } %>
+
+            <!-- CÁC Ô NHẬP THÔNG TIN ĐỊA CHỈ / NGƯỜI NHẬN -->
+
+            <label>Địa chỉ nhận hàng chi tiết:</label>
             <div class="address-group">
                 <input list="dsTinh" id="tinh" name="tinh" placeholder="Nhập hoặc chọn Tỉnh/Thành phố" required>
                 <datalist id="dsTinh"></datalist>
@@ -122,6 +187,7 @@
 
                 <input type="text" name="duong" id="duong" placeholder="Tên đường, Số nhà" required>
             </div>
+
 
             <label>Tìm địa chỉ trên Google Maps (tùy chọn):</label>
             <input type="text" id="diaChiMap" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
@@ -139,13 +205,48 @@
 
             <div id="taiKhoanNganHang" style="display:none;">
                 <label>Tài khoản ngân hàng (từ hồ sơ của tôi):</label>
+
                 <%
-                    String taiKhoan = (String) session.getAttribute("taiKhoanNganHang");
-                    if (taiKhoan == null)
-                        taiKhoan = "0337949703 - Vietcombank";
+                    // Lấy danh sách tài khoản ngân hàng đã được servlet truyền xuống
+                    List<TKNganHang> dsTk = (List<TKNganHang>) request.getAttribute("dsTaiKhoanNganHang");
+                    TKNganHang macDinh = null;
+
+                    if (dsTk != null && !dsTk.isEmpty()) {
+                        // Ưu tiên tìm tài khoản được đặt MẶC ĐỊNH
+                        for (TKNganHang b : dsTk) {
+                            if (b.isMacDinh()) {
+                                macDinh = b;
+                                break;
+                            }
+                        }
+                        // Nếu không có cái nào macDinh = true thì lấy cái đầu tiên
+                        if (macDinh == null) {
+                            macDinh = dsTk.get(0);
+                        }
+                    }
                 %>
-                <input type="text" name="taiKhoan" value="<%= taiKhoan%>" readonly>
+
+                <% if (dsTk == null || dsTk.isEmpty()) {%>
+                <p style="color:#666; font-size:14px; margin-top:6px;">
+                    Bạn chưa liên kết tài khoản ngân hàng nào.
+                    <a href="<%= request.getContextPath()%>/nguoidung?hanhDong=hoso&tab=tknh">
+                        Bấm vào đây để thêm.
+                    </a>
+                </p>
+                <% } else { %>
+                <select name="idTaiKhoanNganHang"
+                        id="idTaiKhoanNganHang"
+                        style="margin-top:6px; width:100%; padding:8px; border:1px solid #ccc; border-radius:5px;">
+                    <% for (TKNganHang b : dsTk) {%>
+                    <option value="<%= b.getIdTkNganHang()%>"
+                            <%= (macDinh != null && macDinh.getIdTkNganHang() == b.getIdTkNganHang()) ? "selected" : ""%>>
+                        <%= b.getTenNganHang()%> - <%= b.getSoTaiKhoan()%> ( <%= b.getChuTaiKhoan()%> )
+                    </option>
+                    <% } %>
+                </select>
+                <% } %>
             </div>
+
 
             <div class="summary">
 
@@ -201,6 +302,64 @@
 
         <script>
                 let dataVN = {};
+                // ====== ĐỊA CHỈ: chọn từ hồ sơ hoặc nhập mới ======
+                function setAddressInputsReadonly(isReadonly) {
+                    var ids = ["tenNguoiNhan", "soDienThoai", "tinh", "huyen", "xa", "duong"];
+                    ids.forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (el) {
+                            el.readOnly = isReadonly;
+                        }
+                    });
+                }
+
+                function fillAddressFromSaved() {
+                    var select = document.getElementById("selectedDiaChiId");
+                    if (!select)
+                        return;
+
+                    var opt = select.options[select.selectedIndex];
+                    if (!opt)
+                        return;
+
+                    // Lấy dữ liệu từ option và đổ vào các ô input
+                    document.getElementById("tenNguoiNhan").value = opt.dataset.hotennhan || "";
+                    document.getElementById("soDienThoai").value = opt.dataset.sdt || "";
+                    document.getElementById("tinh").value = opt.dataset.tinh || "";
+                    document.getElementById("huyen").value = opt.dataset.huyen || "";
+                    document.getElementById("xa").value = opt.dataset.xa || "";
+                    document.getElementById("duong").value = opt.dataset.duong || "";
+
+                    // Dùng địa chỉ từ hồ sơ thì khóa lại cho đỡ sửa nhầm
+                    setAddressInputsReadonly(true);
+                }
+
+                function updateAddressModeUI() {
+                    var modeSaved = document.querySelector('input[name="addressMode"][value="saved"]');
+                    var modeNew = document.querySelector('input[name="addressMode"][value="new"]');
+                    var boxSaved = document.getElementById("savedAddressBox");
+
+                    if (modeSaved && modeSaved.checked && boxSaved) {
+                        // Đang chọn "Chọn địa chỉ từ hồ sơ"
+                        boxSaved.style.display = "block";
+                        fillAddressFromSaved();          // auto fill từ địa chỉ mặc định / đã chọn
+                    } else {
+                        // Đang chọn "Nhập địa chỉ khác"
+                        if (boxSaved)
+                            boxSaved.style.display = "none";
+
+                        // Cho phép nhập mới
+                        setAddressInputsReadonly(false);
+
+                        // XÓA CÁC Ô ĐỊA CHỈ cũ để người dùng nhập lại bằng hanhchinhvn.json
+                        ["tinh", "huyen", "xa", "duong"].forEach(function (id) {
+                            var el = document.getElementById(id);
+                            if (el)
+                                el.value = "";
+                        });
+
+                    }
+                }
 
                 // 1️⃣ Đọc dữ liệu hành chính Việt Nam
                 fetch('data/hanhchinhvn.json')
@@ -307,14 +466,11 @@
                     const huyen = document.getElementById('huyen').value.trim();
                     const xa = document.getElementById('xa').value.trim();
                     const duong = document.getElementById('duong').value.trim();
-
                     const phone = document.getElementById('soDienThoai').value.trim();
                     const error = document.getElementById('soDienThoaiError');
                     const fullAddress = `${duong}, ${xa}, ${huyen}, ${tinh}, Việt Nam`;
-
                     document.getElementById('diaChiDayDu').value = fullAddress;
                     error.textContent = '';
-
                     if (phone === "") {
                         error.textContent = 'Vui lòng nhập số điện thoại.';
                         e.preventDefault();
@@ -325,6 +481,24 @@
                         e.preventDefault();
                         return;
                     }
+                    // 🔹 Kiểm tra phương thức thanh toán & tài khoản ngân hàng
+                    const phuongThuc = document.getElementById('phuongThuc').value;
+                    const dsTkSelect = document.getElementById('idTaiKhoanNganHang');
+                    if (phuongThuc === 'Bank') {
+                        // Nếu chọn Ngân hàng liên kết nhưng không có select (hoặc không có option nào)
+                        if (!dsTkSelect || dsTkSelect.options.length === 0) {
+                            alert('Bạn chưa có tài khoản ngân hàng liên kết. Vui lòng thêm trong "Hồ sơ của tôi" trước khi thanh toán bằng Ngân hàng liên kết.');
+                            e.preventDefault();
+                            return;
+                        }
+
+                        // Nếu có select nhưng chưa chọn giá trị (phòng hờ)
+                        if (!dsTkSelect.value) {
+                            alert('Vui lòng chọn một tài khoản ngân hàng để thanh toán.');
+                            e.preventDefault();
+                            return;
+                        }
+                    }
                 });
                 function capNhatChonSP() {
                     const formData = new FormData();
@@ -334,7 +508,6 @@
                             formData.append('chonSP', cb.value);
                         }
                     });
-
                     fetch('CapNhatGioHangServlet', {
                         method: 'POST',
                         body: formData
@@ -347,12 +520,34 @@
                             .catch(err => console.error(err));
                 }
 
+                // Gắn sự kiện cho radio & select sau khi DOM đã có
+                document.addEventListener('DOMContentLoaded', function () {
+                    // radio chọn chế độ địa chỉ
+                    var radiosAddress = document.querySelectorAll('input[name="addressMode"]');
+                    radiosAddress.forEach(function (r) {
+                        r.addEventListener("change", updateAddressModeUI);
+                    });
+
+                    // select địa chỉ đã lưu
+                    var selectSaved = document.getElementById("selectedDiaChiId");
+                    if (selectSaved) {
+                        selectSaved.addEventListener("change", fillAddressFromSaved);
+                    }
+
+                    // Khởi tạo trạng thái ban đầu (ưu tiên địa chỉ mặc định nếu có)
+                    updateAddressModeUI();
+
+                    // (giữ logic cũ) gắn sự kiện cho checkbox chọn sản phẩm nếu trên trang có dùng
+                    document.querySelectorAll('.chonSP').forEach(cb => {
+                        cb.addEventListener('change', capNhatChonSP);
+                    });
+                });
                 document.querySelectorAll('.chonSP').forEach(cb => {
                     cb.addEventListener('change', capNhatChonSP);
-                });
+                })
+                        ;
 
         </script>
-
         <jsp:include page="footer.jsp" />
     </body>
 </html>

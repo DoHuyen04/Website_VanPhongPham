@@ -138,6 +138,24 @@ public class DiaChiDAO {
             e.printStackTrace();
         }
     }
+        // Lấy 1 địa chỉ theo id
+    public DiaChi findById(int id) {
+        String sql = "SELECT * FROM diachi WHERE id = ?";
+        try (Connection cn = DBUtil.getConnection();
+             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     // ✅ Hàm ánh xạ (map) ResultSet → đối tượng DiaChi
     private DiaChi map(ResultSet rs) throws SQLException {

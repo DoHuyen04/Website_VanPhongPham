@@ -33,8 +33,23 @@
         --line:#e5e7eb;
         --ok:#10b981;
         --blue:#2563eb;
+        --danger:#ef4444;
         --card:#ffffff;
-        --bg:#f8fafc;
+        --bg:#f6f6f6;
+    }
+
+    body{
+        background:var(--bg);
+        font-family:Arial,system-ui,sans-serif;
+        margin:0;
+    }
+
+    .account-content{
+        background:var(--card);
+        border:1px solid #eee;
+        border-radius:16px;
+        box-shadow:0 1px 3px rgba(15,23,42,.06);
+        padding:28px 34px 32px;
     }
 
     .bank-header{
@@ -42,40 +57,53 @@
         justify-content:space-between;
         align-items:center;
         gap:16px;
-        margin:0 0 16px;
+        margin:0 0 12px;
         padding-bottom:6px;
+        border-bottom:1px solid #f1f5f9;
     }
-    .bank-header h1{
+    .bank-header h1,
+    .bank-header h2,
+    h2{
         margin:0;
-        font-size:28px;
+        font-size:24px;
         font-weight:800;
         color:var(--text);
     }
 
     .btn-add{
-        background:var(--brand);
+        background:linear-gradient(180deg,#7aa3ff,#7295E3);
         color:#fff;
         border:0;
-        padding:12px 18px;
+        padding:10px 18px;
         border-radius:10px;
-        font-weight:800;
+        font-weight:700;
         cursor:pointer;
-        box-shadow:0 6px 16px rgba(238,77,45,.25);
-        transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+        box-shadow:0 6px 18px rgba(114,149,227,.28);
+        transition:transform .1s ease, box-shadow .15s ease, opacity .15s ease;
+        font-size:14px;
     }
     .btn-add:hover{
         transform:translateY(-1px);
-        box-shadow:0 8px 22px rgba(238,77,45,.35);
+        box-shadow:0 10px 24px rgba(114,149,227,.35);
     }
     .btn-add:active{
         transform:translateY(0);
-        opacity:.9;
+        opacity:.92;
+    }
+
+    .bank-cta{
+        display:none;
+        margin:12px 0 4px;
+        padding:14px 16px 16px;
+        border-radius:12px;
+        background:#f9fafb;
+        border:1px dashed #cbd5f5;
     }
 
     .bank-item{
         display:flex;
         justify-content:space-between;
-        align-items:center;
+        align-items:flex-start;
         gap:18px;
         padding:18px 20px;
         margin:12px 0 0;
@@ -88,17 +116,11 @@
     .bank-left{
         display:flex;
         gap:14px;
-        align-items:center;
+        align-items:flex-start;
         min-width:0;
+        width:100%;
     }
-    .bank-left .logo{
-        width:44px;
-        height:44px;
-        object-fit:cover;
-        border-radius:10px;
-        background:#f1f5f9;
-        border:1px solid var(--line);
-    }
+
     .bank-left .bank-name{
         font-weight:800;
         color:var(--text);
@@ -107,7 +129,7 @@
     .bank-left .sub{
         margin-top:4px;
         color:var(--muted);
-        font-size:14.5px;
+        font-size:14px;
         line-height:1.45;
     }
     .bank-left .sub b{
@@ -119,8 +141,8 @@
         color:var(--ok);
         font-weight:800;
         border-radius:999px;
-        padding:6px 10px;
-        font-size:13px;
+        padding:5px 10px;
+        font-size:12px;
         margin-left:8px;
         display:inline-flex;
         align-items:center;
@@ -129,10 +151,6 @@
         background:rgba(52,211,153,.14);
         color:#16a34a;
     }
-    .bank-badge.default{
-        background:rgba(16,185,129,.14);
-        color:var(--ok);
-    }
 
     .bank-number{
         font-size:22px;
@@ -140,81 +158,66 @@
         letter-spacing:.8px;
         color:var(--text);
     }
+
     .bank-actions{
         display:flex;
+        flex-wrap:wrap;
         align-items:center;
-        gap:16px;
+        gap:12px;
+        margin-top:10px;
     }
-    .bank-actions .action-btn{
+
+    .action-btn{
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        height:42px;
+        height:40px;
         padding:0 16px;
-        border-radius:12px;
-        font-weight:800;
-        cursor:pointer;
-        border:0;
-    }
-    .bank-actions a,
-    .bank-actions form button{
-        margin-left:0;
-        color:var(--blue);
-        background:transparent;
-        border:0;
-        cursor:pointer;
+        border-radius:10px;
         font-weight:700;
-        text-decoration:none;
-        border-bottom:2px solid transparent;
-        padding:0;
-    }
-    .bank-actions a:hover,
-    .bank-actions form button:hover{
-        border-bottom-color:var(--blue);
+        cursor:pointer;
+        border:0;
+        font-size:13px;
     }
 
-    .bank-actions .del{
-        color:var(--text);
-        text-decoration:none;
-        border-bottom:2px solid transparent;
-    }
-    .bank-actions .del:hover{
-        border-bottom-color:var(--text);
-    }
-
-    .bank-actions .btn-set-default[disabled],
-    .bank-actions .btn-set-default[disabled],
-    .bank-actions .btn-set-default.disabled{
+    .btn-set-default[disabled]{
         background:#f3f4f6;
         color:#9ca3af;
         cursor:not-allowed;
         box-shadow:none;
     }
-    .bank-actions .btn-set-default:not([disabled]):not(.disabled){
+    .btn-set-default:not([disabled]){
         background:#e8f1ff;
         color:#0b3cff;
         box-shadow:0 2px 10px rgba(43,108,255,.15);
     }
-    .bank-actions .btn-set-default:not([disabled]):not(.disabled):hover{
+    .btn-set-default:not([disabled]):hover{
         filter:brightness(1.03);
     }
 
-    .bank-cta{
-        display:none;
-        margin:12px 0 4px;
+    .btn-danger{
+        background:var(--danger);
+        color:#fff;
+        box-shadow:0 2px 10px rgba(239,68,68,.18);
     }
+    .btn-danger:hover{
+        filter:brightness(1.03);
+    }
+
     .inp{
         border:1px solid #d1d5db;
         border-radius:10px;
         padding:10px 12px;
         width:100%;
         background:#fff;
+        font-size:14px;
         transition:border-color .15s ease, box-shadow .15s ease;
+        box-sizing:border-box;
     }
     .inp:focus{
         outline:none;
         border-color:#93c5fd;
-        box-shadow:0 0 0 4px rgba(59,130,246,.15);
+        box-shadow:0 0 0 3px rgba(59,130,246,.18);
     }
 
     .grid2{
@@ -222,37 +225,40 @@
         grid-template-columns:1fr 1fr;
         gap:12px;
     }
+
+    .field-group{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+    }
+    .err-msg{
+        color:#dc2626;
+        font-size:12px;
+        min-height:16px;
+    }
+
+    /* Modal xoá thẻ */
+    #confirmModal{
+        font-family:inherit;
+    }
+
     @media (max-width:768px){
-        .bank-item{
-            flex-wrap:wrap;
+        .account-content{
+            padding:22px 14px;
         }
-        .bank-number{
-            font-size:20px;
+        .bank-item{
+            flex-direction:column;
+            align-items:flex-start;
         }
         .grid2{
             grid-template-columns:1fr;
         }
-    }
-    .btn-danger{
-        background:#ef4444;
-        color:#fff;
-        box-shadow:0 2px 10px rgba(239,68,68,.18);
-    }
-    .btn-danger:hover{
-        filter:brightness(1.03);
-    }
-    .field-group{
-        display:flex;
-        flex-direction:column;
-    }
-
-    .err-msg{
-        color:#dc2626;
-        font-size:13px;
-        margin-top:4px;
-        min-height:18px;
+        .bank-actions{
+            gap:8px;
+        }
     }
 </style>
+
 <h2>Tài Khoản Ngân Hàng Của Tôi</h2>
 <div class="bank-header">
     <div></div>

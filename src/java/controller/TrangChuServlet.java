@@ -24,7 +24,6 @@ public class TrangChuServlet extends HttpServlet {
         sanPhamDAO = new SanPhamDAO();
     }
 
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -35,6 +34,27 @@ public class TrangChuServlet extends HttpServlet {
 
         request.setAttribute("spBanChay", spBanChay);
         request.setAttribute("spKhuyenMai", spKhuyenMai);
+        // Truyền tham số phân trang nếu có (để giữ trạng thái khi reload)
+        String pageBanChayParam = request.getParameter("pageBanChay");
+        String pageKhuyenMaiParam = request.getParameter("pageKhuyenMai");
+
+        int pageBanChay = 1;
+        int pageKhuyenMai = 1;
+
+        try {
+            if (pageBanChayParam != null) {
+                pageBanChay = Integer.parseInt(pageBanChayParam);
+            }
+            if (pageKhuyenMaiParam != null) {
+                pageKhuyenMai = Integer.parseInt(pageKhuyenMaiParam);
+            }
+        } catch (Exception e) {
+            pageBanChay = 1;
+            pageKhuyenMai = 1;
+        }
+
+        request.setAttribute("pageBanChay", pageBanChay);
+        request.setAttribute("pageKhuyenMai", pageKhuyenMai);
 
         // ✅ Lấy thông tin người dùng (nếu đã đăng nhập)
         HttpSession session = request.getSession();
@@ -51,6 +71,7 @@ public class TrangChuServlet extends HttpServlet {
 
         request.getRequestDispatcher(nextPage).forward(request, response);
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
