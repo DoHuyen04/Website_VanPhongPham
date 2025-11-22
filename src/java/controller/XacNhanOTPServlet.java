@@ -2,11 +2,12 @@ package controller;
 
 import dao.DonHangDAO;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 import jakarta.mail.MessagingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -14,7 +15,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.UnsupportedEncodingException;
 import model.DonHang;
 import model.DonHangChiTiet;
 import model.NguoiDung;
@@ -24,7 +24,7 @@ import utils.EmailUtility;
 @WebServlet(name = "XacNhanOTPServlet", urlPatterns = {"/XacNhanOTPServlet"})
 public class XacNhanOTPServlet extends HttpServlet {
 
-    private DonHangDAO donHangDAO = new DonHangDAO();
+    private final DonHangDAO donHangDAO = new DonHangDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,42 +41,52 @@ public class XacNhanOTPServlet extends HttpServlet {
         HttpSession session = request.getSession();
 
         NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
+        if (nd == null) {
+            response.sendRedirect(request.getContextPath() + "/dang_nhap.jsp");
+            return;
+        }
 
-        // LẤY THÔNG TIN NGƯỜI NHẬN
-        String tenNguoiNhan = request.getParameter("tenNguoiNhan");
-        String sdt = request.getParameter("soDienThoai");
-        String tinh = request.getParameter("tinh");
-        String huyen = request.getParameter("huyen");
-        String xa = request.getParameter("xa");
-        String duong = request.getParameter("duong");
-        String diaChi = duong + ", " + xa + ", " + huyen + ", " + tinh;
+        // Lấy phương thức thanh toán (nếu không có trên request thì lấy ở session)
         String phuongThuc = request.getParameter("phuongThuc");
+        if (phuongThuc == null || phuongThuc.isBlank()) {
+            phuongThuc = (String) session.getAttribute("phuongThuc");
+        }
+        if (phuongThuc == null || phuongThuc.isBlank()) {
+            phuongThuc = "COD";
+        }
         session.setAttribute("phuongThuc", phuongThuc);
 
-        if (tenNguoiNhan == null || tenNguoiNhan.isEmpty()
-                || diaChi == null || diaChi.isEmpty()
-                || sdt == null || sdt.isEmpty()) {
-            request.setAttribute("error", "Không thể lấy địa chỉ nhận hàng. Vui lòng nhập lại!");
-            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
-            return;
-        }
-
-        String email = (nd != null ? nd.getEmail() : null);
-        if (email == null) email = (String) session.getAttribute("email");
-        if (email == null) email = request.getParameter("email");
-
-        // Lấy giỏ hàng
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
-        String[] chonSanPham = request.getParameterValues("chonSP");
-        if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
-            request.setAttribute("error", "Không có sản phẩm nào được chọn để thanh toán!");
-            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
-            return;
-        }
-
-        // LUỒNG COD: lưu ngay
+        // ========= LUỒNG THANH TOÁN KHI NHẬN HÀNG (COD) - KHÔNG OTP =========
         if ("COD".equalsIgnoreCase(phuongThuc)) {
+
+            // LẤY THÔNG TIN NGƯỜI NHẬN TỪ FORM
+            String tenNguoiNhan = request.getParameter("tenNguoiNhan");
+            String sdt = request.getParameter("soDienThoai");
+            String tinh = request.getParameter("tinh");
+            String huyen = request.getParameter("huyen");
+            String xa = request.getParameter("xa");
+            String duong = request.getParameter("duong");
+            String diaChi = duong + ", " + xa + ", " + huyen + ", " + tinh;
+
+            if (tenNguoiNhan == null || tenNguoiNhan.isEmpty()
+                    || diaChi == null || diaChi.isEmpty()
+                    || sdt == null || sdt.isEmpty()) {
+                request.setAttribute("error", "Không thể lấy địa chỉ nhận hàng. Vui lòng nhập lại!");
+                request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+                return;
+            }
+
+            // LẤY GIỎ HÀNG VÀ SẢN PHẨM ĐÃ CHỌN
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+            String[] chonSanPham = request.getParameterValues("chonSP");
+            if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
+                request.setAttribute("error", "Không có sản phẩm nào được chọn để thanh toán!");
+                request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+                return;
+            }
+
+            // TẠO ĐƠN HÀNG
             DonHang dh = taoDonHang(nd, gioHang, chonSanPham, diaChi, sdt, phuongThuc);
             if (dh != null) {
                 xoaSanPhamTrongGioHang(session, gioHang, chonSanPham);
@@ -90,11 +100,52 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        // LUỒNG BANK: xử lý OTP
+        // ========= LUỒNG NGÂN HÀNG LIÊN KẾT (BANK) - CÓ OTP =========
+
+        // Xem thử request này có mang mã OTP không
         String otpNhap = request.getParameter("otp");
 
+        // -----------------------------------------------------------
+        // BƯỚC 1: GỬI OTP (request từ trang thanh_toan.jsp, chưa có otp)
+        // -----------------------------------------------------------
         if (otpNhap == null || otpNhap.isEmpty()) {
-            // lưu session thông tin
+
+            // LẤY THÔNG TIN NGƯỜI NHẬN TỪ FORM
+            String tenNguoiNhan = request.getParameter("tenNguoiNhan");
+            String sdt = request.getParameter("soDienThoai");
+            String tinh = request.getParameter("tinh");
+            String huyen = request.getParameter("huyen");
+            String xa = request.getParameter("xa");
+            String duong = request.getParameter("duong");
+            String diaChi = duong + ", " + xa + ", " + huyen + ", " + tinh;
+
+            if (tenNguoiNhan == null || tenNguoiNhan.isEmpty()
+                    || diaChi == null || diaChi.isEmpty()
+                    || sdt == null || sdt.isEmpty()) {
+                request.setAttribute("error", "Không thể lấy địa chỉ nhận hàng. Vui lòng nhập lại!");
+                request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+                return;
+            }
+
+            String email = (nd.getEmail() != null ? nd.getEmail() : null);
+            if (email == null) {
+                email = (String) session.getAttribute("email");
+            }
+            if (email == null) {
+                email = request.getParameter("email");
+            }
+
+            // LẤY GIỎ HÀNG VÀ SẢN PHẨM CHỌN
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+            String[] chonSanPham = request.getParameterValues("chonSP");
+            if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
+                request.setAttribute("error", "Không có sản phẩm nào được chọn để thanh toán!");
+                request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+                return;
+            }
+
+            // LƯU THÔNG TIN VÀO SESSION ĐỂ DÙNG LẠI SAU KHI NHẬP OTP
             session.setAttribute("tenNguoiNhan", tenNguoiNhan);
             session.setAttribute("diaChi", diaChi);
             session.setAttribute("soDienThoai", sdt);
@@ -102,7 +153,7 @@ public class XacNhanOTPServlet extends HttpServlet {
             session.setAttribute("gioHangChon", gioHang);
             session.setAttribute("chonSP", chonSanPham);
 
-            // tạo OTP
+            // TẠO OTP
             String otp = String.format("%06d", new Random().nextInt(999999));
             long otpExpire = System.currentTimeMillis() + 5 * 60 * 1000;
             session.setAttribute("otp", otp);
@@ -126,7 +177,10 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        // xác nhận OTP
+        // -----------------------------------------------------------
+        // BƯỚC 2: NGƯỜI DÙNG ĐÃ NHẬP OTP → KIỂM TRA & TẠO ĐƠN
+        // -----------------------------------------------------------
+
         String otpSession = (String) session.getAttribute("otp");
         Long otpExpire = (Long) session.getAttribute("otp_expire");
         if (otpSession == null || otpExpire == null || System.currentTimeMillis() > otpExpire) {
@@ -140,9 +194,24 @@ public class XacNhanOTPServlet extends HttpServlet {
             return;
         }
 
-        // OTP đúng -> xóa session và lưu đơn hàng
+        // OTP đúng -> xóa OTP khỏi session
         session.removeAttribute("otp");
         session.removeAttribute("otp_expire");
+
+        // LẤY LẠI DỮ LIỆU ĐÃ LƯU TRONG SESSION LÚC GỬI OTP
+        String tenNguoiNhan = (String) session.getAttribute("tenNguoiNhan");
+        String diaChi = (String) session.getAttribute("diaChi");
+        String sdt = (String) session.getAttribute("soDienThoai");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHangChon");
+        String[] chonSanPham = (String[]) session.getAttribute("chonSP");
+
+        if (gioHang == null || chonSanPham == null || chonSanPham.length == 0) {
+            request.setAttribute("error", "Không tìm thấy thông tin giỏ hàng để tạo đơn. Vui lòng thực hiện lại!");
+            request.getRequestDispatcher("thanh_toan.jsp").forward(request, response);
+            return;
+        }
+
         DonHang dh = taoDonHang(nd, gioHang, chonSanPham, diaChi, sdt, phuongThuc);
         if (dh != null) {
             xoaSanPhamTrongGioHang(session, gioHang, chonSanPham);
@@ -155,7 +224,15 @@ public class XacNhanOTPServlet extends HttpServlet {
         }
     }
 
-    private DonHang taoDonHang(NguoiDung nd, List<Map<String,Object>> gioHang, String[] chonSanPham, String diaChi, String sdt, String phuongThuc) {
+    // ================== HÀM PHỤ TRỢ ==================
+
+    private DonHang taoDonHang(NguoiDung nd,
+                               List<Map<String, Object>> gioHang,
+                               String[] chonSanPham,
+                               String diaChi,
+                               String sdt,
+                               String phuongThuc) {
+
         DonHang dh = new DonHang();
         dh.setIdNguoiDung(nd.getId());
         dh.setDiaChi(diaChi);
@@ -178,12 +255,17 @@ public class XacNhanOTPServlet extends HttpServlet {
         }
         dh.setTongTien(tongTien);
         int id = donHangDAO.themDonHang(dh);
-        if (id > 0) dh.setIdDonHang(id);
-        else return null;
+        if (id > 0) {
+            dh.setIdDonHang(id);
+        } else {
+            return null;
+        }
         return dh;
     }
 
-    private void xoaSanPhamTrongGioHang(HttpSession session, List<Map<String,Object>> gioHang, String[] chonSanPham) {
+    private void xoaSanPhamTrongGioHang(HttpSession session,
+                                        List<Map<String, Object>> gioHang,
+                                        String[] chonSanPham) {
         List<String> chonSPList = Arrays.asList(chonSanPham);
         gioHang.removeIf(item -> {
             SanPham sp = (SanPham) item.get("sanpham");
@@ -192,7 +274,8 @@ public class XacNhanOTPServlet extends HttpServlet {
         session.setAttribute("gioHang", gioHang);
     }
 
-    private void guiEmailXacNhan(NguoiDung nd, DonHang dh, List<Map<String,Object>> gioHang) throws UnsupportedEncodingException {
+    private void guiEmailXacNhan(NguoiDung nd, DonHang dh,
+                                 List<Map<String, Object>> gioHang) throws UnsupportedEncodingException {
         double phiVanChuyen = 15000;
         double tongThanhToan = dh.getTongTien() + phiVanChuyen;
 
@@ -208,7 +291,7 @@ public class XacNhanOTPServlet extends HttpServlet {
             sb.append("<td>").append(ct.getId_sanpham()).append("</td>");
             sb.append("<td>").append(ct.getSoLuong()).append("</td>");
             sb.append("<td>").append(String.format("%,.0f VNĐ", ct.getGia())).append("</td>");
-            sb.append("<td>").append(String.format("%,.0f VNĐ", ct.getGia()*ct.getSoLuong())).append("</td>");
+            sb.append("<td>").append(String.format("%,.0f VNĐ", ct.getGia() * ct.getSoLuong())).append("</td>");
             sb.append("</tr>");
         }
         sb.append("</table>");
@@ -221,7 +304,9 @@ public class XacNhanOTPServlet extends HttpServlet {
         sb.append("</body></html>");
 
         try {
-            EmailUtility.sendEmail(nd.getEmail(), "Xác nhận đơn hàng #" + dh.getIdDonHang(), sb.toString());
+            EmailUtility.sendEmail(nd.getEmail(),
+                    "Xác nhận đơn hàng #" + dh.getIdDonHang(),
+                    sb.toString());
         } catch (MessagingException e) {
             e.printStackTrace();
         }

@@ -43,7 +43,7 @@ public class TaiKhoanServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
 
-        HttpSession ses = req.getSession(false);
+        HttpSession ses = req.getSession();
         NguoiDung ndSession = (ses != null) ? (NguoiDung) ses.getAttribute("nguoiDung") : null;
 
         if (ndSession == null) {
