@@ -23,6 +23,12 @@ import java.util.Set;
 import model.DonHang;
 import model.DonHangChiTiet;
 import model.SanPham;
+import dao.TKNganHangDAO;
+import model.TKNganHang;
+import java.util.List;
+import model.NguoiDung;
+import dao.DiaChiDAO;
+import model.DiaChi;
 
 /**
  *
@@ -108,7 +114,6 @@ public class ThanhToanServlet extends HttpServlet {
             }
         }
 
-        // ===== (iamaine) Lấy tổng tiền từ request và lưu vào session =====
         String tongTienStr = request.getParameter("tongTien");
         double tongTien = 0;
         if (tongTienStr != null && !tongTienStr.isEmpty()) {
@@ -148,8 +153,24 @@ public class ThanhToanServlet extends HttpServlet {
 
         session.setAttribute("gioHangChon", gioHangChon);
         request.setAttribute("tongTienHang", tongTien);
+
         String xacNhan = request.getParameter("xacNhan");
+
         if (xacNhan == null) {
+            // Lấy thông tin người dùng từ session
+            NguoiDung nguoiDung = (NguoiDung) session.getAttribute("nguoiDung");
+
+            // Lấy danh sách tài khoản ngân hàng theo userId
+            TKNganHangDAO tkDao = new TKNganHangDAO();
+            List<TKNganHang> dsTaiKhoan = tkDao.listByUserId(nguoiDung.getId());
+
+            // Truyền xuống JSP
+            request.setAttribute("dsTaiKhoanNganHang", dsTaiKhoan);
+            // 🔹 Lấy danh sách địa chỉ đã lưu của user
+            DiaChiDAO diaChiDAO = new DiaChiDAO();
+            List<DiaChi> dsDiaChi = diaChiDAO.listByUser(nguoiDung.getId());
+            request.setAttribute("dsDiaChi", dsDiaChi);
+
             // ===== Chưa nhấn Xác nhận, chỉ hiển thị form =====
             RequestDispatcher rd = request.getRequestDispatcher("thanh_toan.jsp");
             rd.forward(request, response);
@@ -184,9 +205,9 @@ public class ThanhToanServlet extends HttpServlet {
         dh.setId_nguoidung(idNguoiDung);
         dh.setDiaChi(diaChi);
         dh.setSoDienThoai(soDienThoai);
-        dh.setPhuongThuc(request.getParameter("phuongThuc") != null 
-                 ? request.getParameter("phuongThuc") 
-                 : "COD");
+        dh.setPhuongThuc(request.getParameter("phuongThuc") != null
+                ? request.getParameter("phuongThuc")
+                : "COD");
 
         dh.setNgayDat(new Date());
 

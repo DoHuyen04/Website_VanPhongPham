@@ -12,21 +12,35 @@
 </c:if>
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
-
+<jsp:include page="header.jsp"/>
 <style>
-    body {
+    /* Nền và font toàn trang hồ sơ */
+    body{
         background:#f6f6f6;
-        font-family:Arial, sans-serif;
+        font-family:Arial,sans-serif;
     }
+
+    .profile-page{
+        padding:32px 0 60px;
+    }
+
+    .account-shell{
+        max-width:1200px;
+        margin:32px auto 60px;
+        padding:0 16px;
+        display:grid;
+        grid-template-columns:260px 1fr;
+        gap:24px;
+    }
+
     .account-content {
         background:#fff;
         border:1px solid #eee;
         border-radius:10px;
         box-shadow:0 1px 3px rgba(0,0,0,.05);
-        max-width:900px;
-        margin:40px auto;
         padding:30px 40px;
     }
+
     .profile-title {
         font-size:24px;
         font-weight:800;
@@ -36,6 +50,7 @@
         color:#6b7280;
         margin-bottom:24px;
     }
+
     .row {
         display:grid;
         grid-template-columns:200px 1fr 100px;
@@ -82,13 +97,14 @@
         opacity:.5;
         cursor:not-allowed;
     }
-    .profile-right {
+
+    .profile-right{
         display:flex;
         flex-direction:column;
         align-items:center;
         gap:10px;
     }
-    .avatar-img {
+    .avatar-img{
         width:140px;
         height:140px;
         border-radius:50%;
@@ -96,7 +112,7 @@
         border:1px solid #e5e7eb;
         background-color:#f9fafb;
     }
-    .btn-ghost {
+    .btn-ghost{
         background:#fff;
         border:1px solid #d1d5db;
         border-radius:10px;
@@ -105,32 +121,27 @@
         cursor:pointer;
         transition:.2s;
     }
-    .btn-ghost:hover {
+    .btn-ghost:hover{
         background:#f3f4f6;
     }
-    .hint {
+    .hint{
         color:#6b7280;
         font-size:14px;
         text-align:center;
         line-height:1.5;
     }
-    .hint strong {
+    .hint strong{
         color:#111827;
     }
-    .profile-card {
+
+    .profile-card{
         display:grid;
         grid-template-columns:1fr 260px;
         gap:40px;
         align-items:flex-start;
     }
-    .account-shell{
-        max-width:1200px;
-        margin:20px auto;
-        padding:0 16px;
-        display:grid;
-        grid-template-columns:260px 1fr;
-        gap:24px;
-    }
+
+    /* SIDEBAR bên trái – dùng chung cho tất cả tab */
     .account-sidebar{
         background:#fff;
         border:1px solid #eee;
@@ -139,31 +150,32 @@
         position:sticky;
         top:16px;
         height:fit-content;
+        box-shadow:0 1px 3px rgba(0,0,0,.04);
     }
     .side-head{
         display:flex;
         align-items:center;
         gap:10px;
-        margin-bottom:12px
+        margin-bottom:12px;
     }
     .side-avatar{
         width:36px;
         height:36px;
         border-radius:50%;
-        object-fit:cover
+        object-fit:cover;
     }
     .side-username{
-        font-weight:700
+        font-weight:700;
     }
     .side-edit-hint{
         font-size:12px;
-        color:#888
+        color:#888;
     }
 
     .side-nav{
         display:flex;
         flex-direction:column;
-        gap:8px
+        gap:8px;
     }
     .tab-btn{
         display:flex;
@@ -176,11 +188,12 @@
         background:#fff;
         border:1px solid #ececec;
         transition:.15s;
+        font-size:14px;
     }
     .tab-btn:hover{
         background:#e9f2ff;
         color:#1677ff;
-        border-color:#d6e6ff
+        border-color:#d6e6ff;
     }
     .tab-btn.active{
         background:#e9f2ff;
@@ -190,16 +203,17 @@
         box-shadow:0 0 0 1px #1677ff inset;
     }
 
-    .account-shell > .account-content{
-        margin:0;
-        max-width:unset
-    }
     @media (max-width:768px){
         .account-shell{
-            grid-template-columns:1fr
+            grid-template-columns:1fr;
+        }
+        .profile-card{
+            grid-template-columns:1fr;
+        }
+        .row{
+            grid-template-columns:1fr;
         }
     }
-
 </style>
 
 <c:set var="active" value="${not empty param.tab ? param.tab : (not empty requestScope.active ? requestScope.active : 'profile')}" />
@@ -389,6 +403,8 @@
             </c:otherwise>
         </c:choose>
     </div>
+        <jsp:include page="footer.jsp"/>
+
     <script>
         (function () {
             var pf = document.getElementById('profileForm');
@@ -473,7 +489,7 @@
     </script>
     <script>
         (function () {
-            const HOME_URL = '${pageContext.request.contextPath}/trang_chu'; // đổi cho đúng URL trang chủ
+            const HOME_URL = '${pageContext.request.contextPath}/index.jsp'; // đổi cho đúng URL trang chủ
 
             // Đặt lại state hiện tại rồi thêm 1 state giả để bắt sự kiện back
             history.replaceState({p: 'profile'}, '', location.href);
@@ -485,5 +501,3 @@
             });
         })();
     </script>
-
-

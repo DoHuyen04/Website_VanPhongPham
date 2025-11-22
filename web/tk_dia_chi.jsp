@@ -4,122 +4,230 @@
     <head>
         <title>Địa chỉ của tôi</title>
         <style>
-            body {
-                background:#f6f6f6;
-                font-family:Arial, sans-serif;
-            }
-            .account-content{
-                background:#fff;
-                border:1px solid #eee;
-                border-radius:10px;
-                padding:20px;
-                margin:30px auto;
-                max-width:900px
-            }
-            .row-between{
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                margin-bottom:10px
-            }
-            .addr-item{
-                display:flex;
-                justify-content:space-between;
-                gap:16px;
-                padding:16px 0;
-                border-bottom:1px solid #eee
-            }
-            .addr-left .name{
-                font-weight:bold;
-                font-size:15px
-            }
-            .muted{
-                color:#6b7280;
-                font-size:13px
-            }
-            .badge{
-                border:1px solid #ef4444;
-                color:#ef4444;
-                padding:2px 8px;
-                border-radius:6px;
-                font-size:12px;
-                margin-left:8px
-            }
-            .addr-actions form{
-                display:inline
-            }
-            .btn,.link{
-                padding:6px 10px;
-                border-radius:6px;
-                border:1px solid #ddd;
-                background:#fff;
-                cursor:pointer
-            }
-            .btn-primary{
-                background:#ef4444;
-                color:#fff;
-                border-color:#ef4444
-            }
-            .btn[disabled]{
-                opacity:.6;
-                cursor:not-allowed
-            }
-            .link.danger{
-                color:#ef4444;
-                border:none
-            }
-            .modal{
-                position:fixed;
-                inset:0;
-                background:rgba(0,0,0,.35);
-                display:flex;
-                align-items:center;
-                justify-content:center
-            }
-            .modal.hidden{
-                display:none
-            }
-            .modal-body{
-                background:#fff;
-                width:min(720px,92vw);
-                border-radius:12px;
-                padding:20px
-            }
-            .modal-title{
-                font-size:20px;
-                font-weight:600;
-                margin-bottom:12px
-            }
-            .grid2{
-                display:grid;
-                grid-template-columns:1fr 1fr;
-                gap:12px
-            }
-            .grid3{
-                display:grid;
-                grid-template-columns:1fr 1fr 1fr;
-                gap:12px;
-                margin:12px 0
-            }
-            input,select{
-                padding:10px;
-                border:1px solid #e5e7eb;
-                border-radius:8px
-            }
-            .mapbox{
-                background:#f9fafb;
-                border:1px dashed #e5e7eb;
-                border-radius:10px;
-                padding:12px;
-                margin:12px 0
-            }
-            .row-end{
-                display:flex;
-                justify-content:flex-end;
-                gap:12px;
-                margin-top:8px
-            }
-        </style>
+    :root{
+        --brand:#7295E3;
+        --text:#111827;
+        --muted:#6b7280;
+        --line:#e5e7eb;
+        --danger:#ef4444;
+        --bg:#f6f6f6;
+        --card:#ffffff;
+    }
+
+    body{
+        background:var(--bg);
+        font-family:Arial,system-ui,sans-serif;
+        margin:0;
+        padding:0;
+    }
+
+    .account-content{
+        background:var(--card);
+        border:1px solid #eee;
+        border-radius:16px;
+        box-shadow:0 1px 3px rgba(15,23,42,.06);
+        padding:28px 36px;
+        margin:30px auto;
+        max-width:900px;
+    }
+
+    .row-between{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:8px;
+    }
+
+    .account-content h2{
+        margin:0 0 4px;
+        font-size:24px;
+        font-weight:800;
+        color:var(--text);
+    }
+
+    .addr-item{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:16px;
+        padding:16px 0;
+        border-bottom:1px solid var(--line);
+    }
+    .addr-item:last-child{
+        border-bottom:none;
+    }
+
+    .addr-left .name{
+        font-weight:700;
+        font-size:15px;
+        color:var(--text);
+        margin-bottom:4px;
+    }
+    .muted{
+        color:var(--muted);
+        font-size:13px;
+    }
+
+    .badge{
+        display:inline-flex;
+        align-items:center;
+        border-radius:999px;
+        padding:3px 8px;
+        font-size:11px;
+        font-weight:700;
+        background:rgba(16,185,129,.08);
+        color:#16a34a;
+        margin-left:8px;
+        border:1px solid rgba(16,185,129,.25);
+    }
+
+    .addr-actions form{
+        display:inline;
+    }
+
+    .btn{
+        padding:7px 12px;
+        border-radius:8px;
+        border:1px solid #d1d5db;
+        background:#fff;
+        cursor:pointer;
+        font-size:13px;
+        font-weight:600;
+        color:var(--text);
+        transition:.15s ease;
+    }
+    .btn:hover{
+        background:#f3f4ff;
+        border-color:#bfdbfe;
+    }
+
+    .btn-primary{
+        background:linear-gradient(180deg,#7aa3ff,#7295E3);
+        border-color:#7295E3;
+        color:#fff;
+        box-shadow:0 3px 14px rgba(114,149,227,.35);
+    }
+    .btn-primary:hover{
+        filter:brightness(1.03);
+    }
+    .btn[disabled]{
+        opacity:.5;
+        cursor:not-allowed;
+        box-shadow:none;
+        background:#e5e7eb;
+        color:#9ca3af;
+    }
+
+    .link{
+        background:transparent;
+        border:none;
+        padding:0;
+        font-size:13px;
+        font-weight:600;
+        cursor:pointer;
+    }
+    .link.danger{
+        color:var(--danger);
+    }
+    .link.danger:hover{
+        text-decoration:underline;
+    }
+
+    /* Modal thêm địa chỉ */
+    .modal{
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.35);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        z-index:9998;
+    }
+    .modal.hidden{
+        display:none;
+    }
+    .modal-body{
+        background:#fff;
+        width:min(720px,92vw);
+        border-radius:16px;
+        padding:22px 22px 16px;
+        box-shadow:0 20px 40px rgba(15,23,42,.25);
+    }
+    .modal-title{
+        font-size:20px;
+        font-weight:700;
+        margin-bottom:12px;
+        color:var(--text);
+    }
+
+    .grid2{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:12px;
+        margin-bottom:10px;
+    }
+    .grid3{
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:12px;
+        margin:12px 0;
+    }
+
+    input,select{
+        padding:10px 12px;
+        border:1px solid #e5e7eb;
+        border-radius:8px;
+        font-size:14px;
+        outline:none;
+        width:100%;
+        box-sizing:border-box;
+        background:#fff;
+    }
+    input:focus,select:focus{
+        border-color:#93c5fd;
+        box-shadow:0 0 0 3px rgba(59,130,246,.18);
+    }
+
+    .mapbox{
+        background:#f9fafb;
+        border:1px dashed #e5e7eb;
+        border-radius:10px;
+        padding:12px;
+        margin:12px 0;
+    }
+
+    .row-end{
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+        margin-top:12px;
+    }
+
+    /* Modal xác nhận xoá địa chỉ */
+    #addrConfirmModal{
+        font-family:inherit;
+    }
+
+    @media (max-width:768px){
+        .account-content{
+            padding:20px 16px;
+            margin:16px;
+        }
+        .addr-item{
+            flex-direction:column;
+        }
+        .row-between{
+            flex-direction:column;
+            align-items:flex-start;
+            gap:10px;
+        }
+        .grid2,
+        .grid3{
+            grid-template-columns:1fr;
+        }
+    }
+</style>
+
     </head>
     <body>
         <div class="account-content">
@@ -483,3 +591,4 @@
         </script>
     </body>
 </html>
+
