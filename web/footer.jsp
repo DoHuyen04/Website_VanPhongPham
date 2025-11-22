@@ -1,9 +1,39 @@
-<%-- 
-    Document   : footer
-    Created on : Oct 14, 2025, 10:00:02 AM
-    Author     : asus
---%>
 <%@ page contentType="text/html; charset=UTF-8" %>
+<style>
+.footer {
+    background: linear-gradient(135deg, #74ABE2, #5563DE);
+    color: #fff;
+    padding: 30px 0;
+    margin-top: 30px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    text-align: center;
+    background: none; 
+}
+
+.member h4 {
+    margin-bottom: 8px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.member p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <footer class="footer">
     <div class="container footer-grid">
         <div class="member">
@@ -52,6 +82,12 @@
                 margin: 4px 0;
                 font-size: 14px;
             }
+    <div class="member">
+      <h4>Đậu Thị Mai</h4>
+      <p>📅 26/12/2004</p>
+      <p>📞 0966 478 623 </p>
+      <p>✉️ dauthimai2014@gmail.com</p>
+    </div>
 
             /* Responsive cho màn hình nhỏ */
             @media (max-width: 768px) {
@@ -61,4 +97,6 @@
             }
         </style>
     </div>
+
 </footer>
+
