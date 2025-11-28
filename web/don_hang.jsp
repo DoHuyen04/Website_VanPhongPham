@@ -9,7 +9,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Set" %>      
 <%@ page import="java.util.HashSet" %>   
-
+ <jsp:include page="header.jsp" />
 <%
     DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
@@ -610,4 +610,6 @@
         <jsp:include page="footer.jsp"/>
 
     </body>
+
+     <jsp:include page="footer.jsp" />
 </html>

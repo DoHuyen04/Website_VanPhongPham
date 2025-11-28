@@ -1,12 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@page import="java.util.*"%>
+<%@ page import="java.util.*" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:url var="ordersUrl" value="/DonHangServlet">
     <c:param name="hanhDong" value="lichsu"/>
     <c:param name="tab" value="all"/>
 </c:url>
-
 
 <%
     response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -24,35 +23,28 @@
         }
     }
 %>
+
 <header class="banner">
     <div class="banner-left">
         <img src="hinh_anh/logo.png" alt="Logo" class="logo-img">
     </div>
+
     <div class="banner-center">
         <input type="text" placeholder="Tìm theo thương hiệu..." class="search-box">
         <button class="search-btn">🔍</button>
     </div>
-    <div class="banner-right">
-        
 
-        <% if (tenDangNhap != null) {%>
+    <div class="banner-right">
+        <% if (tenDangNhap != null) { %>
         <div class="account-dropdown">
             <button class="account-btn" onclick="toggleAccountMenu()">
-                <span class="account-icon">👤</span>
-                <%= tenDangNhap%>
+                👤 <%= tenDangNhap %>
             </button>
             <div class="account-menu" id="accountMenu">
-                <a href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">
-                    Tài khoản của tôi
-                </a>
-
+                <a href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">Tài khoản của tôi</a>
                 <a href="${ordersUrl}">Đơn hàng</a>
-
-                <a href="${pageContext.request.contextPath}/DangXuatServlet">
-                    Đăng xuất
-                </a>
+                <a href="${pageContext.request.contextPath}/DangXuatServlet">Đăng xuất</a>
             </div>
-
         </div>
         <% } else { %>
         <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
@@ -62,7 +54,7 @@
             List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
             int soLuongGH = (gioHang == null) ? 0 : gioHang.size();
         %>
-        <a href="GioHangServlet">🛒(<%= soLuongGH%>)</a>
+        <a href="GioHangServlet" class="cart">🛒(<%= soLuongGH %>)</a>
     </div>
 </header>
 
@@ -72,25 +64,21 @@
     <a href="gioi_thieu.jsp">Giới thiệu</a>
     <a href="lien_he.jsp">Liên hệ</a>
 </nav>
+
 <style>
 /* ================= HEADER ================= */
-body {
-    margin: 0;
-    padding: 0;
-}
+body { margin:0; padding:0; }
 
 .banner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    background-color: #3498db; /* header cùng màu với menu */
+    background-color: #3498db;
     height: 80px;
 }
 
-.banner-left .logo-img {
-    height: 60px;
-}
+.banner-left .logo-img { height: 60px; }
 
 .banner-center {
     display: flex;
@@ -99,7 +87,6 @@ body {
     background: #fff;
     border-radius: 30px;
     overflow: hidden;
-    margin: 0; /* xóa khoảng trắng */
 }
 
 .search-box {
@@ -113,8 +100,8 @@ body {
 .search-btn {
     border: none;
     padding: 10px 20px;
-    background: #217dbb;
-    color: #fff;
+    background: #fff9c4;
+    color: #111;
     cursor: pointer;
     font-size: 16px;
 }
@@ -125,25 +112,26 @@ body {
     gap: 12px;
 }
 
-.account, .account-btn, .banner-right a[href="GioHangServlet"] {
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-weight: bold;
-    text-decoration: none;
-    color: #fff;
-    background-color: #217dbb;
+/* ================= NÚT TÀI KHOẢN & GIỎ HÀNG ================= */
+.account, .account-btn, .cart {
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    background-color: #fff9c4 !important;
+    color: #111 !important;
+    cursor: pointer !important;
+    border: none !important;
 }
 
-.account:hover, .account-btn:hover, .banner-right a[href="GioHangServlet"]:hover {
-    background-color: #1e88e5;
+
+.account:hover, .account-btn:hover, .cart:hover {
+    background-color: #fff176;
+    color: #111;
 }
 
-/* Dropdown menu tài khoản */
-.account-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
+/* ================= DROPDOWN ================= */
+.account-dropdown { position: relative; }
 .account-menu {
     position: absolute;
     right: 0;
@@ -159,9 +147,7 @@ body {
 
 .account-dropdown:hover .account-menu,
 .account-dropdown:focus-within .account-menu,
-.account-menu:hover {
-    display: block;
-}
+.account-menu:hover { display: block; }
 
 .account-menu a {
     display: block;
@@ -171,9 +157,7 @@ body {
     text-decoration: none;
 }
 
-.account-menu a:hover {
-    background-color: #f3f4f6;
-}
+.account-menu a:hover { background-color: #f3f4f6; }
 
 .account-menu::before {
     content:"";
@@ -193,9 +177,8 @@ body {
     display: flex;
     justify-content: center;
     gap: 40px;
-    background-color: #3498db; /* cùng màu header */
+    background-color: #3498db;
     padding: 0;
-    margin: 0;
 }
 
 .top-menu a {
@@ -203,73 +186,31 @@ body {
     color: #fff;
     text-decoration: none;
     font-weight: 600;
-    border-radius: 0; /* xóa border-radius nếu muốn dính liền */
 }
 
-.top-menu a:hover {
-    background-color: #1e88e5;
-}
+.top-menu a:hover { background-color: #1e88e5; }
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 720px) {
-    .banner {
-        flex-direction: column;
-        gap: 8px;
-        height: auto;
-        padding: 10px 15px;
-    }
-    .banner-center {
-        width: 95%;
-    }
-    .top-menu {
-        flex-wrap: wrap;
-        gap: 10px;
-    }
+    .banner { flex-direction: column; gap: 8px; height:auto; padding: 10px 15px; }
+    .banner-center { width: 95%; }
+    .top-menu { flex-wrap: wrap; gap: 10px; }
 }
 </style>
 
 <script>
-    (function () {
-        // Dùng cho nút onclick="toggleAccountMenu()" đã có trong HTML (hữu ích trên mobile)
-        window.toggleAccountMenu = function () {
-            var menu = document.getElementById('accountMenu');
-            if (!menu)
-                return;
-            var open = menu.style.display === 'block';
-            menu.style.display = open ? 'none' : 'block';
-        };
+(function () {
+    window.toggleAccountMenu = function () {
+        var menu = document.getElementById('accountMenu');
+        if (!menu) return;
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
 
-        // Click ra ngoài để đóng (mobile/desktop đều có lợi)
-        document.addEventListener('click', function (e) {
-            var wrapper = document.querySelector('.account-dropdown');
-            var menu = document.getElementById('accountMenu');
-            if (!wrapper || !menu)
-                return;
-            if (!wrapper.contains(e.target)) {
-                menu.style.display = 'none';
-            }
-        });
-    })();
+    document.addEventListener('click', function (e) {
+        var wrapper = document.querySelector('.account-dropdown');
+        var menu = document.getElementById('accountMenu');
+        if (!wrapper || !menu) return;
+        if (!wrapper.contains(e.target)) menu.style.display = 'none';
+    });
+})();
 </script>
-<style>
-    /* Giữ mở khi rê vào menu hoặc đang focus (tab) */
-    .account-dropdown:hover .account-menu,
-    .account-dropdown:focus-within .account-menu,
-    .account-menu:hover{
-        display:block;
-    }
-
-    /* Xóa gap giữa nút và menu (đặt thấp hơn 1-2px) */
-    .account-menu{
-        top: calc(100% + 2px) !important; /* trước là 120% nên có khe hở */
-    }
-
-    /* Mũi nhọn to hơn để “bắc cầu” hover */
-    .account-menu::before{
-        top:-9px;
-        right:22px;
-        width:18px;
-        height:18px;
-    }
-</style>
-
