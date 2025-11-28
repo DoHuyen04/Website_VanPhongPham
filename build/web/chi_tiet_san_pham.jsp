@@ -4,6 +4,10 @@
     Author     : asus
 --%>
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@page import="java.util.List"%>
+<%@page import="model.DanhGia"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <html>
     <head>
         <title>Chi tiết sản phẩm</title>
@@ -17,6 +21,7 @@
                 align-items: center;
                 min-height: 100vh;
                 margin: 0;
+                flex-direction: column; /* để phía dưới còn hiện phần đánh giá */
             }
 
             .product-form {
@@ -30,6 +35,7 @@
                 align-items: center;
                 gap: 50px;
                 animation: fadeIn 0.6s ease-in-out;
+                margin-bottom: 24px;
             }
 
             .product-form img {
@@ -65,7 +71,6 @@
                 color: #333;
             }
 
-            /* Các nút hành động */
             .btn {
                 background: linear-gradient(135deg, #42a5f5, #1e88e5);
                 border: none;
@@ -103,26 +108,82 @@
             }
 
             .btn-back:hover {
-                background: linear-gradient(135deg, #ff9800, #ff5722); /* chuyển sang cam khi hover */
+                background: linear-gradient(135deg, #ff9800, #ff5722);
                 transform: translateY(-2px);
                 box-shadow: 0 4px 10px rgba(255, 87, 34, 0.4);
             }
 
-            /* Animation mượt */
             @keyframes fadeIn {
                 from {
                     opacity: 0;
                     transform: translateY(20px);
                 }
-                to {
+                to   {
                     opacity: 1;
                     transform: translateY(0);
                 }
             }
+
+            /* ========== HIỂN THỊ ĐÁNH GIÁ ========== */
+            .review-wrapper{
+                width: 100%;
+                max-width: 900px;
+                background:#ffffff;
+                border-radius:16px;
+                padding:20px 24px 24px;
+                box-shadow:0 8px 20px rgba(0,0,0,0.06);
+            }
+
+            .review-wrapper h3{
+                margin-top:0;
+                margin-bottom:12px;
+                font-size:20px;
+                color:#1a237e;
+            }
+
+            .review-list{
+                margin-top:10px;
+                display:flex;
+                flex-direction:column;
+                gap:10px;
+            }
+
+            .review-item{
+                border:1px solid #eee;
+                border-radius:10px;
+                padding:8px 10px;
+                background:#fafafa;
+            }
+
+            .review-header{
+                display:flex;
+                justify-content:space-between;
+                font-size:13px;
+                margin-bottom:4px;
+            }
+
+            .review-header span{
+                letter-spacing:1px;
+            }
+
+            .review-body p{
+                margin:0 0 4px;
+                font-size:14px;
+            }
+
+            .review-body small{
+                font-size:12px;
+                color:#666;
+            }
+            .review-stars{
+                color:#5563DE;
+                font-size: 14px;
+            }
+
         </style>
     </head>
     <body>
-       
+
         <form action="GioHangServlet" method="post" class="product-form">
             <input type="hidden" name="id" value="${sanpham.id_sanpham}">
             <input type="hidden" name="ten" value="${sanpham.ten}">
@@ -148,6 +209,36 @@
                 <button type="button" class="btn-back" onclick="history.back()">⬅ Quay lại</button>
             </div>
         </form>
- 
+
+        <!-- CHỈ HIỂN THỊ CÁC ĐÁNH GIÁ ĐÃ CÓ -->
+        <div class="review-wrapper">
+            <h3>Đánh giá của khách hàng</h3>
+
+            <c:if test="${not empty dsDanhGia}">
+                <div class="review-list">
+                    <c:forEach var="dg" items="${dsDanhGia}">
+                        <div class="review-item">
+                            <div class="review-header">
+                                <strong>Người dùng #${dg.idNguoiDung}</strong>
+                                <span class="review-stars">
+                                    <c:forEach begin="1" end="${dg.sao}" var="i">★</c:forEach>
+                                    <c:forEach begin="1" end="${5 - dg.sao}" var="i">☆</c:forEach>
+                                    </span>
+
+                                </div>
+                                <div class="review-body">
+                                    <p>${dg.binhLuan}</p>
+                                <small>${dg.ngay}</small>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:if>
+
+            <c:if test="${empty dsDanhGia}">
+                <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+            </c:if>
+        </div>
+
     </body>
 </html>

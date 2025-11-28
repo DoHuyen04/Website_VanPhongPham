@@ -3,14 +3,15 @@ package dao;
 import model.DanhGia;
 import java.sql.*;
 import java.util.*;
+import java.util.Set;
+import java.util.HashSet;
 
 public class DanhGiaDAO {
 
     // Thêm đánh giá mới
     public boolean themDanhGia(DanhGia dg) {
         String sql = "INSERT INTO danhgia (id_nguoidung, id_sanpham, sao, binhluan) VALUES (?,?,?,?)";
-        try (Connection cn = DBUtil.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, dg.getIdNguoiDung());
             ps.setInt(2, dg.getIdSanPham());
@@ -24,16 +25,15 @@ public class DanhGiaDAO {
         return false;
     }
 
-    // Lấy danh sách đánh giá theo sản phẩm
     public List<DanhGia> layDanhGiaTheoSanPham(int idSanPham) {
-        List<DanhGia> ds = new ArrayList<>();
-        String sql = "SELECT id_danhgia, id_nguoidung, id_sanpham, sao, binhluan, ngay " +
-                     "FROM danhgia WHERE id_sanpham=? ORDER BY ngay DESC";
+    List<DanhGia> ds = new ArrayList<>();
+    String sql = "SELECT * FROM danhgia WHERE id_sanpham=? ORDER BY ngay DESC";
 
-        try (Connection cn = DBUtil.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+
+        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, idSanPham);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     DanhGia dg = new DanhGia();
@@ -43,13 +43,34 @@ public class DanhGiaDAO {
                     dg.setSao(rs.getInt("sao"));
                     dg.setBinhLuan(rs.getString("binhluan"));
                     dg.setNgay(rs.getTimestamp("ngay"));
+
                     ds.add(dg);
                 }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return ds;
     }
+
+    // Lấy danh sách id_sanpham mà 1 người dùng đã đánh giá
+    public Set<Integer> laySanPhamDaDanhGiaTheoNguoiDung(int idNguoiDung) {
+        Set<Integer> result = new HashSet<>();
+        String sql = "SELECT DISTINCT id_sanpham FROM danhgia WHERE id_nguoidung=?";
+
+        try (Connection cn = DBUtil.getConnection(); PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setInt(1, idNguoiDung);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(rs.getInt("id_sanpham"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 }

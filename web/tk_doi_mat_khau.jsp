@@ -236,11 +236,20 @@
         animation:toastIn .18s ease, toastOut .2s ease 2.8s forwards;
     }
     @keyframes toastIn{
-        from{opacity:0;transform:translate(-50%,-8px);}
-        to{opacity:1;transform:translate(-50%,0);}
+        from{
+            opacity:0;
+            transform:translate(-50%,-8px);
+        }
+        to{
+            opacity:1;
+            transform:translate(-50%,0);
+        }
     }
     @keyframes toastOut{
-        to{opacity:0;transform:translate(-50%,-8px);}
+        to{
+            opacity:0;
+            transform:translate(-50%,-8px);
+        }
     }
 
     @media (max-width:768px){
@@ -288,6 +297,19 @@
         <form method="post"
               action="${pageContext.request.contextPath}/nguoidung?hanhDong=doimatkhau&tab=password"
               id="pwForm" autocomplete="off">
+            <div class="pw-row">
+                <div class="pw-label">Mật khẩu hiện tại</div>
+                <div class="pw-field">
+                    <input type="password"
+                           id="oldPw"
+                           name="oldPw"
+                           class="pw-input"
+                           placeholder="Nhập mật khẩu hiện tại"
+                           autocomplete="current-password"
+                           required>
+                     <span class="pw-eye" data-target="oldPw">👁️</span>
+                </div>
+            </div>
 
             <div class="pw-row">
                 <div class="pw-label">Mật khẩu mới</div>
@@ -313,7 +335,6 @@
             </div>
         </form>
     </div>
-</div>
 </div>
 
 <script>

@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Part;
+
 @MultipartConfig(maxFileSize = 1024 * 1024) // 1MB
 @WebServlet("/nguoidung")
 public class NguoiDungServlet extends HttpServlet {
@@ -98,9 +99,10 @@ public class NguoiDungServlet extends HttpServlet {
             default ->
                 req.setAttribute("active", "profile");
         }
-        
+
         req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
     }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -221,7 +223,7 @@ public class NguoiDungServlet extends HttpServlet {
 
             if (rs.next()) {
                 // Tạo session
-               HttpSession session = request.getSession(true);
+                HttpSession session = request.getSession(true);
                 session.setMaxInactiveInterval(60 * 60);
 
                 NguoiDung nguoiDung = new NguoiDung();
@@ -252,73 +254,109 @@ public class NguoiDungServlet extends HttpServlet {
     }
 
     private void doiMatKhau(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
-        HttpSession ss = req.getSession(false);
-        Integer userId = (ss != null) ? (Integer) ss.getAttribute("userId") : null;
-        String tenDangNhap = (ss != null) ? (String) ss.getAttribute("tenDangNhap") : null;
+    HttpSession ss = req.getSession(false);
+    Integer userId = (ss != null) ? (Integer) ss.getAttribute("userId") : null;
+    String tenDangNhap = (ss != null) ? (String) ss.getAttribute("tenDangNhap") : null;
 
-        // Chưa đăng nhập → về trang đăng nhập
-        if (ss == null || (userId == null && (tenDangNhap == null || tenDangNhap.isBlank()))) {
-            resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
-            return;
-        }
-
-        String pw = req.getParameter("pw");
-        String pw2 = req.getParameter("pw2");
-
-        pw = (pw != null) ? pw.trim() : "";
-        pw2 = (pw2 != null) ? pw2.trim() : "";
-
-        // 1) Kiểm tra trống
-        if (pw.isEmpty() || pw2.isEmpty()) {
-            req.setAttribute("err", "Vui lòng nhập đầy đủ thông tin.");
-            req.setAttribute("active", "password");
-            req.setAttribute("tab", "password");
-            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
-            return;
-        }
-
-        // 2) Khớp nhau
-        if (!pw.equals(pw2)) {
-            req.setAttribute("err", "Mật khẩu xác nhận không khớp.");
-            req.setAttribute("active", "password");
-            req.setAttribute("tab", "password");
-            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
-            return;
-        }
-
-        if (!pw.matches("^(?=.*[0-9])(?=.*[^A-Za-z0-9\\s]).{8,}$")) {
-            req.setAttribute("err", "Mật khẩu chưa đạt yêu cầu (≥8 ký tự, có số & ký tự đặc biệt).");
-            req.setAttribute("active", "password");
-            req.setAttribute("tab", "password");
-            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
-            return;
-        }
-
-        // 4) Hash & cập nhật DB
-        String hashed = hashPassword(pw);
-
-        boolean ok;
-        NguoiDungDAO dao = new NguoiDungDAO();
-        if (userId != null) {
-            ok = dao.updatePassword(userId.intValue(), hashed);
-        } else {
-            ok = dao.updatePasswordByUsername(tenDangNhap, hashed);
-        }
-
-        if (ok) {
-            req.getSession().setAttribute("pw_ok", "Đổi mật khẩu thành công.");
-            resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&tab=password");
-            return;
-        } else {
-            req.setAttribute("err", "Đổi mật khẩu thất bại. Vui lòng thử lại.");
-            req.setAttribute("active", "password");
-            req.setAttribute("tab", "password");
-            req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
-        }
+    // Chưa đăng nhập → về trang đăng nhập
+    if (ss == null || (userId == null && (tenDangNhap == null || tenDangNhap.isBlank()))) {
+        resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
+        return;
     }
 
+    String pw = req.getParameter("pw");
+    String pw2 = req.getParameter("pw2");
+    String oldPw = req.getParameter("oldPw");
+
+    pw = (pw != null) ? pw.trim() : "";
+    pw2 = (pw2 != null) ? pw2.trim() : "";
+    oldPw = (oldPw != null) ? oldPw.trim() : "";
+
+    // 0) Kiểm tra mật khẩu cũ có nhập không
+    if (oldPw.isEmpty()) {
+        req.setAttribute("err", "Vui lòng nhập mật khẩu cũ.");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+        return;
+    }
+
+    // 1) Kiểm tra trống
+    if (pw.isEmpty() || pw2.isEmpty()) {
+        req.setAttribute("err", "Vui lòng nhập đầy đủ thông tin.");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+        return;
+    }
+
+    // 2) Khớp nhau
+    if (!pw.equals(pw2)) {
+        req.setAttribute("err", "Mật khẩu xác nhận không khớp.");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+        return;
+    }
+
+    if (!pw.matches("^(?=.*[0-9])(?=.*[^A-Za-z0-9\\s]).{8,}$")) {
+        req.setAttribute("err", "Mật khẩu chưa đạt yêu cầu (≥8 ký tự, có số & ký tự đặc biệt).");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+        return;
+    }
+
+    NguoiDungDAO daoCheck = new NguoiDungDAO();
+    NguoiDung userDb = null;
+
+    if (userId != null) {
+        userDb = daoCheck.layTheoIdDayDu(userId.intValue());
+    } else if (tenDangNhap != null) {
+        userDb = daoCheck.layTheoTenDangNhap(tenDangNhap);
+    }
+
+    if (userDb == null) {
+        req.setAttribute("err", "Không tìm thấy người dùng. Vui lòng đăng nhập lại.");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+        return;
+    }
+
+    String hashedOld = hashPassword(oldPw);
+    if (!hashedOld.equals(userDb.getMatKhau())) {
+        req.setAttribute("err", "Mật khẩu cũ không chính xác.");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+        return;
+    }
+
+    // 4) Hash & cập nhật DB
+    String hashed = hashPassword(pw);
+
+    boolean ok;
+    NguoiDungDAO dao = new NguoiDungDAO();
+    if (userId != null) {
+        ok = dao.updatePassword(userId.intValue(), hashed);
+    } else {
+        ok = dao.updatePasswordByUsername(tenDangNhap, hashed);
+    }
+
+    if (ok) {
+        req.getSession().setAttribute("pw_ok", "Đổi mật khẩu thành công.");
+        resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso&tab=password");
+        return;
+    } else {
+        req.setAttribute("err", "Đổi mật khẩu thất bại. Vui lòng thử lại.");
+        req.setAttribute("active", "password");
+        req.setAttribute("tab", "password");
+        req.getRequestDispatcher("/tk_doi_mat_khau.jsp").forward(req, resp);
+    }
+}
     private void hienThiHoSo(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         HttpSession session = req.getSession(false);
