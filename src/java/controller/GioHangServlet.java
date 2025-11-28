@@ -221,7 +221,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
                 message = "⚠️ Cảnh báo: Số lượng vượt quá tồn kho (" + tonKho + ")";
             } else {
                 item.put("soluong", soLuongHienTai + 1);
-                message = "✅ Đã thêm sản phẩm \"" + sp.getTen() + "\" vào giỏ hàng!";
+                message = "Đã thêm" + sp.getTen() +" vào giỏ hàng thành công";
             }
             daCo = true;
             break;
@@ -234,7 +234,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             item.put("sanpham", sp);
             item.put("soluong", 1);
             gioHang.add(item);
-            message = "✅ Đã thêm sản phẩm \"" + sp.getTen() + "\" vào giỏ hàng!";
+            message = "Đã thêm" + sp.getTen() +" vào giỏ hàng thành công";
         } else {
             message = "⚠️ Cảnh báo: Sản phẩm \"" + sp.getTen() + "\" đã hết hàng!";
         }

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeUtility;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -101,7 +102,6 @@ public class XacNhanOTPServlet extends HttpServlet {
         }
 
         // ========= LUỒNG NGÂN HÀNG LIÊN KẾT (BANK) - CÓ OTP =========
-
         // Xem thử request này có mang mã OTP không
         String otpNhap = request.getParameter("otp");
 
@@ -159,12 +159,30 @@ public class XacNhanOTPServlet extends HttpServlet {
             session.setAttribute("otp", otp);
             session.setAttribute("otp_expire", otpExpire);
 
-            String subject = "Mã OTP xác nhận thanh toán";
-            String message = "<html><body>"
-                    + "<h3>Xin chào " + tenNguoiNhan + "</h3>"
-                    + "<p>Mã OTP của bạn là: <b>" + otp + "</b> (hết hạn 5 phút)</p>"
-                    + "<p>Không chia sẻ mã này với người khác.</p>"
-                    + "</body></html>";
+            String subject = MimeUtility.encodeText("Mã OTP xác nhận thanh toán", "UTF-8", "B");
+
+            String message
+                    = "<html>"
+                    + "<body style='font-family:Arial,sans-serif; line-height:1.6; background-color:#f7f8fa; padding:20px;'>"
+                    + "<div style='max-width:600px; margin:auto; background-color:#ffffff; border-radius:10px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);'>"
+                    + "<h2 style='color:#4A90E2; text-align:center;'>Xác nhận thanh toán đơn hàng</h2>"
+                    + "<p>Xin chào <b>" + tenNguoiNhan + "</b>,</p>"
+                    + "<p>Cảm ơn bạn đã mua sắm tại <b>WEB Văn Phòng Phẩm</b>!<br>"
+                    + "Dưới đây là mã xác nhận (OTP) để hoàn tất thanh toán đơn hàng của bạn:</p>"
+                    + "<div style='text-align:center; margin:25px 0;'>"
+                    + "<span style='font-size:26px; font-weight:bold; color:#ffffff; background:linear-gradient(135deg, #74ABE2, #5563DE); padding:12px 30px; border-radius:8px; letter-spacing:3px;'>"
+                    + otp
+                    + "</span>"
+                    + "</div>"
+                    + "<p>Mã OTP có hiệu lực trong <b>5 phút</b>. Vui lòng không chia sẻ mã này với bất kỳ ai để đảm bảo an toàn tài khoản của bạn.</p>"
+                    + "<p style='margin-top:25px;'>Trân trọng,<br>"
+                    + "<b>Đội ngũ hỗ trợ - WEB Văn Phòng Phẩm</b></p>"
+                    + "<hr style='margin-top:30px; border:none; border-top:1px solid #ddd;'>"
+                    + "<p style='font-size:12px; color:#777; text-align:center;'>Đây là email tự động, vui lòng không phản hồi lại email này.</p>"
+                    + "</div>"
+                    + "</body>"
+                    + "</html>";
+
             try {
                 EmailUtility.sendEmail(email, subject, message);
                 request.setAttribute("thongBao", "Mã OTP đã gửi đến email: " + email);
@@ -180,7 +198,6 @@ public class XacNhanOTPServlet extends HttpServlet {
         // -----------------------------------------------------------
         // BƯỚC 2: NGƯỜI DÙNG ĐÃ NHẬP OTP → KIỂM TRA & TẠO ĐƠN
         // -----------------------------------------------------------
-
         String otpSession = (String) session.getAttribute("otp");
         Long otpExpire = (Long) session.getAttribute("otp_expire");
         if (otpSession == null || otpExpire == null || System.currentTimeMillis() > otpExpire) {
@@ -225,13 +242,12 @@ public class XacNhanOTPServlet extends HttpServlet {
     }
 
     // ================== HÀM PHỤ TRỢ ==================
-
     private DonHang taoDonHang(NguoiDung nd,
-                               List<Map<String, Object>> gioHang,
-                               String[] chonSanPham,
-                               String diaChi,
-                               String sdt,
-                               String phuongThuc) {
+            List<Map<String, Object>> gioHang,
+            String[] chonSanPham,
+            String diaChi,
+            String sdt,
+            String phuongThuc) {
 
         DonHang dh = new DonHang();
         dh.setIdNguoiDung(nd.getId());
@@ -264,8 +280,8 @@ public class XacNhanOTPServlet extends HttpServlet {
     }
 
     private void xoaSanPhamTrongGioHang(HttpSession session,
-                                        List<Map<String, Object>> gioHang,
-                                        String[] chonSanPham) {
+            List<Map<String, Object>> gioHang,
+            String[] chonSanPham) {
         List<String> chonSPList = Arrays.asList(chonSanPham);
         gioHang.removeIf(item -> {
             SanPham sp = (SanPham) item.get("sanpham");
@@ -275,7 +291,7 @@ public class XacNhanOTPServlet extends HttpServlet {
     }
 
     private void guiEmailXacNhan(NguoiDung nd, DonHang dh,
-                                 List<Map<String, Object>> gioHang) throws UnsupportedEncodingException {
+            List<Map<String, Object>> gioHang) throws UnsupportedEncodingException {
         double phiVanChuyen = 15000;
         double tongThanhToan = dh.getTongTien() + phiVanChuyen;
 
@@ -305,8 +321,10 @@ public class XacNhanOTPServlet extends HttpServlet {
 
         try {
             EmailUtility.sendEmail(nd.getEmail(),
-                    "Xác nhận đơn hàng #" + dh.getIdDonHang(),
+                    "Đơn hàng đã đặt \n Mã đơn hàng : id" + dh.getIdDonHang(),
                     sb.toString());
+                       
+
         } catch (MessagingException e) {
             e.printStackTrace();
         }

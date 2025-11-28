@@ -27,7 +27,7 @@
 
             <nav class="side-nav">
                 <a class="tab-btn ${active=='profile' ? 'active' : ''}" href="thong_tin_ca_nhan.jsp">👤 Hồ sơ</a>
-                <a class="tab-btn" href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
+                 <a class="tab-btn" href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
                 <a class="tab-btn ${active=='tknh' ? 'active' : ''}" href="tk_ngan_hang.jsp">🏦 Ngân Hàng</a>
                 <a class="tab-btn ${active=='address' ? 'active' : ''}" href="tk_dia_chi.jsp">📮 Địa chỉ</a>
                 <a class="tab-btn ${active=='password' ? 'active' : ''}" href="tk_doi_mat_khau.jsp">🔒 Đổi mật khẩu</a>
@@ -221,7 +221,147 @@
 @media (max-width: 768px) {
     .account-content-page .account-shell { grid-template-columns:1fr; }
     .account-content-page .account-sidebar { position: relative; top:0; }
+} 
+/* ============================
+   MODAL THÊM ĐỊA CHỈ
+============================ */
+
+#modalAddr {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
 }
+
+/* Ẩn mặc định */
+#modalAddr.hidden {
+    display: none;
+}
+
+/* Khung trắng */
+#modalAddr .modal-body {
+    background: #fff;
+    width: 95%;
+    max-width: 520px;
+    padding: 28px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    animation: modalIn .25s ease;
+}
+
+@keyframes modalIn {
+    from { transform: scale(0.88); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* Tiêu đề */
+#modalAddr .modal-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 18px;
+}
+
+/* GRID 2 cột */
+#modalAddr .grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+/* GRID 3 cột */
+#modalAddr .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+/* Input + Select */
+#modalAddr input,
+#modalAddr select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #fafafa;
+    transition: .2s;
+}
+
+/* Hover – Focus */
+#modalAddr input:focus,
+#modalAddr select:focus {
+    border-color: #2563eb;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
+    outline: none;
+}
+
+/* Checkbox label */
+#modalAddr label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 16px;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Checkbox */
+#modalAddr input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+/* Hàng nút */
+#modalAddr .row-end {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Nút chung */
+#modalAddr .btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .2s;
+    border: none;
+}
+
+/* Nút trở lại */
+#modalAddr #btnClose {
+    background: #e5e7eb;
+    color: #111;
+}
+#modalAddr #btnClose:hover {
+    background: #d1d5db;
+}
+
+/* Nút hoàn thành */
+#modalAddr .btn-primary {
+    background: #2563eb;
+    color: #fff;
+}
+#modalAddr .btn-primary:hover {
+    background: #1d4ed8;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    #modalAddr .grid2,
+    #modalAddr .grid3 {
+        grid-template-columns: 1fr;
+    }
+}
+
 </style>
 
 <script>
@@ -257,6 +397,94 @@ document.getElementById('btnClose').onclick = () => modal.classList.add('hidden'
         formDel.submit();
     });
 })();
+(function () {
+    const CONTEXT = '/' + window.location.pathname.split('/')[1];
+    const DATA_URL = CONTEXT + '/data/hanhchinhvn.json';
+
+    const selProv = document.getElementById('selTinh');
+    const selDist = document.getElementById('selHuyen');
+    const selWard = document.getElementById('selXa');
+
+    if (!selProv || !selDist || !selWard) return;
+
+    let HC = null;
+
+    const reset = (sel, placeholder) => {
+        sel.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = placeholder;
+        sel.appendChild(opt);
+    };
+
+    const fillProvinces = () => {
+        reset(selProv, 'Tỉnh/Thành phố');
+        Object.entries(HC).forEach(([code, p]) => {
+            selProv.add(new Option(p.name, code));
+        });
+        selProv.disabled = false;
+    };
+
+    const fillDistricts = (provCode) => {
+        reset(selDist, 'Quận/Huyện');
+        reset(selWard, 'Phường/Xã');
+        selDist.disabled = true;
+        selWard.disabled = true;
+
+        if (!provCode || !HC[provCode]) return;
+
+        const p = HC[provCode];
+        const districts = p['quan-huyen'] || {};
+        Object.entries(districts).forEach(([code, d]) => {
+            selDist.add(new Option(d.name, code));
+        });
+
+        selDist.disabled = false;
+    };
+
+    const fillWards = (provCode, distCode) => {
+        reset(selWard, 'Phường/Xã');
+        selWard.disabled = true;
+
+        const dist = HC?.[provCode]?.['quan-huyen']?.[distCode];
+        if (!dist) return;
+
+        const wards = dist['xa-phuong'] || {};
+        Object.entries(wards).forEach(([code, w]) => {
+            selWard.add(new Option(w.name, code));
+        });
+
+        selWard.disabled = false;
+    };
+
+    selProv.addEventListener('change', () => {
+        fillDistricts(selProv.value);
+    });
+
+    selDist.addEventListener('change', () => {
+        fillWards(selProv.value, selDist.value);
+    });
+
+    fetch(DATA_URL)
+        .then(r => r.json())
+        .then(json => {
+            HC = json;
+            fillProvinces();
+        })
+        .catch(err => console.error('Lỗi tải hanhchinhvn.json:', err));
+})();
+</script>
+
+<script>
+// ==============================
+// GÁN TEXT TỈNH - HUYỆN - XÃ KHI SUBMIT FORM
+// ==============================
+document.getElementById('formAddr').addEventListener('submit', function () {
+    const getText = (sel) => sel.options[sel.selectedIndex]?.text?.trim() || '';
+    document.getElementById('hidTinh').value = getText(document.getElementById('selTinh'));
+    document.getElementById('hidHuyen').value = getText(document.getElementById('selHuyen'));
+    document.getElementById('hidXa').value = getText(document.getElementById('selXa'));
+});
 </script>
 
 <jsp:include page="footer.jsp" />
