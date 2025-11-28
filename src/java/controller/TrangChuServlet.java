@@ -24,33 +24,25 @@ public class TrangChuServlet extends HttpServlet {
         sanPhamDAO = new SanPhamDAO();
     }
 
+@Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    // Lấy danh sách sản phẩm
+    List<SanPham> spBanChay = sanPhamDAO.laySanPhamTheoLoai("banchay");
+    List<SanPham> spKhuyenMai = sanPhamDAO.laySanPhamTheoLoai("khuyenmai");
 
-        // ✅ Lấy danh sách sản phẩm bán chạy & khuyến mãi
-        List<SanPham> spBanChay = sanPhamDAO.laySanPhamTheoLoai("banchay");
-        List<SanPham> spKhuyenMai = sanPhamDAO.laySanPhamTheoLoai("khuyenmai");
+    request.setAttribute("spBanChay", spBanChay);
+    request.setAttribute("spKhuyenMai", spKhuyenMai);
 
-        request.setAttribute("spBanChay", spBanChay);
-        request.setAttribute("spKhuyenMai", spKhuyenMai);
+    // Lấy tên người dùng nếu có
+    HttpSession session = request.getSession();
+    String tenDangNhap = (String) session.getAttribute("tendangnhap");
+    request.setAttribute("tenDangNhap", tenDangNhap);
 
-        // ✅ Lấy thông tin người dùng (nếu đã đăng nhập)
-        HttpSession session = request.getSession();
-        String tenDangNhap = (String) session.getAttribute("tendangnhap");
-        request.setAttribute("tenDangNhap", tenDangNhap);
-
-        // ✅ Kiểm tra nếu có tham số afterLogin=true -> hiển thị trang_chu.jsp
-        String nextPage = "index.jsp";
-        String afterLogin = request.getParameter("afterLogin");
-
-        if ("true".equals(afterLogin)) {
-            nextPage = "trang_chu.jsp";
-        }
-
-        request.getRequestDispatcher(nextPage).forward(request, response);
-    }
+    // → luôn forward về trang_chu.jsp
+    request.getRequestDispatcher("trang_chu.jsp").forward(request, response);
+}
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

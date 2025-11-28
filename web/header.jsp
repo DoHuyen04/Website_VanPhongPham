@@ -7,7 +7,6 @@
     <c:param name="tab" value="all"/>
 </c:url>
 
-
 <%
     response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     response.setHeader("Pragma", "no-cache");
@@ -17,43 +16,68 @@
     String tenDangNhap = null;
     if (ses != null) {
         Object obj = ses.getAttribute("tenDangNhap");
-        if (obj != null && obj instanceof String) {
+        if (obj instanceof String) {
             tenDangNhap = (String) obj;
-        } else {
-            ses.removeAttribute("tenDangNhap");
         }
     }
 %>
-<header class="banner">
-    <div class="banner-left">
-        <img src="hinh_anh/logo.png" alt="Logo" class="logo-img">
+<style>
+/* RESET KHÔNG CHO HEADER BỊ CO */
+header, .header-main, .header-menu, .category-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Cho nội dung header căng ra full */
+.header-main > div,
+.header-menu > a,
+.category-bar > a {
+    max-width: none !important;
+}
+
+/* Tạo khung bên trong header để căn giữa đẹp, nhưng header vẫn full width */
+.header-inner {
+    width: 100%;
+    max-width: 1400px;
+    margin: auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+</style>
+
+<!-- ======================================
+         HEADER TẦNG 1 (PASTEL)
+====================================== -->
+<header class="header-main">
+    <div class="site-logo">
+        <div class="logo-text">Văn Phòng Phẩm</div>
+        <div class="logo-slogan">Học tập - Văn phòng - Tiện lợi mỗi ngày</div>
     </div>
-    <div class="banner-center">
-        <input type="text" placeholder="Tìm theo thương hiệu..." class="search-box">
+
+
+    <div class="header-search">
+        <input type="text" placeholder="Tìm kiếm sản phẩm..." class="search-box">
         <button class="search-btn">🔍</button>
     </div>
-    <div class="banner-right">
+
+    <div class="header-right">
         <div class="hotline">📞 0968.715.858</div>
 
-        <% if (tenDangNhap != null) {%>
+        <% if (tenDangNhap != null) { %>
         <div class="account-dropdown">
-            <button class="account-btn" onclick="toggleAccountMenu()">
-                <span class="account-icon">👤</span>
-                <%= tenDangNhap%>
-            </button>
-            <div class="account-menu" id="accountMenu">
-                <a href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">
-                    Tài khoản của tôi
-                </a>
-
+            <button class="account-btn">👤 <%= tenDangNhap %></button>
+            <div class="account-menu">
+                <a href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">Tài khoản của tôi</a>
                 <a href="${ordersUrl}">Đơn hàng</a>
-
-                <a href="${pageContext.request.contextPath}/DangXuatServlet">
-                    Đăng xuất
-                </a>
+                <a href="${pageContext.request.contextPath}/DangXuatServlet">Đăng xuất</a>
             </div>
-
         </div>
+
         <% } else { %>
         <a href="dang_nhap.jsp" class="account">👤 Tài khoản</a>
         <% } %>
@@ -62,114 +86,287 @@
             List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
             int soLuongGH = (gioHang == null) ? 0 : gioHang.size();
         %>
-        <a href="GioHangServlet">🛒 Giỏ hàng (<%= soLuongGH%>)</a>
+        <a href="GioHangServlet" class="cart-icon">🛒</a>
     </div>
 </header>
 
-<nav class="top-menu">
+<!-- ======================================
+         HEADER TẦNG 2 – MENU CHÍNH
+====================================== -->
+<nav class="header-menu">
     <a href="trang_chu.jsp">Trang chủ</a>
     <a href="SanPhamServlet">Sản phẩm</a>
     <a href="gioi_thieu.jsp">Giới thiệu</a>
     <a href="lien_he.jsp">Liên hệ</a>
 </nav>
+
+<!-- ======================================
+         HEADER TẦNG 3 – DANH MỤC
+====================================== -->
+<nav class="category-bar">
+    <a href="#"><span>🖊️</span> Bút viết</a>
+    <a href="#"><span📑</span> Văn phòng phẩm</a>
+    <a href="#"><span>✏️</span> Dụng cụ học tập</a>
+    <a href="#"><span>🎨</span> Mỹ thuật</a>
+    <a href="#"><span>📄</span> Giấy in</a>
+    <a href="#"><span>🎁</span> Quà tặng</a>
+</nav>
+
+<!-- ======================================
+                 CSS
+====================================== -->
 <style>
-    /* Khung dropdown tài khoản */
-    .account-dropdown{
-        position:relative;
-        display:inline-block;
-    }
-    .account-btn{
-        background:transparent;
-        border:0;
-        cursor:pointer;
-        padding:.25rem .5rem;
-    }
+/* FONT */
+body, * {
+    font-family: "Segoe UI", sans-serif;
+}
 
-    /* Hộp menu */
-    .account-menu{
-        position:absolute;
-        right:0;
-        top:120%;
-        min-width:210px;
-        background:#fff;
-        border:1px solid #e5e7eb;
-        border-radius:6px;
-        box-shadow:0 10px 25px rgba(0,0,0,.12);
-        display:none;
-        z-index:1000;
-    }
-    .account-menu a{
-        display:block;
-        padding:.7rem 1rem;
-        text-decoration:none;
-        color:#111827;
-        font-weight:600;
-    }
-    .account-menu a:hover{
-        background:#f3f4f6;
-    }
+/* ================= HEADER TẦNG 1 ================= */
+.header-main {
+    width: 100%;
+    background: #BEE3F8; /* Xanh pastel nhẹ */
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
 
-    /* Mũi nhọn nhỏ như hình */
-    .account-menu::before{
-        content:"";
-        position:absolute;
-        top:-8px;
-        right:20px;
-        width:14px;
-        height:14px;
-        background:#fff;
-        border-left:1px solid #e5e7eb;
-        border-top:1px solid #e5e7eb;
-        transform:rotate(45deg);
-    }
+.logo-img {
+    height: 60px;
+}
 
-    /* Hiện menu khi rê chuột */
-    .account-dropdown:hover .account-menu{
-        display:block;
-    }
-</style>
-<script>
-    (function () {
-        // Dùng cho nút onclick="toggleAccountMenu()" đã có trong HTML (hữu ích trên mobile)
-        window.toggleAccountMenu = function () {
-            var menu = document.getElementById('accountMenu');
-            if (!menu)
-                return;
-            var open = menu.style.display === 'block';
-            menu.style.display = open ? 'none' : 'block';
-        };
+.header-search {
+    display: flex;
+    flex: 1;
+    margin: 0 50px;
+}
 
-        // Click ra ngoài để đóng (mobile/desktop đều có lợi)
-        document.addEventListener('click', function (e) {
-            var wrapper = document.querySelector('.account-dropdown');
-            var menu = document.getElementById('accountMenu');
-            if (!wrapper || !menu)
-                return;
-            if (!wrapper.contains(e.target)) {
-                menu.style.display = 'none';
-            }
-        });
-    })();
-</script>
-<style>
-    /* Giữ mở khi rê vào menu hoặc đang focus (tab) */
-    .account-dropdown:hover .account-menu,
-    .account-dropdown:focus-within .account-menu,
-    .account-menu:hover{
-        display:block;
-    }
+.search-box {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 30px 0 0 30px;
+    border: 1px solid #A0AEC0;
+    background: #fff;
+}
 
-    /* Xóa gap giữa nút và menu (đặt thấp hơn 1-2px) */
-    .account-menu{
-        top: calc(100% + 2px) !important; /* trước là 120% nên có khe hở */
-    }
+.search-btn {
+    padding: 12px 25px;
+    background: #63B3ED;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    cursor: pointer;
+    font-size: 17px;
+}
 
-    /* Mũi nhọn to hơn để “bắc cầu” hover */
-    .account-menu::before{
-        top:-9px;
-        right:22px;
-        width:18px;
-        height:18px;
+/* Right Side */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+/* ================= HEADER TẦNG 2 – MENU ================= */
+.header-menu {
+    width: 100%;
+    background: white;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    position: sticky;
+    top: 75px; /* dưới header 1 */
+    z-index: 998;
+}
+
+.header-menu a {
+    text-decoration: none;
+    color: #2B6CB0;
+    font-weight: 600;
+    font-size: 17px;
+    padding-bottom: 4px;
+}
+
+.header-menu a:hover {
+    color: #2C5282;
+    border-bottom: 3px solid #63B3ED;
+}
+
+/* ================= HEADER TẦNG 3 – CATEGORY ================= */
+.category-bar {
+    width: 100%;
+    background: #EBF8FF;
+    padding: 12px 0;
+    display: flex;
+    justify-content: center;
+    gap: 35px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.category-bar a {
+    text-decoration: none;
+    color: #2A4365;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 8px;
+}
+
+.category-bar a:hover {
+    background: #bee3f8;
+}
+
+/* ================= ACCOUNT DROPDOWN ================= */
+.account-dropdown {
+    position: relative;
+}
+
+.account-btn {
+    background: transparent;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.account-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 120%;
+    background: white;
+    border-radius: 10px;
+    min-width: 200px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.account-dropdown:hover .account-menu {
+    display: block;
+}
+
+.account-menu a {
+    display: block;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #2D3748;
+}
+
+.account-menu a:hover {
+    background: #EDF2F7;
+}
+
+/* Giỏ hàng */
+.cart-icon {
+    font-size: 22px;
+    color: #2D3748;
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.cart-icon:hover {
+    background: #cfe9ff;
+}
+/* -------------------------------
+   LÀM TRANG TỰ FIT MỌI MÀN HÌNH
+-------------------------------- */
+
+/* Khung trang chung */
+.container {
+    width: 100%;
+    max-width: 1400px;      /* Không bao giờ giãn quá to */
+    margin: 0 auto;
+    padding: 0 20px;        /* Fit 2 bên */
+}
+
+/* Header căn giữa nội dung */
+.header-main,
+.header-menu,
+.category-bar {
+    padding-left: max(20px, 5vw);
+    padding-right: max(20px, 5vw);
+}
+
+/* Search box tự co */
+.header-search {
+    flex: 1;
+}
+
+/* Nếu màn nhỏ hơn laptop */
+@media (max-width: 1200px) {
+    .header-main {
+        padding: 10px 20px;
     }
+    .category-bar a {
+        font-size: 14px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    .header-search {
+        margin: 0 20px;
+    }
+    .header-right {
+        gap: 15px;
+    }
+    .header-menu {
+        gap: 25px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .header-main {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+        text-align: center;
+    }
+    .header-search {
+        width: 100%;
+        margin: 0;
+    }
+    .header-menu {
+        gap: 15px;
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+    .category-bar {
+        gap: 15px;
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+}
+/* ================================
+   SUPER STICKY HEADER 3 TẦNG
+================================ */
+
+/* Tầng 1 */
+.header-main {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+/* Tầng 2 */
+.header-menu {
+    position: sticky;
+    top: 72px; /* bằng đúng chiều cao tầng 1 */
+    z-index: 998;
+}
+
+/* Tầng 3 */
+.category-bar {
+    position: sticky;
+    top: 120px; /* = tầng 1 + tầng 2 */
+    z-index: 997;
+}
+
 </style>
 

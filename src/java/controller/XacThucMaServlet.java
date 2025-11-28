@@ -6,6 +6,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import model.NguoiDung;
+import utils.MailUtil;
+
 
 @WebServlet(name = "XacThucMaServlet", urlPatterns = {"/XacThucMaServlet"})
 public class XacThucMaServlet extends HttpServlet {

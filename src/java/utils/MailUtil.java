@@ -14,7 +14,7 @@ public class MailUtil {
     // ✅ Hàm gửi email chung
     public static boolean sendMail(String toEmail, String subject, String htmlContent) {
         final String fromEmail = "ntmhuong.dhti16a4hn@sv.uneti.edu.vn"; // Gmail của bạn
-        final String password = "zupotovjjhlohggs"; // App password (16 ký tự từ Google)
+        final String password = "qszuhbsoonfhppgk"; // App password (16 ký tự từ Google)
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
