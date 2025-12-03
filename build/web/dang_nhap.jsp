@@ -1,16 +1,15 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" %> 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Đăng nhập</title>
     <style>
-        /* Reset cơ bản */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-
         body {
-            background: linear-gradient(to right, #4e54c8, #8f94fb);
-            height: 100vh;
+            margin: 0;
+            font-family: "Arial", sans-serif;
+            background: linear-gradient(120deg, #cce8ff, #9bd4ff, #7db8ff);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,78 +22,88 @@
         }
 
         .login-container {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px 35px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+            animation: fadeIn .35s ease;
         }
 
-        h2 {
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        h2.login-title {
             text-align: center;
-            color: #4e54c8;
-            margin-bottom: 25px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 35px;
         }
 
-        label {
+        label.form-label {
+            font-weight: bold;
+            color: #003366;
+            font-size: 15px;
             display: block;
             margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
+        }
+
+        label.form-label span {
+            color: #ffcc00;
         }
 
         input, select {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            transition: border 0.3s;
-        }
-
-        input:focus, select:focus {
-            border-color: #4e54c8;
-            outline: none;
-        }
-
-        .password-wrapper {
-            position: relative;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #4e54c8;
-            color: #fff;
+            padding: 10px 0;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
+            border-bottom: 1.5px solid #cccccc;
+            background: transparent;
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 25px;
         }
 
-        button:hover {
-            background: #3b3f9a;
-        }
+        input::placeholder { color: #999999; }
 
-        .login-links {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .login-links a {
-            color: #4e54c8;
-            text-decoration: none;
-            margin: 0 10px;
+        .forgot {
+            margin-top: -8px;
+            margin-bottom: 25px;
             font-size: 14px;
+            color: #003366;
+        }
+
+        .forgot a { text-decoration: none; font-weight: bold; color: #003366; }
+        .forgot a span { color: #ffcc00; }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 25px;
+            background: #ffdd33;
+            font-size: 17px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: .2s;
+        }
+
+        .btn-login:hover { background: #ffcc00; }
+
+        .register-text {
+            text-align: center;
+            font-size: 14px;
+            color: #003366;
+        }
+
+        .register-text span {
+            color: #ffcc00;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .error, .error-msg {
@@ -120,12 +129,59 @@
             margin-bottom: 10px;
             text-align: center;
         }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+        }
+        /* CSS cho select Vai trò */
+select#role {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1.5px solid #cccccc;
+    background: transparent;
+    font-size: 15px;
+    outline: none;
+    margin-bottom: 25px;
+    appearance: none; /* loại bỏ mũi tên mặc định trên trình duyệt */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+select#role:focus {
+    border-color: #ffdd33; /* highlight khi focus */
+}
+
+select#role option {
+    color: #003366;
+    background-color: #fff;
+}
+
+/* Thêm mũi tên custom bằng CSS (tùy chọn) */
+select#role {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D'10'%20height%3D'5'%20viewBox%3D'0%200%2010%205'%20xmlns%3D'http://www.w3.org/2000/svg'%3E%3Cpath%20d%3D'M0%200l5%205%205-5z'%20fill%3D'%23003366'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 5px;
+}
+
     </style>
 </head>
+
 <body>
 <div class="login-page">
     <div class="login-container">
-        <h2>Đăng nhập</h2>
+        <h2 class="login-title">Đăng nhập</h2>
 
         <% 
             String notLoggedIn = request.getParameter("error");
@@ -151,26 +207,26 @@
         <form action="nguoidung" method="post">
             <input type="hidden" name="hanhDong" value="dangnhap">
 
-            <label for="tenDangNhap">Tên đăng nhập</label>
+            <label class="form-label" for="tenDangNhap">Tên đăng nhập</label>
             <input type="text" id="tenDangNhap" name="tenDangNhap" required
                    value="<%= request.getParameter("tenDangNhap") != null ? request.getParameter("tenDangNhap") : "" %>">
             <div class="error"><%= request.getAttribute("loiTenDangNhap") != null ? request.getAttribute("loiTenDangNhap") : "" %></div>
 
-            <label for="matKhau">Mật khẩu</label>
+            <label class="form-label" for="matKhau">Mật khẩu</label>
             <div class="password-wrapper">
                 <input type="password" id="matKhau" name="matKhau" required>
                 <span class="toggle-password" onclick="togglePassword()">👁</span>
             </div>
             <div class="error"><%= request.getAttribute("loiMatKhau") != null ? request.getAttribute("loiMatKhau") : "" %></div>
 
-            <label for="role">Vai trò</label>
+            <label class="form-label" for="role">Vai trò</label>
             <select name="role" id="role" required>
                 <option value="USER" <%= "USER".equals(request.getParameter("role")) ? "selected" : "" %>>USER</option>
-                <option value="ADMIN" <%= "ADMIN".equals(request.getParameter("role")) ? "selected" : "" %>>ADMIN</option>
+               
                 <option value="SHIPPER" <%= "SHIPPER".equals(request.getParameter("role")) ? "selected" : "" %>>SHIPPER</option>
             </select>
 
-            <button type="submit">Đăng nhập</button>
+            <button type="submit" class="btn-login">Đăng nhập</button>
         </form>
 
         <div class="login-links">

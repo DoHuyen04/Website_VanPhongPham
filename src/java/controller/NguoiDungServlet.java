@@ -148,53 +148,72 @@ public class NguoiDungServlet extends HttpServlet {
     }
 
     private void dangNhap(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
-        String tenDangNhap = req.getParameter("tenDangNhap");
-        String matKhau = hashPassword(req.getParameter("matKhau"));
+    String tenDangNhap = req.getParameter("tenDangNhap");
+    String matKhau = hashPassword(req.getParameter("matKhau")); // Hàm hash mật khẩu
+    String roleForm = req.getParameter("role"); // Role người dùng chọn trên form
 
-        try (Connection conn = DBUtil.getConnection()) {
-            String sql = "SELECT * FROM nguoidung WHERE tenDangNhap=? AND matKhau=?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, tenDangNhap);
-            ps.setString(2, matKhau);
-            ResultSet rs = ps.executeQuery();
+    if (roleForm == null || roleForm.isEmpty()) {
+        req.setAttribute("error", "Vui lòng chọn vai trò!");
+        req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+        return;
+    }
 
-            if (rs.next()) {
-                HttpSession session = req.getSession(true);
-                session.setMaxInactiveInterval(60 * 60);
+    try (Connection conn = DBUtil.getConnection()) {
+        String sql = "SELECT * FROM nguoidung WHERE tenDangNhap=? AND matKhau=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, tenDangNhap);
+        ps.setString(2, matKhau);
+        ResultSet rs = ps.executeQuery();
 
-                NguoiDung nd = new NguoiDung();
-                nd.setId(rs.getInt("id_nguoidung"));
-                nd.setTenDangNhap(rs.getString("tenDangNhap"));
-                nd.setHoTen(rs.getString("hoTen"));
-                nd.setEmail(rs.getString("email"));
-                nd.setSoDienThoai(rs.getString("soDienThoai"));
-                nd.setGioiTinh(rs.getString("gioiTinh"));
-                nd.setRole(rs.getString("role"));
+        if (rs.next()) {
+            String roleDB = rs.getString("role");
 
-                session.setAttribute("nguoiDung", nd);
-                session.setAttribute("role", nd.getRole());
-                session.setAttribute("userId", nd.getId());
-                session.setAttribute("tenDangNhap", nd.getTenDangNhap());
-
-                switch (nd.getRole()) {
-                    case "ADMIN" -> resp.sendRedirect(req.getContextPath() + "/admin_dashboard.jsp");
-                    case "SHIPPER" -> resp.sendRedirect(req.getContextPath() + "/shipper_dashboard.jsp");
-                    default -> resp.sendRedirect(req.getContextPath() + "/trang_chu.jsp");
-                }
-                return;
-            } else {
-                req.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
+            // Kiểm tra role chọn trên form có trùng role thực tế trong database không
+            if (!roleDB.equalsIgnoreCase(roleForm)) {
+                req.setAttribute("error", "Bạn đã chọn vai trò không đúng!");
                 req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+                return;
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            req.setAttribute("error", "Lỗi hệ thống, vui lòng thử lại sau!");
+            // Nếu role đúng, tạo session
+            HttpSession session = req.getSession(true);
+            session.setMaxInactiveInterval(60 * 60); // 1 giờ
+
+            NguoiDung nd = new NguoiDung();
+            nd.setId(rs.getInt("id_nguoidung"));
+            nd.setTenDangNhap(rs.getString("tenDangNhap"));
+            nd.setHoTen(rs.getString("hoTen"));
+            nd.setEmail(rs.getString("email"));
+            nd.setSoDienThoai(rs.getString("soDienThoai"));
+            nd.setGioiTinh(rs.getString("gioiTinh"));
+            nd.setRole(roleDB);
+
+            session.setAttribute("nguoiDung", nd);
+            session.setAttribute("role", nd.getRole());
+            session.setAttribute("userId", nd.getId());
+            session.setAttribute("tenDangNhap", nd.getTenDangNhap());
+
+            // Chuyển hướng theo role
+            switch (roleDB.toUpperCase()) {
+                
+                case "SHIPPER" -> resp.sendRedirect(req.getContextPath() + "/shipper_dashboard.jsp");
+                default -> resp.sendRedirect(req.getContextPath() + "/trang_chu.jsp");
+            }
+            return;
+        } else {
+            // Sai username hoặc password
+            req.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
             req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
         }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        req.setAttribute("error", "Lỗi hệ thống, vui lòng thử lại sau!");
+        req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
     }
+}
 
     private void doiMatKhau(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
