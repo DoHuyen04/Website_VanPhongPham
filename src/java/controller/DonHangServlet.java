@@ -16,6 +16,9 @@ import model.DonHang;
 import model.DonHangChiTiet;
 import model.NguoiDung;
 import model.SanPham;
+import dao.DanhGiaDAO;
+import java.util.Set;
+import java.util.Collections;
 
 @WebServlet(name = "DonHangServlet", urlPatterns = {"/DonHangServlet"})
 public class DonHangServlet extends HttpServlet {
@@ -42,16 +45,22 @@ public class DonHangServlet extends HttpServlet {
             List<DonHang> ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
             req.setAttribute("activeTab", filter == null ? "all" : filter); // để tô active tab
             req.setAttribute("dsDonHang", ds);
+            
+            // ========== NEW: lấy danh sách sản phẩm mà người dùng này đã đánh giá ==========
+            DanhGiaDAO dgDAO = new DanhGiaDAO();
+            Set<Integer> spDaDanhGia = dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
+            req.setAttribute("spDaDanhGia", spDaDanhGia);
+            
             // --------------- LẤY TÊN SẢN PHẨM ĐỂ HIỂN THỊ ---------------
-SanPhamDAO spDAO = new SanPhamDAO();
-List<SanPham> dsSP = spDAO.layTatCa();   // Lấy tất cả sản phẩm 1 lần
-Map<Integer, SanPham> mapFullSP = dsSP.stream()
-        .collect(Collectors.toMap(
-                SanPham::getId_sanpham,
-                sp -> sp
-        ));
+            SanPhamDAO spDAO = new SanPhamDAO();
+            List<SanPham> dsSP = spDAO.layTatCa();   // Lấy tất cả sản phẩm 1 lần
+            Map<Integer, SanPham> mapFullSP = dsSP.stream()
+                    .collect(Collectors.toMap(
+                            SanPham::getId_sanpham,
+                            sp -> sp
+                    ));
 
-req.setAttribute("mapSP", mapFullSP);
+            req.setAttribute("mapSP", mapFullSP);
 
             req.getRequestDispatcher("don_hang.jsp").forward(req, resp);
             return;
@@ -126,7 +135,7 @@ req.setAttribute("mapSP", mapFullSP);
             for (Map<String, Object> item : gioHang) {
                 SanPham sp = (SanPham) item.get("sanpham");
                 int sl = (int) item.get("soluong");
-      
+
                 DonHangChiTiet ct = new DonHangChiTiet();
                 ct.setId_sanpham(sp.getId_sanpham());
                 ct.setSoLuong(sl);

@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="java.util.List" %>
 <%@ page import="model.DiaChi" %>
+
 <%
     HttpSession ss = request.getSession(false);
     String username = ss != null ? (String) ss.getAttribute("tenDangNhap") : null;
@@ -14,27 +15,31 @@
     <c:set var="active" value="${not empty param.tab ? param.tab : (not empty requestScope.active ? requestScope.active : 'address')}" />
 
     <div class="account-shell">
+
         <!-- SIDEBAR -->
         <aside class="account-sidebar">
             <div class="side-head">
                 <img src="${pageContext.request.contextPath}${ava}?v=${pageContext.session.id}"
                      class="side-avatar" alt="">
                 <div>
-                    <div class="side-username"><c:out value="${nguoiDung.tenDangNhap}" default="Khách"/></div>
+                    <div class="side-username">
+                        <c:out value="${nguoiDung.tenDangNhap}" default="Khách"/>
+                    </div>
                     <div class="side-edit-hint">✏️ Sửa Hồ Sơ</div>
                 </div>
             </div>
 
             <nav class="side-nav">
                 <a class="tab-btn ${active=='profile' ? 'active' : ''}" href="thong_tin_ca_nhan.jsp">👤 Hồ sơ</a>
-                 <a class="tab-btn" href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
+                <a class="tab-btn" href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
                 <a class="tab-btn ${active=='tknh' ? 'active' : ''}" href="tk_ngan_hang.jsp">🏦 Ngân Hàng</a>
                 <a class="tab-btn ${active=='address' ? 'active' : ''}" href="tk_dia_chi.jsp">📮 Địa chỉ</a>
                 <a class="tab-btn ${active=='password' ? 'active' : ''}" href="tk_doi_mat_khau.jsp">🔒 Đổi mật khẩu</a>
             </nav>
         </aside>
 
-        <!-- NỘI DUNG CHÍNH -->
+
+        <!-- MAIN CONTENT -->
         <div class="account-content">
             <div class="row-between">
                 <h2>Địa chỉ của tôi</h2>
@@ -47,26 +52,30 @@
                     <div class="addr-item">
                         <div class="addr-left">
                             <div class="name">
-                                ${d.hoTen} <span class="muted">(${d.soDienThoai})</span>
+                                ${d.hoTen}
+                                <span class="muted">(${d.soDienThoai})</span>
+
                                 <c:if test="${d.macDinh}">
                                     <span class="badge">Mặc định</span>
                                 </c:if>
                             </div>
+
                             <div class="muted">
                                 ${d.diaChiDuong}, ${d.xaPhuong}, ${d.quanHuyen}, ${d.tinhThanh}
                             </div>
                         </div>
+
                         <div class="addr-actions">
-                            <!-- Đặt mặc định -->
                             <form method="post" action="${pageContext.request.contextPath}/DiaChiServlet">
                                 <input type="hidden" name="action" value="setDefault">
                                 <input type="hidden" name="id" value="${d.id}">
-                                <input type="hidden" name="backTo" value="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=address">
-                                <button class="btn" ${d.macDinh ? "disabled" : ""}>Thiết lập mặc định</button>
+                                <button class="btn" ${d.macDinh ? "disabled" : ""}>
+                                    Thiết lập mặc định
+                                </button>
                             </form>
 
-                            <!-- Xóa -->
-                            <button type="button" class="link danger btn-delete-addr"
+                            <button type="button"
+                                    class="link danger btn-delete-addr"
                                     data-id="${d.id}"
                                     data-label="${d.hoTen} - ${d.diaChiDuong}, ${d.xaPhuong}, ${d.quanHuyen}, ${d.tinhThanh}">
                                 Xoá
@@ -75,23 +84,27 @@
                     </div>
                 </c:forEach>
             </c:if>
+
             <c:if test="${empty dsDiaChi}">
                 <div class="no-address">Bạn chưa thêm địa chỉ nào.</div>
             </c:if>
+
         </div>
     </div>
+
 
     <!-- MODAL THÊM ĐỊA CHỈ -->
     <div id="modalAddr" class="modal hidden">
         <div class="modal-body">
             <div class="modal-title">Thêm địa chỉ mới</div>
+
             <form id="formAddr" method="post" action="${pageContext.request.contextPath}/DiaChiServlet">
                 <input type="hidden" name="action" value="add">
-                <input type="hidden" name="backTo" value="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=address">
                 <div class="grid2">
                     <input name="hoTen" placeholder="Họ và tên" required>
                     <input name="soDienThoai" placeholder="Số điện thoại" required>
                 </div>
+
                 <div class="grid3">
                     <select id="selTinh" required>
                         <option value="">Tỉnh/Thành phố</option>
@@ -102,12 +115,16 @@
                     <select id="selXa" required disabled>
                         <option value="">Phường/Xã</option>
                     </select>
+
                     <input type="hidden" name="tinhThanh" id="hidTinh">
                     <input type="hidden" name="quanHuyen" id="hidHuyen">
                     <input type="hidden" name="xaPhuong" id="hidXa">
                 </div>
+
                 <input name="diaChiDuong" placeholder="Địa chỉ cụ thể (số nhà, đường...)" required>
+
                 <label><input type="checkbox" name="macDinh"> Đặt làm địa chỉ mặc định</label>
+
                 <div class="row-end">
                     <button type="button" class="btn" id="btnClose">Trở lại</button>
                     <button class="btn btn-primary">Hoàn thành</button>
@@ -116,11 +133,13 @@
         </div>
     </div>
 
-    <!-- MODAL XÓA ĐỊA CHỈ -->
+
+    <!-- MODAL XÓA -->
     <div id="addrConfirmModal" class="modal hidden">
         <div class="modal-body">
             <h3>Xác nhận xoá địa chỉ</h3>
             <p id="addrConfirmText"></p>
+
             <div class="row-end">
                 <button type="button" class="btn" id="addrBtnCancel">Huỷ</button>
                 <button type="button" class="btn btn-primary" id="addrBtnConfirm">Xác nhận</button>
@@ -131,360 +150,260 @@
     <form id="addrDeleteForm" method="post" action="${pageContext.request.contextPath}/DiaChiServlet" style="display:none">
         <input type="hidden" name="action" value="delete">
         <input type="hidden" name="id" id="addrDeleteId">
-        <input type="hidden" name="backTo" value="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=address">
     </form>
 
 </div>
 
+
+<!-- ================== CSS ================== -->
 <style>
-/* Scoped CSS chỉ trong account-content-page */
-.account-content-page {
-    font-family: Arial, sans-serif;
-    color: #111827;
+.account-content-page { font-family: Arial; color:#111827; }
+.account-shell {
+    display:grid; grid-template-columns:260px 1fr; gap:24px;
+    max-width:1200px; margin:20px auto; padding:0 16px;
 }
-.account-content-page .account-shell {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 24px;
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 16px;
+.account-sidebar {
+    background:#fff; border:1px solid #eee; border-radius:10px;
+    padding:16px; position:sticky; top:16px;
 }
-.account-content-page .account-sidebar {
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    padding: 16px;
-    position: sticky;
-    top: 16px;
-}
-.account-content-page .side-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-.account-content-page .side-avatar { width: 36px; height: 36px; border-radius:50%; object-fit:cover; }
-.account-content-page .side-username { font-weight:700; }
-.account-content-page .side-edit-hint { font-size:12px; color:#888; }
-.account-content-page .side-nav { display:flex; flex-direction:column; gap:8px; }
-.account-content-page .tab-btn {
-    display:flex; align-items:center; gap:8px;
-    padding:10px 12px; border-radius:8px;
-    text-decoration:none; color:#333; background:#fff;
-    border:1px solid #ececec; transition:.15s;
-}
-.account-content-page .tab-btn:hover { background:#e9f2ff; color:#1677ff; border-color:#d6e6ff; }
-.account-content-page .tab-btn.active { background:#e9f2ff; color:#1677ff; font-weight:700; border-color:#1677ff; box-shadow:0 0 0 1px #1677ff inset; }
+.side-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.side-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+.side-nav{display:flex;flex-direction:column;gap:8px;}
+.tab-btn{padding:10px;border-radius:8px;border:1px solid #ddd;text-decoration:none;color:#333;}
+.tab-btn.active, .tab-btn:hover{background:#e9f2ff;color:#1677ff;border-color:#1677ff;}
 
-.account-content-page .account-content {
-    background: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+.account-content{
+    background:#fff;padding:20px;border-radius:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
 }
-.account-content-page .row-between {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:16px;
+.row-between{display:flex;justify-content:space-between;align-items:center;}
+
+.btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;}
+.btn-primary{background:#ef4444;color:#fff;border-color:#ef4444;}
+
+.addr-item{display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid #eee;}
+.muted{color:#6b7280;font-size:13px;}
+.badge{border:1px solid #ef4444;color:#ef4444;padding:2px 8px;border-radius:6px;font-size:12px;}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;}
+.modal.hidden{display:none;}
+.modal-body{background:#fff;padding:20px;border-radius:12px;width:min(720px,92vw);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+@media(max-width:768px){
+    .account-shell{grid-template-columns:1fr;}
 }
-.account-content-page .btn { padding:6px 12px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-.account-content-page .btn-primary { background:#ef4444; color:#fff; border-color:#ef4444; }
-.account-content-page .btn[disabled] { opacity:.6; cursor:not-allowed; }
-.account-content-page .link { text-decoration:none; cursor:pointer; }
-.account-content-page .link.danger { color:#ef4444; border:none; }
-
-.account-content-page .addr-item {
-    display:flex;
-    justify-content:space-between;
-    gap:16px;
-    padding:16px 0;
-    border-bottom:1px solid #eee;
-}
-.account-content-page .addr-left .name { font-weight:bold; font-size:15px; }
-.account-content-page .muted { color:#6b7280; font-size:13px; }
-.account-content-page .badge { border:1px solid #ef4444; color:#ef4444; padding:2px 8px; border-radius:6px; font-size:12px; margin-left:8px; }
-
-.account-content-page .row-end { display:flex; justify-content:flex-end; gap:12px; margin-top:8px; }
-
-/* MODAL */
-.account-content-page .modal {
-    position: fixed; inset:0; background: rgba(0,0,0,.35);
-    display: flex; align-items:center; justify-content:center;
-    z-index: 9999;
-}
-.account-content-page .modal.hidden { display:none; }
-.account-content-page .modal-body { background:#fff; width:min(720px,92vw); border-radius:12px; padding:20px; }
-.account-content-page .modal-body .modal-title { font-size:20px; font-weight:600; margin-bottom:12px; }
-
-@media (max-width: 768px) {
-    .account-content-page .account-shell { grid-template-columns:1fr; }
-    .account-content-page .account-sidebar { position: relative; top:0; }
-} 
-/* ============================
-   MODAL THÊM ĐỊA CHỈ
-============================ */
-
-#modalAddr {
+/* ===== MODAL OVERLAY ===== */
+.modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,.45);
     display: flex;
-    justify-content: center;
     align-items: center;
-    z-index: 999;
+    justify-content: center;
+    z-index: 2000;
+    transition: .2s ease;
 }
 
-/* Ẩn mặc định */
-#modalAddr.hidden {
-    display: none;
+.modal.hidden {
+    visibility: hidden;
+    opacity: 0;
 }
 
-/* Khung trắng */
-#modalAddr .modal-body {
+/* ===== MODAL BODY ===== */
+.modal-body {
     background: #fff;
     width: 95%;
     max-width: 520px;
-    padding: 28px 30px;
-    border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    animation: modalIn .25s ease;
+    padding: 24px 26px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    animation: zoomIn .25s ease;
 }
 
-@keyframes modalIn {
-    from { transform: scale(0.88); opacity: 0; }
+@keyframes zoomIn {
+    from { transform: scale(.85); opacity: .5; }
     to   { transform: scale(1); opacity: 1; }
 }
 
-/* Tiêu đề */
-#modalAddr .modal-title {
-    font-size: 22px;
+/* ===== TIÊU ĐỀ ===== */
+.modal-title {
+    font-size: 20px;
     font-weight: 700;
-    color: #111827;
-    margin-bottom: 18px;
-}
-
-/* GRID 2 cột */
-#modalAddr .grid2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
     margin-bottom: 14px;
+    color: #2c3e50;
 }
 
-/* GRID 3 cột */
-#modalAddr .grid3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 14px;
-}
-
-/* Input + Select */
-#modalAddr input,
-#modalAddr select {
+/* ===== INPUT & SELECT ===== */
+.modal-body input,
+.modal-body select {
     width: 100%;
     padding: 10px 12px;
-    font-size: 14px;
     border: 1px solid #d1d5db;
-    border-radius: 10px;
-    background: #fafafa;
-    transition: .2s;
-}
-
-/* Hover – Focus */
-#modalAddr input:focus,
-#modalAddr select:focus {
-    border-color: #2563eb;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.25);
+    border-radius: 8px;
     outline: none;
-}
-
-/* Checkbox label */
-#modalAddr label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 10px 0 16px;
+    transition: .15s ease;
     font-size: 14px;
-    color: #374151;
 }
 
-/* Checkbox */
-#modalAddr input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+.modal-body input:focus,
+.modal-body select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52,152,219,.25);
 }
 
-/* Hàng nút */
-#modalAddr .row-end {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
+/* ===== GRID ===== */
+.grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-/* Nút chung */
-#modalAddr .btn {
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 14px;
+.grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    padding: 8px 16px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: .2s;
-    border: none;
+    background: #e5e7eb;
+    border: 1px solid #d1d5db;
+    transition: .15s ease;
 }
 
-/* Nút trở lại */
-#modalAddr #btnClose {
-    background: #e5e7eb;
-    color: #111;
-}
-#modalAddr #btnClose:hover {
+.btn:hover {
     background: #d1d5db;
 }
 
-/* Nút hoàn thành */
-#modalAddr .btn-primary {
-    background: #2563eb;
+.btn-primary {
+    background: #3498db;
     color: #fff;
-}
-#modalAddr .btn-primary:hover {
-    background: #1d4ed8;
+    border: none;
 }
 
-/* Mobile */
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+/* ===== ROW END ===== */
+.row-end {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* ===== MOBILE ===== */
 @media (max-width: 600px) {
-    #modalAddr .grid2,
-    #modalAddr .grid3 {
+    .grid2,
+    .grid3 {
         grid-template-columns: 1fr;
     }
 }
 
 </style>
-
 <script>
-// Modal Thêm địa chỉ
-const modal = document.getElementById('modalAddr');
-document.getElementById('btnAdd').onclick = () => modal.classList.remove('hidden');
-document.getElementById('btnClose').onclick = () => modal.classList.add('hidden');
+const tinhSel = document.getElementById("selTinh");
+const huyenSel = document.getElementById("selHuyen");
+const xaSel = document.getElementById("selXa");
 
-// Modal Xóa địa chỉ
-(function(){
-    const modalDel = document.getElementById('addrConfirmModal');
-    const txt = document.getElementById('addrConfirmText');
-    const btnOk = document.getElementById('addrBtnConfirm');
-    const btnCan = document.getElementById('addrBtnCancel');
-    const formDel = document.getElementById('addrDeleteForm');
-    const hidId = document.getElementById('addrDeleteId');
+async function loadData() {
 
-    let pendingId = null;
-    document.addEventListener('click', function(e){
-        const btn = e.target.closest('.btn-delete-addr');
-        if(!btn) return;
-        e.preventDefault();
-        pendingId = btn.dataset.id;
-        txt.textContent = 'Bạn có chắc chắn muốn xoá địa chỉ: ' + btn.dataset.label + ' ?';
-        modalDel.classList.remove('hidden');
+    let data = await fetch("${pageContext.request.contextPath}/data/hanhchinhvn.json")
+        .then(res => res.json());
+
+    // Load Tỉnh/TP
+    data.forEach(t => {
+        let op = document.createElement("option");
+        op.value = t.name;
+        op.textContent = t.name;
+        tinhSel.appendChild(op);
     });
 
-    btnCan.addEventListener('click', function(){ pendingId=null; modalDel.classList.add('hidden'); });
-    btnOk.addEventListener('click', function(){
-        if(!pendingId) return;
-        hidId.value = pendingId;
-        modalDel.classList.add('hidden');
-        formDel.submit();
-    });
-})();
-(function () {
-    const CONTEXT = '/' + window.location.pathname.split('/')[1];
-    const DATA_URL = CONTEXT + '/data/hanhchinhvn.json';
+    // Chọn tỉnh
+    tinhSel.onchange = () => {
+        huyenSel.innerHTML = "<option value=''>Quận/Huyện</option>";
+        xaSel.innerHTML = "<option value=''>Phường/Xã</option>";
+        huyenSel.disabled = true;
+        xaSel.disabled = true;
 
-    const selProv = document.getElementById('selTinh');
-    const selDist = document.getElementById('selHuyen');
-    const selWard = document.getElementById('selXa');
+        let t = data.find(item => item.name === tinhSel.value);
+        if (!t) return;
 
-    if (!selProv || !selDist || !selWard) return;
+        huyenSel.disabled = false;
 
-    let HC = null;
-
-    const reset = (sel, placeholder) => {
-        sel.innerHTML = '';
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = placeholder;
-        sel.appendChild(opt);
-    };
-
-    const fillProvinces = () => {
-        reset(selProv, 'Tỉnh/Thành phố');
-        Object.entries(HC).forEach(([code, p]) => {
-            selProv.add(new Option(p.name, code));
-        });
-        selProv.disabled = false;
-    };
-
-    const fillDistricts = (provCode) => {
-        reset(selDist, 'Quận/Huyện');
-        reset(selWard, 'Phường/Xã');
-        selDist.disabled = true;
-        selWard.disabled = true;
-
-        if (!provCode || !HC[provCode]) return;
-
-        const p = HC[provCode];
-        const districts = p['quan-huyen'] || {};
-        Object.entries(districts).forEach(([code, d]) => {
-            selDist.add(new Option(d.name, code));
+        t.huyen.forEach(h => {
+            let op = document.createElement("option");
+            op.value = h.name;
+            op.textContent = h.name;
+            huyenSel.appendChild(op);
         });
 
-        selDist.disabled = false;
+        document.getElementById("hidTinh").value = tinhSel.value;
     };
 
-    const fillWards = (provCode, distCode) => {
-        reset(selWard, 'Phường/Xã');
-        selWard.disabled = true;
+    // Chọn huyện
+    huyenSel.onchange = () => {
+        xaSel.innerHTML = "<option value=''>Phường/Xã</option>";
+        let t = data.find(item => item.name === tinhSel.value);
+        let h = t.huyen.find(item => item.name === huyenSel.value);
 
-        const dist = HC?.[provCode]?.['quan-huyen']?.[distCode];
-        if (!dist) return;
+        if (!h) return;
+        xaSel.disabled = false;
 
-        const wards = dist['xa-phuong'] || {};
-        Object.entries(wards).forEach(([code, w]) => {
-            selWard.add(new Option(w.name, code));
+        h.xa.forEach(x => {
+            let op = document.createElement("option");
+            op.value = x.name;
+            op.textContent = x.name;
+            xaSel.appendChild(op);
         });
 
-        selWard.disabled = false;
+        document.getElementById("hidHuyen").value = huyenSel.value;
     };
 
-    selProv.addEventListener('change', () => {
-        fillDistricts(selProv.value);
-    });
+    // Chọn xã
+    xaSel.onchange = () => {
+        document.getElementById("hidXa").value = xaSel.value;
+    };
+}
 
-    selDist.addEventListener('change', () => {
-        fillWards(selProv.value, selDist.value);
-    });
+loadData();
 
-    fetch(DATA_URL)
-        .then(r => r.json())
-        .then(json => {
-            HC = json;
-            fillProvinces();
-        })
-        .catch(err => console.error('Lỗi tải hanhchinhvn.json:', err));
-})();
-</script>
 
-<script>
-// ==============================
-// GÁN TEXT TỈNH - HUYỆN - XÃ KHI SUBMIT FORM
-// ==============================
-document.getElementById('formAddr').addEventListener('submit', function () {
-    const getText = (sel) => sel.options[sel.selectedIndex]?.text?.trim() || '';
-    document.getElementById('hidTinh').value = getText(document.getElementById('selTinh'));
-    document.getElementById('hidHuyen').value = getText(document.getElementById('selHuyen'));
-    document.getElementById('hidXa').value = getText(document.getElementById('selXa'));
+// ====================== MODAL THÊM ĐỊA CHỈ ======================
+document.getElementById("btnAdd").onclick = () => {
+    document.getElementById("modalAddr").classList.remove("hidden");
+};
+document.getElementById("btnClose").onclick = () => {
+    document.getElementById("modalAddr").classList.add("hidden");
+};
+
+// ======================= MODAL XÓA ============================
+const modalDel = document.getElementById("addrConfirmModal");
+
+document.addEventListener("click", e => {
+    const btn = e.target.closest(".btn-delete-addr");
+    if (!btn) return;
+
+    modalDel.classList.remove("hidden");
+
+    document.getElementById("addrConfirmText").textContent = btn.dataset.label;
+    document.getElementById("addrDeleteId").value = btn.dataset.id;
 });
+
+document.getElementById("addrBtnCancel").onclick = () =>
+    modalDel.classList.add("hidden");
+
+document.getElementById("addrBtnConfirm").onclick = () =>
+    document.getElementById("addrDeleteForm").submit();
 </script>
 
 <jsp:include page="footer.jsp" />

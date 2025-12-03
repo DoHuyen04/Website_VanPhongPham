@@ -5,6 +5,7 @@
 package controller;
 
 import dao.SanPhamDAO;
+import dao.DanhGiaDAO;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,6 +15,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.SanPham;
+import java.util.List;
+import model.DanhGia;
 
 /**
  *
@@ -58,7 +61,7 @@ public class ChiTietSanPhamServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-   protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String idParam = request.getParameter("id");
 
@@ -70,8 +73,14 @@ public class ChiTietSanPhamServlet extends HttpServlet {
                 SanPhamDAO spDAO = new SanPhamDAO();
                 SanPham sanpham = spDAO.layTheoId(id);
 
+                // NEW: Lấy danh sách đánh giá cho sản phẩm này
+                DanhGiaDAO dgDAO = new DanhGiaDAO();
+                List<DanhGia> dsDanhGia = dgDAO.layDanhGiaTheoSanPham(id);
+
                 if (sanpham != null) {
                     request.setAttribute("sanpham", sanpham);
+                    request.setAttribute("dsDanhGia", dsDanhGia); // NEW
+
                     RequestDispatcher rd = request.getRequestDispatcher("chi_tiet_san_pham.jsp");
                     rd.forward(request, response);
                 } else {
@@ -84,7 +93,8 @@ public class ChiTietSanPhamServlet extends HttpServlet {
         } else {
             response.getWriter().println("Thiếu tham số id sản phẩm!");
         }
-   }
+    }
+
     /**
      * Handles the HTTP <code>POST</code> method.
      *

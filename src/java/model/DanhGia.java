@@ -3,14 +3,17 @@ package model;
 import java.util.Date;
 
 public class DanhGia {
+
     private int idDanhGia;
     private int idNguoiDung;
     private int idSanPham;
     private int sao;
     private String binhLuan;
     private Date ngay;
+    private String tenDangNhap;
 
-    public DanhGia() {}
+    public DanhGia() {
+    }
 
     // Getter và Setter
     public int getIdDanhGia() {
@@ -60,4 +63,5 @@ public class DanhGia {
     public void setNgay(Date ngay) {
         this.ngay = ngay;
     }
+
 }
