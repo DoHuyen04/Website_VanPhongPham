@@ -41,7 +41,7 @@
                 👤 <%= tenDangNhap %>
             </button>
             <div class="account-menu" id="accountMenu">
-                <a href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">Tài khoản của tôi</a>
+                <a href="thong_tin_ca_nhan.jsp">Tài khoản của tôi</a>
                 <a href="${ordersUrl}">Đơn hàng</a>
                 <a href="${pageContext.request.contextPath}/DangXuatServlet">Đăng xuất</a>
             </div>

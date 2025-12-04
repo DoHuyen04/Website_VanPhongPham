@@ -17,12 +17,15 @@
             <file>file:/E:/Website_VanPhongPham/web/don_hang.jsp</file>
             <file>file:/E:/Website_VanPhongPham/src/java/controller/DonHangServlet.java</file>
             <file>file:/E:/Website_VanPhongPham/src/java/controller/CapNhatThongTinServlet.java</file>
-            <file>file:/E:/Website_VanPhongPham/src/java/model/DonHang.java</file>
-            <file>file:/E:/Website_VanPhongPham/src/java/controller/TaiKhoanServlet.java</file>
-            <file>file:/E:/Website_VanPhongPham/web/san_pham.jsp</file>
-            <file>file:/E:/Website_VanPhongPham/src/java/model/DonHangChiTiet.java</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/model/DanhGia.java</file>
+            <file>file:/E:/Website_VanPhongPham/nbproject/build-impl.xml</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/model/NguoiDung.java</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/controller/KiemTraOTPServlet.java</file>
+            <file>file:/E:/Website_VanPhongPham/web/dang_ky.jsp</file>
+            <file>file:/E:/Website_VanPhongPham/web/dang_nhap.jsp</file>
+            <file>file:/E:/Website_VanPhongPham/src/java/model/SanPham.java</file>
+            <file>file:/E:/Website_VanPhongPham/web/chi_tiet_san_pham.jsp</file>
             <file>file:/E:/Website_VanPhongPham/src/java/dao/DonHangDAO.java</file>
-            <file>file:/E:/Website_VanPhongPham/src/java/dao/NguoiDungDAO.java</file>
         </group>
     </open-files>
 </project-private>

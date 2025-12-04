@@ -1,15 +1,96 @@
+
+</head>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
         <title>Đăng ký tài khoản</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(to right, #cce8ff, #90c8ff);
+
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;   /* căn từ trên xuống */
+
+                min-height: 100vh;         /* cho phép cuộn ngoài */
+                padding: 40px 0;           /* cách trên dưới */
+            }
+
+            /* KHUNG TRẮNG LỚN – KHÔNG CÒN THANH CUỘN TRONG */
+            .container {
+                width: 520px;              /* rộng hơn → form không dài */
+                min-height: 85vh;          /* khung cao → chứa được hết */
+                background: #fff;
+                padding: 40px;
+                border-radius: 22px;
+                box-shadow: 0 6px 22px rgba(0,0,0,0.18);
+
+                overflow: visible !important; /* bỏ cuộn trong */
+            }
+
+
+            /* TIÊU ĐỀ */
+            h2 {
+                text-align: center;
+                margin-top: 0;
+                color: #003366;
+            }
+
+            /* INPUT + SELECT */
+            input, select {
+                width: 100%;
+                padding: 12px;
+                margin: 6px 0 16px 0;
+                font-size: 15px;
+                border-radius: 10px;
+                border: 1px solid #d0d7e2;
+                outline: none;
+            }
+
+            input:focus, select:focus {
+                border-color: #4b8dff;
+                box-shadow: 0 0 6px rgba(75, 141, 255, 0.4);
+            }
+
+            /* NÚT */
+            .btn {
+                width: 100%;
+                background: #ffcc00;
+                color: #000;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 12px;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+            }
+
+            .btn:hover {
+                background: #e6b800;
+            }
+
+            /* LINK */
+            .bottom-text {
+                text-align: center;
+                margin-top: 10px;
+            }
+
+            a {
+                color: #005bbb;
+                font-weight: bold;
+            }
+
+        </style>
         <link rel="stylesheet" href="css/kieu.css">
     </head>
     <body>
         <div class="register-page">
             <div class="register-container">
-              <h2>Đăng ký tài khoản</h2>
+                <h2>Đăng ký tài khoản</h2>
                 <form action="nguoidung" method="post" id="registerForm">
                     <input type="hidden" name="hanhDong" value="dangky">
 
@@ -27,6 +108,13 @@
 
                     <label>Họ tên</label>
                     <input type="text" name="hoTen" id="hoTen">
+                    <label>Email</label>
+                    <input type="text" name="email" id="email">
+                    <div class="error" id="emailError"></div>
+
+                    <label>Số điện thoại</label>
+                    <input type="text" name="soDienThoai" id="soDienThoai">
+                    <div class="error" id="soDienThoaiError"></div>
 
                     <!-- 🔹 Giới tính -->
                     <label>Giới tính</label>
@@ -43,13 +131,6 @@
                     <input type="date" name="ngaySinh" id="ngaySinh">
                     <div class="error" id="ngaySinhError"></div>
 
-                    <label>Email</label>
-                    <input type="text" name="email" id="email">
-                    <div class="error" id="emailError"></div>
-
-                    <label>Số điện thoại</label>
-                    <input type="text" name="soDienThoai" id="soDienThoai">
-                    <div class="error" id="soDienThoaiError"></div>
 
                     <button type="submit">Đăng ký</button>
                 </form>
@@ -88,10 +169,21 @@
 
                 // Kiểm tra email
                 const email = document.getElementById('email').value.trim();
-                if (!email.endsWith('@gmail.com')) {
-                    document.getElementById('emailError').textContent = 'Email phải có đuôi @gmail.com';
+
+// Danh sách đuôi email hợp lệ
+                const validDomains = ['@gmail.com', '@sv.uneti.edu.vn', '.com'];
+
+// Kiểm tra email có kết thúc bằng 1 trong các đuôi hợp lệ
+                const isValidEmail = validDomains.some(domain => email.endsWith(domain));
+
+                if (!isValidEmail) {
+                    document.getElementById('emailError').textContent =
+                            'Email phải có đuôi hợp lệ: ' + validDomains.join(', ');
                     valid = false;
+                } else {
+                    document.getElementById('emailError').textContent = '';
                 }
+
 
                 // Kiểm tra số điện thoại
                 const phone = document.getElementById('soDienThoai').value.trim();
@@ -115,7 +207,8 @@
                 }
 
                 // Ngăn form gửi đi nếu có lỗi
-                if (!valid) e.preventDefault();
+                if (!valid)
+                    e.preventDefault();
             });
         </script>
     </body>
