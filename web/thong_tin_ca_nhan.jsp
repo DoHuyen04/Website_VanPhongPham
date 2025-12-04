@@ -245,18 +245,23 @@
             </div>
         </div>
 
-        <nav class="side-nav">
-            <a class="tab-btn ${active=='profile' ? 'active' : ''}"
-               href="thong_tin_ca_nhan.jsp">👤 Hồ sơ</a>
-            <a class="tab-btn"
-               href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
-            <a class="tab-btn ${active=='tknh' ? 'active' : ''}"
-               href="tk_ngan_hang.jsp">🏦 Ngân Hàng</a>
-            <a class="tab-btn ${active=='address' ? 'active' : ''}"
-               href="tk_dia_chi.jsp">📮 Địa chỉ</a>
-            <a class="tab-btn ${active=='password' ? 'active' : ''}"
-               href="tk_doi_mat_khau.jsp">🔒 Đổi mật khẩu</a>
-        </nav>
+               <nav class="side-nav">
+                    <a class="tab-btn ${active=='profile' ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=profile">👤 Hồ sơ</a>
+
+                    <a class="tab-btn"
+                       href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
+
+
+                    <a class="tab-btn ${active=='tknh' ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=tknh">🏦 Ngân Hàng</a>
+
+                    <a class="tab-btn ${active=='address' ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=address">📮 Địa chỉ</a>
+
+                    <a class="tab-btn ${active=='password' ? 'active' : ''}"
+                       href="${pageContext.request.contextPath}/nguoidung?hanhDong=hoso&tab=password">🔒 Đổi mật khẩu</a>
+                </nav>
     </aside>
 
     <div class="account-content">

@@ -181,10 +181,10 @@
                 <li class="nav-item">
                     <a class="nav-link <%= "hoankho".equals(request.getAttribute("activeTab")) ? "active" : ""%>" href="ShipperDonHang?trangthai=hoankho">Đơn hàng hoàn hàng</a>
                 </li>
-                <li class="nav-item">
+<!--                <li class="nav-item">
                     <a class="nav-link <%= "thongke".equals(activeTab) ? "active" : ""%>" 
                        href="ShipperDonHang?trangthai=thongke">Thống kê</a>
-                </li>
+                </li>-->
             </ul>
             <div class="tab-content">
 

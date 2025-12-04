@@ -91,6 +91,15 @@
         <div class="register-page">
             <div class="register-container">
                 <h2>Đăng ký tài khoản</h2>
+                <%
+                    String thongBao = (String) request.getAttribute("thongBao");
+                    if (thongBao != null) {
+                %>
+                <p style="color:red; text-align:center;"><%= thongBao%></p>
+                <%
+                    }
+                %>
+
                 <form action="nguoidung" method="post" id="registerForm">
                     <input type="hidden" name="hanhDong" value="dangky">
 

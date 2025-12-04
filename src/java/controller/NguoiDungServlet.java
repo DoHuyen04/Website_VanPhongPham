@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import model.NguoiDung;
+import dao.DiaChiDAO;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +32,8 @@ public class NguoiDungServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final NguoiDungDAO nguoiDungDAO = new NguoiDungDAO();
     private final DonHangDAO donHangDAO = new DonHangDAO();
+    private final DiaChiDAO diaChiDAO = new DiaChiDAO();
+
     private static final String REGEX_GMAIL = "^[a-z0-9._%+-]+@gmail\\.com$";
 
     private boolean isGmail(String email) {
@@ -40,7 +43,7 @@ public class NguoiDungServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
 
@@ -65,13 +68,21 @@ public class NguoiDungServlet extends HttpServlet {
 
         req.setAttribute("nguoiDung", nd);
         req.setAttribute("ngaySinhText", ngaySinhText);
-
+        if ("address".equals(tab)) {
+            int userId = nd.getId();
+            req.setAttribute("dsDiaChi", diaChiDAO.listByUser(userId));
+        }
         switch (tab) {
-            case "tknh" -> req.setAttribute("active", "tknh");
-            case "orders" -> req.setAttribute("active", "orders");
-            case "address" -> req.setAttribute("active", "address");
-            case "password" -> req.setAttribute("active", "password");
-            default -> req.setAttribute("active", "profile");
+            case "tknh" ->
+                req.setAttribute("active", "tknh");
+            case "orders" ->
+                req.setAttribute("active", "orders");
+            case "address" ->
+                req.setAttribute("active", "address");
+            case "password" ->
+                req.setAttribute("active", "password");
+            default ->
+                req.setAttribute("active", "profile");
         }
 
         req.getRequestDispatcher("/thong_tin_ca_nhan.jsp").forward(req, resp);
@@ -86,12 +97,18 @@ public class NguoiDungServlet extends HttpServlet {
 
         String hanhDong = Optional.ofNullable(req.getParameter("hanhDong")).orElse("");
         switch (hanhDong) {
-            case "capnhat_hoso" -> capNhatHoSo(req, resp);
-            case "dangky" -> dangKy(req, resp);
-            case "dangnhap" -> dangNhap(req, resp);
-            case "doimatkhau" -> doiMatKhau(req, resp);
-            case "upload_avatar" -> uploadAvatar(req, resp);
-            default -> resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso");
+            case "capnhat_hoso" ->
+                capNhatHoSo(req, resp);
+            case "dangky" ->
+                dangKy(req, resp);
+            case "dangnhap" ->
+                dangNhap(req, resp);
+            case "doimatkhau" ->
+                doiMatKhau(req, resp);
+            case "upload_avatar" ->
+                uploadAvatar(req, resp);
+            default ->
+                resp.sendRedirect(req.getContextPath() + "/nguoidung?hanhDong=hoso");
         }
     }
 
@@ -100,7 +117,9 @@ public class NguoiDungServlet extends HttpServlet {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(password.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            for (byte b : hash) sb.append(String.format("%02x", b));
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Lỗi mã hóa mật khẩu!", e);
@@ -148,72 +167,74 @@ public class NguoiDungServlet extends HttpServlet {
     }
 
     private void dangNhap(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
 
-    String tenDangNhap = req.getParameter("tenDangNhap");
-    String matKhau = hashPassword(req.getParameter("matKhau")); // Hàm hash mật khẩu
-    String roleForm = req.getParameter("role"); // Role người dùng chọn trên form
+        String tenDangNhap = req.getParameter("tenDangNhap");
+        String matKhau = hashPassword(req.getParameter("matKhau")); // Hàm hash mật khẩu
+        String roleForm = req.getParameter("role"); // Role người dùng chọn trên form
 
-    if (roleForm == null || roleForm.isEmpty()) {
-        req.setAttribute("error", "Vui lòng chọn vai trò!");
-        req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
-        return;
-    }
-
-    try (Connection conn = DBUtil.getConnection()) {
-        String sql = "SELECT * FROM nguoidung WHERE tenDangNhap=? AND matKhau=?";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, tenDangNhap);
-        ps.setString(2, matKhau);
-        ResultSet rs = ps.executeQuery();
-
-        if (rs.next()) {
-            String roleDB = rs.getString("role");
-
-            // Kiểm tra role chọn trên form có trùng role thực tế trong database không
-            if (!roleDB.equalsIgnoreCase(roleForm)) {
-                req.setAttribute("error", "Bạn đã chọn vai trò không đúng!");
-                req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
-                return;
-            }
-
-            // Nếu role đúng, tạo session
-            HttpSession session = req.getSession(true);
-            session.setMaxInactiveInterval(60 * 60); // 1 giờ
-
-            NguoiDung nd = new NguoiDung();
-            nd.setId(rs.getInt("id_nguoidung"));
-            nd.setTenDangNhap(rs.getString("tenDangNhap"));
-            nd.setHoTen(rs.getString("hoTen"));
-            nd.setEmail(rs.getString("email"));
-            nd.setSoDienThoai(rs.getString("soDienThoai"));
-            nd.setGioiTinh(rs.getString("gioiTinh"));
-            nd.setRole(roleDB);
-
-            session.setAttribute("nguoiDung", nd);
-            session.setAttribute("role", nd.getRole());
-            session.setAttribute("userId", nd.getId());
-            session.setAttribute("tenDangNhap", nd.getTenDangNhap());
-
-            // Chuyển hướng theo role
-            switch (roleDB.toUpperCase()) {
-                
-                case "SHIPPER" -> resp.sendRedirect(req.getContextPath() + "/shipper_dashboard.jsp");
-                default -> resp.sendRedirect(req.getContextPath() + "/trang_chu.jsp");
-            }
-            return;
-        } else {
-            // Sai username hoặc password
-            req.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
+        if (roleForm == null || roleForm.isEmpty()) {
+            req.setAttribute("error", "Vui lòng chọn vai trò!");
             req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+            return;
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        req.setAttribute("error", "Lỗi hệ thống, vui lòng thử lại sau!");
-        req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+        try (Connection conn = DBUtil.getConnection()) {
+            String sql = "SELECT * FROM nguoidung WHERE tenDangNhap=? AND matKhau=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, tenDangNhap);
+            ps.setString(2, matKhau);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                String roleDB = rs.getString("role");
+
+                // Kiểm tra role chọn trên form có trùng role thực tế trong database không
+                if (!roleDB.equalsIgnoreCase(roleForm)) {
+                    req.setAttribute("error", "Bạn đã chọn vai trò không đúng!");
+                    req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+                    return;
+                }
+
+                // Nếu role đúng, tạo session
+                HttpSession session = req.getSession(true);
+                session.setMaxInactiveInterval(60 * 60); // 1 giờ
+
+                NguoiDung nd = new NguoiDung();
+                nd.setId(rs.getInt("id_nguoidung"));
+                nd.setTenDangNhap(rs.getString("tenDangNhap"));
+                nd.setHoTen(rs.getString("hoTen"));
+                nd.setEmail(rs.getString("email"));
+                nd.setSoDienThoai(rs.getString("soDienThoai"));
+                nd.setGioiTinh(rs.getString("gioiTinh"));
+                nd.setRole(roleDB);
+
+                session.setAttribute("nguoiDung", nd);
+                session.setAttribute("role", nd.getRole());
+                session.setAttribute("userId", nd.getId());
+                session.setAttribute("tenDangNhap", nd.getTenDangNhap());
+
+                // Chuyển hướng theo role
+                switch (roleDB.toUpperCase()) {
+
+                    case "SHIPPER" ->
+                        resp.sendRedirect(req.getContextPath() + "/shipper_dashboard.jsp");
+                    default ->
+                        resp.sendRedirect(req.getContextPath() + "/trang_chu.jsp");
+                }
+                return;
+            } else {
+                // Sai username hoặc password
+                req.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
+                req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.setAttribute("error", "Lỗi hệ thống, vui lòng thử lại sau!");
+            req.getRequestDispatcher("dang_nhap.jsp").forward(req, resp);
+        }
     }
-}
 
     private void doiMatKhau(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -323,7 +344,9 @@ public class NguoiDungServlet extends HttpServlet {
         String fileName = "u" + userId + "-" + System.currentTimeMillis() + ext;
         String uploadRoot = getServletContext().getRealPath("/uploads/avatars");
         java.io.File dir = new java.io.File(uploadRoot);
-        if (!dir.exists()) dir.mkdirs();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
 
         java.io.File saved = new java.io.File(dir, fileName);
         part.write(saved.getAbsolutePath());
@@ -341,7 +364,9 @@ public class NguoiDungServlet extends HttpServlet {
     }
 
     private static LocalDate parseNgaySinhFlexible(String s) {
-        if (s == null || s.isBlank()) return null;
+        if (s == null || s.isBlank()) {
+            return null;
+        }
         String[] patterns = {"dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd"};
         for (String p : patterns) {
             try {

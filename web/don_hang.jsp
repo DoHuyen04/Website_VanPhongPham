@@ -22,167 +22,164 @@
     }
 %>
 
-<html>
-<head>
-    <title>Lịch sử đơn hàng</title>
-    <style>
-        body {
-            background: #f5f6fa;
-            font-family: Arial, sans-serif;
-            padding: 40px;
-        }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #5563DE;
-            margin-bottom: 25px;
-        }
-        .tabbar {
-            display:flex;
-            gap:20px;
-            border-bottom:1px solid #ddd;
-            margin-bottom: 20px;
-        }
-        .tabbar a {
-            padding:10px 0;
-            color:#555;
-            text-decoration:none;
-            font-weight:600;
-        }
-        .tabbar a.active {
-            color:#ee4d2d;
-            border-bottom:2px solid #ee4d2d;
-        }
-        .order {
-            border-bottom: 1px solid #ddd;
-            padding: 20px 0;
-        }
-        .order:last-child { border-bottom: none; }
-        .order h3 {
-            color: #333;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-            text-transform: uppercase;
-        }
-        .badge.dadat { background:#ee4d2d; }
-        .badge.dagiao { background:#2ecc71; }
-        .badge.danggiao { background:#f39c12; }
-        .badge.dahuy { background:#e74c3c; }
-        .badge.hoantien { background:#3498db; }
-        .badge.hoankho { background:#9b59b6; }
+<style>
+    body {
+        background: #f5f6fa;
+        font-family: Arial, sans-serif;
+        padding: 40px;
+    }
+    /* ĐỔI TÊN container -> order-container ĐỂ KHÔNG ĐỤNG FOOTER */
+    .order-container {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #5563DE;
+        margin-bottom: 25px;
+    }
+    .tabbar {
+        display:flex;
+        gap:20px;
+        border-bottom:1px solid #ddd;
+        margin-bottom: 20px;
+    }
+    .tabbar a {
+        padding:10px 0;
+        color:#555;
+        text-decoration:none;
+        font-weight:600;
+    }
+    .tabbar a.active {
+        color:#ee4d2d;
+        border-bottom:2px solid #ee4d2d;
+    }
+    .order {
+        border-bottom: 1px solid #ddd;
+        padding: 20px 0;
+    }
+    .order:last-child { border-bottom: none; }
+    .order h3 {
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        text-transform: uppercase;
+    }
+    .badge.dadat { background:#ee4d2d; }
+    .badge.dagiao { background:#2ecc71; }
+    .badge.danggiao { background:#f39c12; }
+    .badge.dahuy { background:#e74c3c; }
+    .badge.hoantien { background:#3498db; }
+    .badge.hoankho { background:#9b59b6; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background: #f0f2ff;
-            color: #333;
-        }
-        .summary-right {
-            text-align: right;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-        .price { color:#ee4d2d; font-size:18px; font-weight:700; }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background: #f0f2ff;
+        color: #333;
+    }
+    .summary-right {
+        text-align: right;
+        margin-top: 10px;
+        font-weight: 600;
+    }
+    .price { color:#ee4d2d; font-size:18px; font-weight:700; }
 
-        .action-row {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 12px;
-        }
-        .btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            border:1px solid #ddd;
-            background:#fff;
-            font-weight:600;
-            cursor:pointer;
-        }
-        .btn.primary { background:#ee4d2d; color:#fff; border-color:#ee4d2d; }
-        .btn.primary:hover { opacity:0.9; }
-        .btn.cancel { background:#3498db; color:#fff; border-color:#3498db; }
-        .btn.cancel:hover { background:#2c80c9; }
-        .btn.review { background:#2ecc71; color:#fff; border:none; }
-        .btn.reviewed { background:#95a5a6; color:#fff; border:none; cursor:default; }
-        .back-btn { text-align:center; margin-top:20px; }
-        .back-btn a { background:#5563DE; color:#fff; padding:10px 20px; border-radius:6px; text-decoration:none; }
-        .empty { text-align:center; margin-top:20px; }
+    .action-row {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 12px;
+    }
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border:1px solid #ddd;
+        background:#fff;
+        font-weight:600;
+        cursor:pointer;
+    }
+    .btn.primary { background:#ee4d2d; color:#fff; border-color:#ee4d2d; }
+    .btn.primary:hover { opacity:0.9; }
+    .btn.cancel { background:#3498db; color:#fff; border-color:#3498db; }
+    .btn.cancel:hover { background:#2c80c9; }
+    .btn.review { background:#2ecc71; color:#fff; border:none; }
+    .btn.reviewed { background:#95a5a6; color:#fff; border:none; cursor:default; }
+    .back-btn { text-align:center; margin-top:20px; }
+    .back-btn a { background:#5563DE; color:#fff; padding:10px 20px; border-radius:6px; text-decoration:none; }
+    .empty { text-align:center; margin-top:20px; }
 
-        /* Modal */
-        .modal-overlay, .review-modal-overlay {
-            display:none;
-            position: fixed;
-            top:0; left:0; right:0; bottom:0;
-            background: rgba(0,0,0,0.4);
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-        .modal-box, .review-modal-box {
-            background:#fff;
-            padding:20px 25px;
-            border-radius:10px;
-            max-width: 400px;
-            width: 100%;
-            text-align:center;
-            box-shadow:0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-buttons, .review-actions {
-            margin-top: 15px;
-            display:flex;
-            justify-content:space-around;
-        }
-        .btn-modal, .btn-review {
-            padding:8px 15px;
-            border:none;
-            border-radius:6px;
-            font-weight:600;
-            cursor:pointer;
-        }
-        .btn-modal.btn-cancel,
-        .btn-review.btn-review-cancel { background:#bdc3c7; color:#fff; }
-        .btn-modal.btn-ok,
-        .btn-review.btn-review-submit { background:#2ecc71; color:#fff; }
+    /* Modal */
+    .modal-overlay, .review-modal-overlay {
+        display:none;
+        position: fixed;
+        top:0; left:0; right:0; bottom:0;
+        background: rgba(0,0,0,0.4);
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    }
+    .modal-box, .review-modal-box {
+        background:#fff;
+        padding:20px 25px;
+        border-radius:10px;
+        max-width: 400px;
+        width: 100%;
+        text-align:center;
+        box-shadow:0 5px 15px rgba(0,0,0,0.3);
+    }
+    .modal-buttons, .review-actions {
+        margin-top: 15px;
+        display:flex;
+        justify-content:space-around;
+    }
+    .btn-modal, .btn-review {
+        padding:8px 15px;
+        border:none;
+        border-radius:6px;
+        font-weight:600;
+        cursor:pointer;
+    }
+    .btn-modal.btn-cancel,
+    .btn-review.btn-review-cancel { background:#bdc3c7; color:#fff; }
+    .btn-modal.btn-ok,
+    .btn-review.btn-review-submit { background:#2ecc71; color:#fff; }
 
-        .review-field { margin:10px 0; text-align:left; }
-        .review-field label { display:block; margin-bottom:5px; font-weight:600; }
-        .review-field select,
-        .review-field textarea,
-        .review-field input[type="file"] {
-            width:100%;
-            padding:6px 8px;
-            border-radius:5px;
-            border:1px solid #ccc;
-        }
-    </style>
-</head>
-<body>
+    .review-field { margin:10px 0; text-align:left; }
+    .review-field label { display:block; margin-bottom:5px; font-weight:600; }
+    .review-field select,
+    .review-field textarea,
+    .review-field input[type="file"] {
+        width:100%;
+        padding:6px 8px;
+        border-radius:5px;
+        border:1px solid #ccc;
+    }
+</style>
+
 <div class="order-page">
-    <div class="container">
+    <div class="order-container"><!-- ĐÃ ĐỔI TÊN Ở ĐÂY -->
         <h2>📜 Lịch sử đơn hàng</h2>
         <%
             String activeTab = (String) request.getAttribute("activeTab");
@@ -431,7 +428,6 @@
         document.getElementById("confirmModal").style.display = "none";
     }
 
-    // Khi bấm OK trong popup hoàn tiền / huỷ đơn
     document.getElementById("modalConfirmBtn").onclick = function () {
         if (!currentAction || !currentId) return;
 
@@ -448,12 +444,8 @@
         const targetSelect = document.getElementById("reviewProductSelect");
         if (!sourceSelect || !targetSelect) return;
 
-        // copy option từ select ẩn sang select trong modal
         targetSelect.innerHTML = sourceSelect.innerHTML;
-
-        // gán id đơn hàng cho input hidden
         document.getElementById("reviewOrderId").value = orderId;
-
         document.getElementById("reviewModal").style.display = "flex";
     }
 
@@ -463,5 +455,3 @@
 </script>
 
 <jsp:include page="footer.jsp" />
-</body>
-</html>
