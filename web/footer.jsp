@@ -82,13 +82,6 @@
                 margin: 4px 0;
                 font-size: 14px;
             }
-    <div class="member">
-      <h4>Đậu Thị Mai</h4>
-      <p>📅 26/12/2004</p>
-      <p>📞 0966 478 623 </p>
-      <p>✉️ dauthimai2014@gmail.com</p>
-    </div>
-
             /* Responsive cho màn hình nhỏ */
             @media (max-width: 768px) {
                 .footer-grid {

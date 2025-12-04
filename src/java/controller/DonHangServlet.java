@@ -5,6 +5,7 @@ import dao.SanPhamDAO;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -46,10 +47,17 @@ public class DonHangServlet extends HttpServlet {
             req.setAttribute("activeTab", filter == null ? "all" : filter); // để tô active tab
             req.setAttribute("dsDonHang", ds);
             
-            // ========== NEW: lấy danh sách sản phẩm mà người dùng này đã đánh giá ==========
-            DanhGiaDAO dgDAO = new DanhGiaDAO();
-            Set<Integer> spDaDanhGia = dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
-            req.setAttribute("spDaDanhGia", spDaDanhGia);
+//            // ========== NEW: lấy danh sách sản phẩm mà người dùng này đã đánh giá ==========
+//            DanhGiaDAO dgDAO = new DanhGiaDAO();
+//            Set<Integer> spDaDanhGia = dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
+//            req.setAttribute("spDaDanhGia", spDaDanhGia);
+            DanhGiaDAO dgDao = new DanhGiaDAO();
+Map<Integer, Integer> mapDonHangDanhGia =
+        dgDao.laySanPhamDaDanhGiaTheoDonHang(nd.getId());
+
+req.setAttribute("mapDonHangDanhGia", mapDonHangDanhGia);
+
+
             
             // --------------- LẤY TÊN SẢN PHẨM ĐỂ HIỂN THỊ ---------------
             SanPhamDAO spDAO = new SanPhamDAO();

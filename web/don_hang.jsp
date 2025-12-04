@@ -18,10 +18,12 @@
     if (mapSP == null) {
         mapSP = new HashMap<>();
     }
-    Set<Integer> spDaDanhGia = (Set<Integer>) request.getAttribute("spDaDanhGia");
-    if (spDaDanhGia == null) {
-        spDaDanhGia = new HashSet<>();
+    Map<Integer, Integer> mapDonHangDanhGia
+            = (Map<Integer, Integer>) request.getAttribute("mapDonHangDanhGia");
+    if (mapDonHangDanhGia == null) {
+        mapDonHangDanhGia = new HashMap<>();
     }
+    Set<Integer> donDaDanhGia = mapDonHangDanhGia.keySet();
 
     DonHang donMoi = (DonHang) session.getAttribute("donHangHienTai");
     double phiVanChuyen = 15000;
@@ -29,10 +31,11 @@
         lichSu = new ArrayList<>();
     }
     if (donMoi != null) {
-        lichSu.add(0, donMoi); // thêm đơn mới lên đầu
+        lichSu.add(0, donMoi);
         session.removeAttribute("donHangHienTai");
     }
 %>
+
 
 <html>
     <head>
@@ -374,17 +377,8 @@
                             chiTiet = Collections.emptyList();
                         }
 
-                        // Kiểm tra đơn này đã có sản phẩm nào người dùng đánh giá chưa
-                        boolean daDanhGiaDonNay = false;
-                        Integer idSpDaDanhGia = null;   // NEW: lưu id sản phẩm đã đánh giá
-
-                        for (DonHangChiTiet ctCheck : chiTiet) {
-                            if (spDaDanhGia.contains(ctCheck.getId_sanpham())) {
-                                daDanhGiaDonNay = true;
-                                idSpDaDanhGia = ctCheck.getId_sanpham();  // sản phẩm đã được đánh giá
-                                break;
-                            }
-                        }
+                        boolean daDanhGiaDonNay = donDaDanhGia.contains(don.getIdDonHang());
+                        Integer idSpDaDanhGia = mapDonHangDanhGia.get(don.getIdDonHang());
 
                     %>
 
@@ -471,7 +465,7 @@
                         <%
                                 }   // end if daDanhGiaDonNay
                             }     // end if trangthai=dadat
-%>
+                        %>
 
                     </div>
 
@@ -505,28 +499,28 @@
                 </div>
             </div>
 
-            <!-- MODAL XÁC NHẬN HOÀN TIỀN / HỦY ĐƠN CŨ -->
-            <div id="confirmModal" class="modal-overlay">
-                <div class="modal-box">
-                    <div id="modalMessage" style="font-size:17px; margin-bottom:20px;"></div>
-                    <div class="modal-buttons">
-                        <button class="btn-modal btn-cancel" onclick="closeModal()">Huỷ bỏ</button>
-                        <button class="btn-modal btn-ok" id="modalConfirmBtn">Đồng ý</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- MODAL ĐÁNH GIÁ SẢN PHẨM (NEW) -->
             <div id="reviewModal" class="review-modal-overlay">
                 <div class="review-modal-box">
                     <h3>Đánh giá sản phẩm</h3>
-                    <form method="post" action="<%= request.getContextPath()%>/them_danh_gia">
+
+                    <form method="post"
+                          action="<%= request.getContextPath()%>/them_danh_gia"
+                          enctype="multipart/form-data">  <!-- BẮT BUỘC cho upload ảnh -->
+                        <div class="review-field">
+                            <label>Hình ảnh (tuỳ chọn):</label>
+                            <input type="file" name="hinhAnh" accept="image/*" />
+                        </div>
+                        <!-- HIDDEN: ID ĐƠN HÀNG, JS sẽ set value -->
+                        <input type="hidden" name="idDonHang" id="reviewOrderId"/>
+
                         <div class="review-field">
                             <label>Sản phẩm trong đơn:</label>
                             <select name="idSanPham" id="reviewProductSelect" required>
                                 <!-- options sẽ được JS nạp từ select ẩn -->
                             </select>
                         </div>
+
                         <div class="review-field">
                             <label>Số sao:</label>
                             <select name="sao" required>
@@ -537,77 +531,95 @@
                                 <option value="1">1 sao</option>
                             </select>
                         </div>
+
                         <div class="review-field">
                             <label>Nhận xét:</label>
-                            <textarea name="binhLuan" rows="3" placeholder="Nhập đánh giá của bạn..."></textarea>
+                            <textarea name="binhLuan" rows="3"
+                                      placeholder="Nhập đánh giá của bạn..."></textarea>
                         </div>
+
+                        <div class="review-field">
+                            <label>Hình ảnh (tuỳ chọn):</label>
+                            <input type="file" name="hinhAnh" accept="image/*">
+                        </div>
+
                         <div class="review-actions">
-                            <button type="button" class="btn-review btn-review-cancel" onclick="closeReviewModal()">Hủy</button>
-                            <button type="submit" class="btn-review btn-review-submit">Gửi đánh giá</button>
+                            <button type="button"
+                                    class="btn-review btn-review-cancel"
+                                    onclick="closeReviewModal()">Hủy</button>
+
+                            <button type="submit"
+                                    class="btn-review btn-review-submit">
+                                Gửi đánh giá
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </div> <!-- end .order-page -->
 
-        <script>
-            let currentAction = null;
-            let currentId = null;
 
-            function openRefundModal(id) {
-                currentAction = "refund";
-                currentId = id;
-                document.getElementById("modalMessage").innerText =
-                        "Bạn có chắc chắn muốn hoàn tiền đơn #" + id + "?";
-                document.getElementById("confirmModal").style.display = "flex";
-            }
+            <script>
+                let currentAction = null;
+                let currentId = null;
 
-            function openCancelModal(id) {
-                currentAction = "cancel";
-                currentId = id;
-                document.getElementById("modalMessage").innerText =
-                        "Bạn có chắc chắn muốn huỷ đơn hàng #" + id + "?";
-                document.getElementById("confirmModal").style.display = "flex";
-            }
-
-            function closeModal() {
-                document.getElementById("confirmModal").style.display = "none";
-            }
-
-            // Khi bấm OK trong popup hoàn tiền / huỷ đơn
-            document.getElementById("modalConfirmBtn").onclick = function () {
-                if (!currentAction || !currentId)
-                    return;
-
-                const form = document.querySelector(
-                        'form[data-action="' + currentAction + '"][data-id="' + currentId + '"]'
-                        );
-
-                if (form) {
-                    form.submit();
+                function openRefundModal(id) {
+                    currentAction = "refund";
+                    currentId = id;
+                    document.getElementById("modalMessage").innerText =
+                            "Bạn có chắc chắn muốn hoàn tiền đơn #" + id + "?";
+                    document.getElementById("confirmModal").style.display = "flex";
                 }
-                closeModal();
-            };
 
-            // ====== JS CHO MODAL ĐÁNH GIÁ (NEW) ======
-            function openReviewModal(orderId) {
-                const sourceSelect = document.getElementById("products-order-" + orderId);
-                const targetSelect = document.getElementById("reviewProductSelect");
-                if (!sourceSelect || !targetSelect)
-                    return;
+                function openCancelModal(id) {
+                    currentAction = "cancel";
+                    currentId = id;
+                    document.getElementById("modalMessage").innerText =
+                            "Bạn có chắc chắn muốn huỷ đơn hàng #" + id + "?";
+                    document.getElementById("confirmModal").style.display = "flex";
+                }
 
-                // copy list option từ select ẩn sang select trong modal
-                targetSelect.innerHTML = sourceSelect.innerHTML;
+                function closeModal() {
+                    document.getElementById("confirmModal").style.display = "none";
+                }
 
-                document.getElementById("reviewModal").style.display = "flex";
-            }
+                // Khi bấm OK trong popup hoàn tiền / huỷ đơn
+                document.getElementById("modalConfirmBtn").onclick = function () {
+                    if (!currentAction || !currentId)
+                        return;
 
-            function closeReviewModal() {
-                document.getElementById("reviewModal").style.display = "none";
-            }
-        </script>
+                    const form = document.querySelector(
+                            'form[data-action="' + currentAction + '"][data-id="' + currentId + '"]'
+                            );
 
-        <jsp:include page="footer.jsp"/>
+                    if (form) {
+                        form.submit();
+                    }
+                    closeModal();
+                };
+                function openReviewModal(orderId) {
+                    const sourceSelect = document.getElementById("products-order-" + orderId);
+                    const targetSelect = document.getElementById("reviewProductSelect");
+                    if (!sourceSelect || !targetSelect)
+                        return;
+
+                    // copy list option từ select ẩn sang select trong modal
+                    targetSelect.innerHTML = sourceSelect.innerHTML;
+
+                    // GÁN ID ĐƠN HÀNG VÀO INPUT HIDDEN
+                    document.getElementById("reviewOrderId").value = orderId;
+
+                    // MỞ MODAL
+                    document.getElementById("reviewModal").style.display = "flex";
+                }
+
+
+
+                function closeReviewModal() {
+                    document.getElementById("reviewModal").style.display = "none";
+                }
+            </script>
+
+            <jsp:include page="footer.jsp"/>
 
     </body>
 

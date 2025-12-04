@@ -7,6 +7,9 @@
 <%@page import="java.util.List"%>
 <%@page import="model.DanhGia"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 
 <html>
     <head>
@@ -179,6 +182,79 @@
                 color:#5563DE;
                 font-size: 14px;
             }
+            .review-images{
+                margin:8px 0;
+            }
+
+            .review-img{
+                width:80px;
+                height:80px;
+                object-fit:cover;
+                border-radius:8px;
+                border:1px solid #e5e7eb;
+            }
+            /* ==== TỔNG QUAN ĐÁNH GIÁ (GIỐNG SHOPEE) ==== */
+            .review-summary{
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:24px;
+                padding:16px 18px;
+                margin-bottom:12px;
+                background:#fff7f3;
+                border-radius:12px;
+                border:1px solid #ffe0cc;
+            }
+
+            .review-summary-left{
+                text-align:center;
+                min-width:150px;
+            }
+
+            .review-summary-left .score-number{
+                font-size:32px;
+                font-weight:700;
+                color:#ff4d00;
+            }
+
+            .review-summary-left .score-text{
+                font-size:14px;
+                color:#555;
+            }
+
+            .review-summary-left .score-stars{
+                margin-top:4px;
+                color:#ff9800;
+                font-size:18px;
+            }
+
+            .review-summary-left .score-count{
+                margin-top:4px;
+                font-size:13px;
+                color:#777;
+            }
+
+            .review-summary-right{
+                display:flex;
+                flex-wrap:wrap;
+                gap:8px;
+            }
+
+            .filter-pill{
+                padding:6px 10px;
+                border-radius:999px;
+                border:1px solid #ddd;
+                background:#fff;
+                font-size:13px;
+                cursor:pointer;
+                transition:all .2s;
+            }
+
+            .filter-pill.active{
+                border-color:#ee4d2d;
+                color:#ee4d2d;
+                background:#fff3ee;
+            }
 
         </style>
     </head>
@@ -210,24 +286,87 @@
             </div>
         </form>
 
-        <!-- CHỈ HIỂN THỊ CÁC ĐÁNH GIÁ ĐÃ CÓ -->
         <div class="review-wrapper">
             <h3>Đánh giá của khách hàng</h3>
 
             <c:if test="${not empty dsDanhGia}">
+
+                <!-- ====== TỔNG QUAN ĐÁNH GIÁ (GIỐNG SHOPEE) ====== -->
+                <div class="review-summary">
+                    <div class="review-summary-left">
+                        <div class="score-number">
+                            <fmt:formatNumber value="${avgRating}" type="number"
+                                              maxFractionDigits="1" minFractionDigits="1"/>
+                        </div>
+                        <div class="score-text">trên 5</div>
+
+                        <!-- Shopee cũng hiển thị 5 sao đỏ luôn -->
+                        <div class="score-stars">
+                            ★★★★★
+                        </div>
+
+                        <div class="score-count">
+                            <c:out value="${totalRating}"/> đánh giá
+                        </div>
+                    </div>
+
+                    <div class="review-summary-right">
+                        <span class="filter-pill active" data-filter="all">Tất cả</span>
+
+                        <span class="filter-pill" data-filter="star" data-star="5">
+                            5 Sao (<c:out value="${count5}"/>)
+                        </span>
+                        <span class="filter-pill" data-filter="star" data-star="4">
+                            4 Sao (<c:out value="${count4}"/>)
+                        </span>
+                        <span class="filter-pill" data-filter="star" data-star="3">
+                            3 Sao (<c:out value="${count3}"/>)
+                        </span>
+                        <span class="filter-pill" data-filter="star" data-star="2">
+                            2 Sao (<c:out value="${count2}"/>)
+                        </span>
+                        <span class="filter-pill" data-filter="star" data-star="1">
+                            1 Sao (<c:out value="${count1}"/>)
+                        </span>
+
+                        <span class="filter-pill" data-filter="comment">
+                            Có bình luận (<c:out value="${countComment}"/>)
+                        </span>
+                        <span class="filter-pill" data-filter="image">
+                            Có hình ảnh (<c:out value="${countImage}"/>)
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- ====== DANH SÁCH ĐÁNH GIÁ CHI TIẾT ====== -->
                 <div class="review-list">
                     <c:forEach var="dg" items="${dsDanhGia}">
-                        <div class="review-item">
+                        <div class="review-item"
+                             data-stars="${dg.sao}"
+                             data-has-comment="${not empty dg.binhLuan}"
+                             data-has-image="${not empty dg.hinhAnh}">
                             <div class="review-header">
                                 <strong>Người dùng #${dg.idNguoiDung}</strong>
                                 <span class="review-stars">
                                     <c:forEach begin="1" end="${dg.sao}" var="i">★</c:forEach>
                                     <c:forEach begin="1" end="${5 - dg.sao}" var="i">☆</c:forEach>
                                     </span>
-
                                 </div>
+
                                 <div class="review-body">
                                     <p>${dg.binhLuan}</p>
+
+                                <!-- HÌNH ẢNH ĐÁNH GIÁ (nếu có) -->
+                                <c:if test="${not empty dg.hinhAnh}">
+                                    <div class="review-images">
+                                        <img src="uploads/review/${dg.hinhAnh}"
+                                             alt="Hình ảnh đánh giá"
+                                             class="review-img" />
+
+                                    </div>
+                                </c:if>
+
                                 <small>${dg.ngay}</small>
                             </div>
                         </div>
@@ -239,6 +378,51 @@
                 <p>Chưa có đánh giá nào cho sản phẩm này.</p>
             </c:if>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const pills = document.querySelectorAll('.filter-pill');
+                const items = document.querySelectorAll('.review-item');
+
+                function applyFilter(filter, star) {
+                    items.forEach(function (item) {
+                        const itemStar = item.getAttribute('data-stars');
+                        const hasComment = item.getAttribute('data-has-comment') === 'true';
+                        const hasImage = item.getAttribute('data-has-image') === 'true';
+
+                        let show = true;
+
+                        if (filter === 'star') {
+                            show = (itemStar === star);
+                        } else if (filter === 'comment') {
+                            show = hasComment;
+                        } else if (filter === 'image') {
+                            show = hasImage;
+                        } else {
+                            // 'all'
+                            show = true;
+                        }
+
+                        item.style.display = show ? 'block' : 'none';
+                    });
+                }
+
+                pills.forEach(function (pill) {
+                    pill.addEventListener('click', function () {
+                        // đổi active
+                        pills.forEach(function (p) {
+                            p.classList.remove('active');
+                        });
+                        pill.classList.add('active');
+
+                        const filter = pill.getAttribute('data-filter');
+                        const star = pill.getAttribute('data-star');
+
+                        applyFilter(filter, star);
+                    });
+                });
+            });
+        </script>
 
     </body>
 </html>
