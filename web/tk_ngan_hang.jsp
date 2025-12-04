@@ -1,9 +1,3 @@
-<%-- 
-    Document   : tk_ngan_hang
-    Created on : 17 thg 10, 2025, 23:12:52
-    Author     : daumai
---%>
-
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.*" %>
 <%@ page import="dao.TKNganHangDAO, model.TKNganHang" %>
@@ -15,569 +9,525 @@
     if (username != null) {
         banks = new TKNganHangDAO().layDanhSachTheoTenDangNhap(username);
     }
-    String flash = (String) session.getAttribute("msgBank");
-
     Integer userId = (ss != null) ? (Integer) ss.getAttribute("userId") : null;
     if (userId != null) {
         banks = new TKNganHangDAO().listByUserId(userId);
     }
-    if (flash != null) {
-        session.removeAttribute("msgBank");
-    }
 %>
+
+<jsp:include page="header.jsp" />
+<c:set var="active" value="${not empty param.tab ? param.tab : (not empty requestScope.active ? requestScope.active : 'profile')}" />
+
 <style>
-    :root{
-        --brand:#7295E3;
-        --text:#111827;
-        --muted:#6b7280;
-        --line:#e5e7eb;
-        --ok:#10b981;
-        --blue:#2563eb;
-        --danger:#ef4444;
-        --card:#ffffff;
-        --bg:#f6f6f6;
-    }
-
-    body{
-        background:var(--bg);
-        font-family:Arial,system-ui,sans-serif;
-        margin:0;
-    }
-
-    .account-content{
-        background:var(--card);
-        border:1px solid #eee;
-        border-radius:16px;
-        box-shadow:0 1px 3px rgba(15,23,42,.06);
-        padding:28px 34px 32px;
-    }
-
-    .bank-header{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:16px;
-        margin:0 0 12px;
-        padding-bottom:6px;
-        border-bottom:1px solid #f1f5f9;
-    }
-    .bank-header h1,
-    .bank-header h2,
-    h2{
-        margin:0;
-        font-size:24px;
-        font-weight:800;
-        color:var(--text);
-    }
-
-    .btn-add{
-        background:linear-gradient(180deg,#7aa3ff,#7295E3);
-        color:#fff;
-        border:0;
-        padding:10px 18px;
-        border-radius:10px;
-        font-weight:700;
-        cursor:pointer;
-        box-shadow:0 6px 18px rgba(114,149,227,.28);
-        transition:transform .1s ease, box-shadow .15s ease, opacity .15s ease;
-        font-size:14px;
-    }
-    .btn-add:hover{
-        transform:translateY(-1px);
-        box-shadow:0 10px 24px rgba(114,149,227,.35);
-    }
-    .btn-add:active{
-        transform:translateY(0);
-        opacity:.92;
-    }
-
-    .bank-cta{
-        display:none;
-        margin:12px 0 4px;
-        padding:14px 16px 16px;
-        border-radius:12px;
-        background:#f9fafb;
-        border:1px dashed #cbd5f5;
-    }
-
-    .bank-item{
-        display:flex;
-        justify-content:space-between;
-        align-items:flex-start;
-        gap:18px;
-        padding:18px 20px;
-        margin:12px 0 0;
-        background:var(--card);
-        border:1px solid var(--line);
-        border-radius:14px;
-        box-shadow:0 1px 0 var(--line), 0 8px 24px rgba(2,6,23,.04);
-    }
-
-    .bank-left{
-        display:flex;
-        gap:14px;
-        align-items:flex-start;
-        min-width:0;
-        width:100%;
-    }
-
-    .bank-left .bank-name{
-        font-weight:800;
-        color:var(--text);
-        letter-spacing:.2px;
-    }
-    .bank-left .sub{
-        margin-top:4px;
-        color:var(--muted);
-        font-size:14px;
-        line-height:1.45;
-    }
-    .bank-left .sub b{
-        color:var(--text);
-    }
-
-    .bank-badge{
-        background:rgba(16,185,129,.12);
-        color:var(--ok);
-        font-weight:800;
-        border-radius:999px;
-        padding:5px 10px;
-        font-size:12px;
-        margin-left:8px;
-        display:inline-flex;
-        align-items:center;
-    }
-    .bank-badge.approved{
-        background:rgba(52,211,153,.14);
-        color:#16a34a;
-    }
-
-    .bank-number{
-        font-size:22px;
-        font-weight:800;
-        letter-spacing:.8px;
-        color:var(--text);
-    }
-
-    .bank-actions{
-        display:flex;
-        flex-wrap:wrap;
-        align-items:center;
-        gap:12px;
-        margin-top:10px;
-    }
-
-    .action-btn{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        height:40px;
-        padding:0 16px;
-        border-radius:10px;
-        font-weight:700;
-        cursor:pointer;
-        border:0;
-        font-size:13px;
-    }
-
-    .btn-set-default[disabled]{
-        background:#f3f4f6;
-        color:#9ca3af;
-        cursor:not-allowed;
-        box-shadow:none;
-    }
-    .btn-set-default:not([disabled]){
-        background:#e8f1ff;
-        color:#0b3cff;
-        box-shadow:0 2px 10px rgba(43,108,255,.15);
-    }
-    .btn-set-default:not([disabled]):hover{
-        filter:brightness(1.03);
-    }
-
-    .btn-danger{
-        background:var(--danger);
-        color:#fff;
-        box-shadow:0 2px 10px rgba(239,68,68,.18);
-    }
-    .btn-danger:hover{
-        filter:brightness(1.03);
-    }
-
-    .inp{
-        border:1px solid #d1d5db;
-        border-radius:10px;
-        padding:10px 12px;
-        width:100%;
-        background:#fff;
-        font-size:14px;
-        transition:border-color .15s ease, box-shadow .15s ease;
+/* ==========================
+   Scoped CSS cho main content
+=========================== */
+ .account-shell, 
+    .account-shell * {
         box-sizing:border-box;
     }
-    .inp:focus{
-        outline:none;
-        border-color:#93c5fd;
-        box-shadow:0 0 0 3px rgba(59,130,246,.18);
-    }
 
-    .grid2{
+    .account-shell {
+        max-width:1200px;
+        margin:20px auto;
+        padding:0 16px;
         display:grid;
-        grid-template-columns:1fr 1fr;
-        gap:12px;
+        grid-template-columns:260px 1fr;
+        gap:24px;
     }
 
-    .field-group{
+    .account-content {
+        background:#fff;
+        border:1px solid #eee;
+        border-radius:10px;
+        box-shadow:0 1px 3px rgba(0,0,0,.05);
+        padding:30px 40px;
+    }
+
+    .profile-card {
+        display:grid;
+        grid-template-columns:1fr 260px;
+        gap:40px;
+        align-items:flex-start;
+    }
+
+    .profile-title {
+        font-size:24px;
+        font-weight:800;
+        margin:0 0 6px;
+    }
+
+    .profile-sub {
+        color:#6b7280;
+        margin-bottom:24px;
+    }
+
+    .row {
+        display:grid;
+        grid-template-columns:200px 1fr 100px;
+        align-items:center;
+        gap:16px;
+        margin-bottom:18px;
+    }
+
+    .row label {
+        font-weight:600;
+        color:#444;
+    }
+
+    .inp {
+        width:100%;
+        padding:10px 12px;
+        border:1px solid #ddd;
+        border-radius:6px;
+        background:#fff;
+        font-size:15px;
+    }
+
+    .inp[disabled] {
+        background:#f9fafb;
+        color:#333;
+    }
+
+    .action {
+        color:#1677ff;
+        text-decoration:none;
+        cursor:pointer;
+        font-weight:600;
+    }
+
+    .action:hover {
+        text-decoration:underline;
+    }
+
+    .save-btn {
+        background:#1677ff;
+        color:#fff;
+        border:0;
+        border-radius:8px;
+        font-weight:700;
+        padding:12px 28px;
+        cursor:pointer;
+        transition:.2s;
+    }
+
+    .save-btn:disabled {
+        opacity:.5;
+        cursor:not-allowed;
+    }
+
+    .profile-right {
         display:flex;
         flex-direction:column;
-        gap:4px;
+        align-items:center;
+        gap:10px;
     }
-    .err-msg{
-        color:#dc2626;
+
+    .avatar-img {
+        width:140px;
+        height:140px;
+        border-radius:50%;
+        object-fit:cover;
+        border:1px solid #e5e7eb;
+        background-color:#f9fafb;
+    }
+
+    .btn-ghost {
+        background:#fff;
+        border:1px solid #d1d5db;
+        border-radius:10px;
+        padding:8px 16px;
+        font-weight:700;
+        cursor:pointer;
+        transition:.2s;
+    }
+
+    .btn-ghost:hover {
+        background:#f3f4f6;
+    }
+
+    .hint {
+        color:#6b7280;
+        font-size:14px;
+        text-align:center;
+        line-height:1.5;
+    }
+
+    .hint strong {
+        color:#111827;
+    }
+
+    .account-sidebar {
+        background:#fff;
+        border:1px solid #eee;
+        border-radius:10px;
+        padding:16px;
+        position:sticky;
+        top:16px;
+        height:fit-content;
+    }
+
+    .side-head {
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:12px;
+    }
+
+    .side-avatar {
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        object-fit:cover;
+    }
+
+    .side-username {
+        font-weight:700;
+    }
+
+    .side-edit-hint {
         font-size:12px;
-        min-height:16px;
+        color:#888;
     }
 
-    /* Modal xoá thẻ */
-    #confirmModal{
-        font-family:inherit;
+    .side-nav {
+        display:flex;
+        flex-direction:column;
+        gap:8px;
     }
 
+    .tab-btn {
+        display:flex;
+        align-items:center;
+        gap:8px;
+        padding:10px 12px;
+        border-radius:8px;
+        text-decoration:none;
+        color:#333;
+        background:#fff;
+        border:1px solid #ececec;
+        transition:.15s;
+    }
+
+    .tab-btn:hover {
+        background:#e9f2ff;
+        color:#1677ff;
+        border-color:#d6e6ff;
+    }
+
+    .tab-btn.active {
+        background:#e9f2ff;
+        color:#1677ff;
+        font-weight:700;
+        border-color:#1677ff;
+        box-shadow:0 0 0 1px #1677ff inset;
+    }
+
+    /* Responsive */
     @media (max-width:768px){
-        .account-content{
-            padding:22px 14px;
-        }
-        .bank-item{
-            flex-direction:column;
-            align-items:flex-start;
-        }
-        .grid2{
+        .account-shell{
             grid-template-columns:1fr;
         }
-        .bank-actions{
-            gap:8px;
+        .profile-card {
+            grid-template-columns:1fr;
         }
     }
+#tkBankContent {
+    max-width: 1100px;
+    margin: 30px auto;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Sidebar */
+#tkBankContent .account-sidebar {
+   
+    background:#fff;
+        border:1px solid #eee;
+        border-radius:10px;
+        padding:16px;
+        position:sticky;
+        top:16px;
+        height:fit-content;
+}
+
+#tkBankContent .side-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+#tkBankContent .side-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#tkBankContent .side-username {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+#tkBankContent .side-edit-hint {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+#tkBankContent .side-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#tkBankContent .tab-btn {
+    padding: 10px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #111827;
+    font-weight: 500;
+    transition: 0.15s;
+}
+
+#tkBankContent .tab-btn.active, 
+#tkBankContent .tab-btn:hover {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+/* Nội dung chính */
+#tkBankContent .account-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+/* Header ngân hàng */
+#tkBankContent .bank-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+#tkBankContent .btn-add {
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.15s;
+}
+#tkBankContent .btn-add:hover { background: #4338ca; }
+
+/* Form thêm ngân hàng */
+#tkBankContent .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+#tkBankContent .inp {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Bank card */
+#tkBankContent .bank-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+#tkBankContent .bank-badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-left: 6px;
+    font-weight: 600;
+}
+#tkBankContent .approved {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+/* Buttons */
+#tkBankContent .btn-set-default {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+    transition: 0.15s;
+}
+#tkBankContent .btn-set-default:hover:not([disabled]) {
+    background: #eef;
+    border-color: #4f46e5;
+}
+#tkBankContent .btn-danger {
+    background: #ef4444;
+    border: none;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.15s;
+}
+#tkBankContent .btn-danger:hover { background: #dc2626; }
+
+/* Modal */
+#tkBankContent #confirmModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+#tkBankContent #confirmModal .modal-box {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 92%;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width:768px){
+    #tkBankContent { grid-template-columns: 1fr; }
+    #tkBankContent .grid2 { grid-template-columns: 1fr; }
+    #tkBankContent .account-sidebar { margin-bottom: 20px; }
+}
 </style>
 
-<h2>Tài Khoản Ngân Hàng Của Tôi</h2>
-<div class="bank-header">
-    <div></div>
-    <button class="btn-add" type="button" onclick="document.getElementById('addBankBox').style.display = 'block'">
-        ＋ Thêm Ngân Hàng Liên Kết
-    </button>
-</div>
-<div id="addBankBox" class="bank-cta">
-    <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
-        <input type="hidden" name="action" value="add">
-
-        <div class="grid2">
-            <!-- TÊN NGÂN HÀNG -->
-            <div class="field-group">
-                <input class="inp"
-                       id="tenNganHang"
-                       name="tenNganHang"
-                       placeholder="Tên ngân hàng (VD: BIDV)"
-                       required
-                       data-validate="text"
-                       data-error-id="errTenNganHang">
-                <div class="err-msg" id="errTenNganHang"></div>
-            </div>
-
-            <!-- CHI NHÁNH -->
-            <div class="field-group">
-                <input class="inp"
-                       id="chiNhanh"
-                       name="chiNhanh"
-                       placeholder="Chi nhánh (VD: CN Nghệ An)"
-                       required
-                       data-validate="text"
-                       data-error-id="errChiNhanh">
-                <div class="err-msg" id="errChiNhanh"></div>
-            </div>
-
-            <!-- CHỦ TÀI KHOẢN -->
-            <div class="field-group">
-                <input class="inp"
-                       name="chuTaiKhoan"
-                       placeholder="Chủ tài khoản"
-                       required>
-                <div class="err-msg"></div>
-            </div>
-
-            <!-- SỐ TÀI KHOẢN -->
-            <div class="field-group">
-                <input class="inp"
-                       id="soTaiKhoan"
-                       name="soTaiKhoan"
-                       placeholder="Số tài khoản"
-                       required
-                       data-validate="number"
-                       data-error-id="errSoTaiKhoan"
-                       inputmode="numeric">
-                <div class="err-msg" id="errSoTaiKhoan"></div>
+<div id="tkBankContent">
+    <!-- Sidebar -->
+    <aside class="account-sidebar">
+        <div class="side-head">
+            <img src="${pageContext.request.contextPath}${ava}?v=${pageContext.session.id}" class="side-avatar" alt="">
+            <div>
+                <div class="side-username"><c:out value="${nguoiDung.tenDangNhap}" default="Khách"/></div>
+                <div class="side-edit-hint">✏️ Sửa Hồ Sơ</div>
             </div>
         </div>
+        <nav class="side-nav">
+            <a class="tab-btn ${active=='profile' ? 'active' : ''}" href="thong_tin_ca_nhan.jsp">👤 Hồ sơ</a>
+            <a class="tab-btn" href="${ctx}/DonHangServlet?hanhDong=lichsu&tab=orders">🧾 Đơn hàng</a>
+            <a class="tab-btn ${active=='tknh' ? 'active' : ''}" href="tk_ngan_hang.jsp">🏦 Ngân Hàng</a>
+            <a class="tab-btn ${active=='address' ? 'active' : ''}" href="tk_dia_chi.jsp">📮 Địa chỉ</a>
+            <a class="tab-btn ${active=='password' ? 'active' : ''}" href="tk_doi_mat_khau.jsp">🔒 Đổi mật khẩu</a>
+        </nav>
+    </aside>
 
-        <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
-            <input type="checkbox" name="macDinh" value="1"> Đặt làm mặc định
-        </label>
-
-        <div style="margin-top:10px">
-            <button class="btn-add" type="submit">Lưu thẻ</button>
-            <button type="button"
-                    onclick="document.getElementById('addBankBox').style.display = 'none'">
-                Hủy
-            </button>
+    <!-- Main content -->
+    <div class="account-content">
+        <h2>Tài Khoản Ngân Hàng Của Tôi</h2>
+        <div class="bank-header">
+            <div></div>
+            <button class="btn-add" type="button" onclick="document.getElementById('addBankBox').style.display='block'">＋ Thêm Ngân Hàng Liên Kết</button>
         </div>
-    </form>
-</div>
 
-
-
-<!-- Danh sách -->
-<% for (TKNganHang b : banks) {%>
-<div class="bank-item">
-    <div class="bank-left">
-        <div>
-            <div style="font-weight:700">
-                <%= b.getTenNganHang()%>
-                <% if ("daduyet".equalsIgnoreCase(b.getTrangThai())) { %>
-                <span class="bank-badge approved">ĐÃ DUYỆT</span>
-                <% } %>
-                <% if (b.isMacDinh()) { %>
-                <span class="bank-badge">MẶC ĐỊNH</span>
-                <% }%>
-            </div>
-
-            <!-- Hiển thị thông tin đã lưu -->
-            <div class="grid2" style="margin-top:10px">
-                <input class="inp" value="<%= b.getTenNganHang()%>"  placeholder="Tên ngân hàng"   readonly>
-                <input class="inp" value="<%= b.getChiNhanh()%>"     placeholder="Chi nhánh"       readonly>
-                <input class="inp" value="<%= b.getChuTaiKhoan()%>"  placeholder="Chủ tài khoản"   readonly>
-                <input class="inp" value="<%= b.getSoTaiKhoan()%>"   placeholder="Số tài khoản"    readonly>
-            </div>
-
-            <div class="bank-actions" style="margin-top:10px">
-
-                <!-- Đặt mặc định -->
-                <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
-                    <input type="hidden" name="action" value="setDefault">
-                    <input type="hidden" name="id" value="<%= b.getIdTkNganHang()%>">
-
-                    <button class="btn-set-default action-btn"
-                            <%= b.isMacDinh() ? "disabled" : ""%>>
-                        <%= b.isMacDinh() ? "Đang là mặc định" : "Đặt làm mặc định"%>
-                    </button>
-                </form>
-
-                <!-- Xoá -->
-                <button type="button"
-                        class="btn-danger action-btn btn-delete-bank"
-                        data-id="<%= b.getIdTkNganHang()%>">
-                    Xoá
-                </button>
-
-            </div>
-
+        <!-- Add Bank Form -->
+        <div id="addBankBox" style="display:none">
+            <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
+                <input type="hidden" name="action" value="add">
+                <div class="grid2">
+                    <input class="inp" name="tenNganHang" placeholder="Tên ngân hàng" required>
+                    <input class="inp" name="chiNhanh" placeholder="Chi nhánh">
+                    <input class="inp" name="chuTaiKhoan" placeholder="Chủ tài khoản" required>
+                    <input class="inp" name="soTaiKhoan" placeholder="Số tài khoản" required>
+                </div>
+                <label style="display:inline-flex;align-items:center;gap:6px;margin-top:10px">
+                    <input type="checkbox" name="macDinh" value="1"> Đặt làm mặc định
+                </label>
+                <div style="margin-top:10px">
+                    <button class="btn-add" type="submit">Lưu thẻ</button>
+                    <button type="button" onclick="document.getElementById('addBankBox').style.display='none'">Hủy</button>
+                </div>
+            </form>
         </div>
-    </div>
-</div>
-<% } %>
 
-<% if (banks.isEmpty()) { %>
-<div style="color:#6b7280">Bạn chưa liên kết tài khoản ngân hàng nào.</div>
-<% }%>
-
-<div id="confirmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);align-items:center;justify-content:center;z-index:9999">
-    <div style="background:#fff;border-radius:12px;max-width:420px;width:92%;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
-        <h3 style="margin:0 0 8px;font-size:18px">Xác nhận xoá thẻ</h3>
-        <p id="confirmText" style="margin:0 0 16px;color:#6b7280">
-            Bạn có chắc chắn muốn xoá thẻ ngân hàng này không?
-        </p>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button type="button" id="btnCancel" style="padding:8px 12px;border:1px solid #e5e7eb;background:#fff;border-radius:8px;cursor:pointer">Huỷ</button>
-            <button type="button" id="btnConfirm" style="padding:8px 12px;border:0;background:#ef4444;color:#fff;border-radius:8px;cursor:pointer">Xác nhận</button>
+        <!-- Bank List -->
+        <% for(TKNganHang b : banks){ %>
+        <div class="bank-item">
+            <div>
+                <div style="font-weight:700">
+                    <%= b.getTenNganHang() %>
+                    <% if("daduyet".equalsIgnoreCase(b.getTrangThai())){ %>
+                        <span class="bank-badge approved">ĐÃ DUYỆT</span>
+                    <% } %>
+                    <% if(b.isMacDinh()){ %>
+                        <span class="bank-badge">MẶC ĐỊNH</span>
+                    <% } %>
+                </div>
+                <div class="grid2" style="margin-top:10px">
+                    <input class="inp" value="<%= b.getTenNganHang() %>" readonly>
+                    <input class="inp" value="<%= b.getChiNhanh() %>" readonly>
+                    <input class="inp" value="<%= b.getChuTaiKhoan() %>" readonly>
+                    <input class="inp bank-number" value="<%= b.getSoTaiKhoan() %>" readonly>
+                </div>
+                <div class="bank-actions" style="margin-top:10px">
+                    <form method="post" action="${pageContext.request.contextPath}/TKNganHangServlet">
+                        <input type="hidden" name="action" value="setDefault">
+                        <input type="hidden" name="id" value="<%= b.getIdTkNganHang() %>">
+                        <button class="btn-set-default" <%= b.isMacDinh()?"disabled":""%>>
+                            <%= b.isMacDinh()?"Đang là mặc định":"Đặt làm mặc định"%>
+                        </button>
+                    </form>
+                    <button type="button" class="btn-danger btn-delete-bank" data-id="<%= b.getIdTkNganHang() %>">Xoá</button>
+                </div>
+            </div>
         </div>
+        <% } %>
+        <% if(banks.isEmpty()){ %>
+            <div style="color:#6b7280">Bạn chưa liên kết tài khoản ngân hàng nào.</div>
+        <% } %>
     </div>
 </div>
 
-<form id="deleteForm" method="post" action="${pageContext.request.contextPath}/TKNganHangServlet" style="display:none">
-    <input type="hidden" name="action" value="delete">
-    <input type="hidden" name="id" id="deleteId">
-</form>
+<jsp:include page="footer.jsp" />
+
 <script>
-    (function () {
-        const modal = document.getElementById('confirmModal');
-        const btnCancel = document.getElementById('btnCancel');
-        const btnConfirm = document.getElementById('btnConfirm');
-        const deleteForm = document.getElementById('deleteForm');
-        const deleteIdInput = document.getElementById('deleteId');
-        const confirmText = document.getElementById('confirmText');
+(function(){
+    const modal = document.getElementById('confirmModal');
+    const btnCancel = document.getElementById('btnCancel');
+    const btnConfirm = document.getElementById('btnConfirm');
+    const deleteForm = document.getElementById('deleteForm');
+    const deleteIdInput = document.getElementById('deleteId');
+    const confirmText = document.getElementById('confirmText');
+    let pendingId = null;
 
-        let pendingId = null;
-        let pendingLabel = '';
+    document.addEventListener('click', function(e){
+        const btn = e.target.closest('.btn-delete-bank');
+        if(!btn) return;
+        e.preventDefault();
+        pendingId = btn.dataset.id;
+        modal.style.display='flex';
+    });
 
-        // Khi bấm nút Xoá
-        document.addEventListener('click', function (e) {
-            const btn = e.target.closest('.btn-delete-bank');
-            if (!btn)
-                return;
-
-            e.preventDefault();
-            pendingId = btn.dataset.id;
-
-            // Hiện số tài khoản (4 số cuối) trong hộp thoại
-            const row = btn.closest('.bank-item');
-            const num = row ? row.querySelector('.bank-number') : null;
-            pendingLabel = num ? num.textContent.trim() : '';
-
-            if (confirmText && pendingLabel) {
-                confirmText.textContent = 'Bạn có chắc chắn muốn xoá thẻ ' + pendingLabel + ' không?';
-            }
-
-            // Mở modal
-            modal.style.display = 'flex';
-        });
-
-        // Nút Huỷ
-        btnCancel.addEventListener('click', function () {
-            pendingId = null;
-            modal.style.display = 'none';
-        });
-
-        // Nút Xác nhận
-        btnConfirm.addEventListener('click', function () {
-            if (!pendingId)
-                return;
-            deleteIdInput.value = pendingId;
-            modal.style.display = 'none';
-            deleteForm.submit(); // gửi request xoá đến servlet
-        });
-
-        // Click ra nền ngoài để đóng modal
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
-                pendingId = null;
-                modal.style.display = 'none';
-            }
-        });
-    })();
-</script>
-<script>
-    (function () {
-        const nameRegex = /^[A-Za-zÀ-ỹ\s]+$/;  // chữ + khoảng trắng (có tiếng Việt)
-        const numberRegex = /^\d+$/;            // chỉ số
-
-        function showError(input, message) {
-            const errId = input.dataset.errorId;
-            if (!errId)
-                return;
-            const el = document.getElementById(errId);
-            if (el)
-                el.textContent = message || "";
-        }
-
-        // validate 1 ô, đồng thời update lỗi text
-        function validateInput(input) {
-            const type = input.dataset.validate;
-            const value = input.value.trim();
-            let ok = true;
-
-            if (!value) {
-                // required mà trống -> coi là chưa hợp lệ để chặn ô dưới
-                if (input.required)
-                    ok = false;
-                showError(input, "");
-            } else if (type === "text") {
-                if (!nameRegex.test(value)) {
-                    showError(input, "Chỉ được nhập chữ và khoảng trắng, không được nhập số hoặc ký tự đặc biệt.");
-                    ok = false;
-                } else {
-                    showError(input, "");
-                }
-            } else if (type === "number") {
-                if (!numberRegex.test(value)) {
-                    showError(input, "Chỉ được nhập số.");
-                    ok = false;
-                } else {
-                    showError(input, "");
-                }
-            } else {
-                showError(input, "");
-            }
-
-            updateLocking();
-            return ok;
-        }
-
-        // thứ tự các ô từ trên xuống
-        const orderedIds = ["tenNganHang", "chiNhanh", "chuTaiKhoan", "soTaiKhoan"];
-        const orderedInputs = orderedIds.map(id => document.getElementById(id));
-
-        // Hàm khoá/mở các ô bên dưới
-        function updateLocking() {
-            let previousValid = true;
-
-            orderedInputs.forEach((input, idx) => {
-                if (!input)
-                    return;
-
-                if (idx === 0) {
-                    // ô đầu luôn đc nhập
-                    input.disabled = false;
-                } else {
-                    input.disabled = !previousValid;
-                    if (input.disabled) {
-                        input.value = "";
-                        showError(input, "");
-                    }
-                }
-
-                // xác định xem ô hiện tại có "hợp lệ" để quyết định cho ô sau
-                if (previousValid) {
-                    const type = input.dataset.validate;
-                    const value = input.value.trim();
-                    let ok = true;
-
-                    if (!value) {
-                        if (input.required)
-                            ok = false;
-                    } else if (type === "text") {
-                        ok = nameRegex.test(value);
-                    } else if (type === "number") {
-                        ok = numberRegex.test(value);
-                    }
-
-                    previousValid = ok;
-                }
-            });
-        }
-
-        // gắn event realtime
-        document.querySelectorAll(".inp[data-validate]").forEach(function (inp) {
-            inp.addEventListener("input", function () {
-                validateInput(inp);
-            });
-            inp.addEventListener("blur", function () {
-                validateInput(inp);
-            });
-        });
-
-        // chặn submit nếu còn ô sai
-        const form = document.querySelector("#addBankBox form");
-        if (form) {
-            form.addEventListener("submit", function (e) {
-                let okAll = true;
-                orderedInputs.forEach(function (inp) {
-                    if (!inp)
-                        return;
-                    if (!validateInput(inp))
-                        okAll = false;
-                });
-                if (!okAll)
-                    e.preventDefault();
-            });
-        }
-        updateLocking();
-    })();
+    btnCancel.addEventListener('click', ()=>{pendingId=null; modal.style.display='none';});
+    btnConfirm.addEventListener('click', ()=>{
+        if(!pendingId) return;
+        deleteIdInput.value=pendingId;
+        modal.style.display='none';
+        deleteForm.submit();
+    });
+    modal.addEventListener('click', e=>{if(e.target===modal){pendingId=null; modal.style.display='none';}});
+})();
 </script>

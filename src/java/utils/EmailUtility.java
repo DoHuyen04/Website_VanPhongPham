@@ -21,22 +21,25 @@ public class EmailUtility {
         // props.put("mail.debug", "true"); // bật log nếu cần
 
         jakarta.mail.Session session = jakarta.mail.Session.getInstance(
-            props,
-            new jakarta.mail.Authenticator() {
-                @Override
-                protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
-                    return new jakarta.mail.PasswordAuthentication(from, password);
-                }
+                props,
+                new jakarta.mail.Authenticator() {
+            @Override
+            protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new jakarta.mail.PasswordAuthentication(from, password);
             }
+        }
         );
 
         Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(from, "Cửa hàng Văn Phòng Phẩm"));
+        message.setFrom(new InternetAddress(
+                from,
+                MimeUtility.encodeText("Cửa hàng Văn Phòng Phẩm", "UTF-8", "B")
+        ));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
         message.setSubject(subject);
         message.setContent(messageText, "text/html; charset=UTF-8");
 
         Transport.send(message);
-        System.out.println("✅ Gửi email thành công tới " + to);
+        System.out.println("Gửi email thành công tới " + to);
     }
 }

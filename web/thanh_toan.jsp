@@ -116,6 +116,54 @@
             .address-group input, .address-group select {
                 margin-top: 6px;
             }
+            /* Thanh gạt CSS */
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 26px;
+            }
+
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                transition: .4s;
+                border-radius: 26px;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 20px;
+                width: 20px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+
+            input:checked + .slider {
+                background-color: #28a745;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(24px);
+            }
+            .dc-macdinh{
+                magin-left : auto;
+            }
         </style>
     </head>
 
@@ -130,24 +178,39 @@
                     SanPham sp = (SanPham) item.get("sanpham");%>
             <input type="hidden" name="chonSP" value="<%= sp.getId_sanpham()%>">
             <% }%>
+
             <!-- HỌ TÊN NGƯỜI NHẬN -->
             <label>Họ tên người nhận:</label>
             <input type="text" name="tenNguoiNhan" id="tenNguoiNhan" required>
 
-            <!-- CHẾ ĐỘ ĐỊA CHỈ -->
-            <div class="address-mode" style="margin:6px 0 10px; display:flex; gap:24px;">
-                <label>
-                    <input type="radio" name="addressMode" value="saved"
-                           <%= (dsDiaChi != null && !dsDiaChi.isEmpty()) ? "checked" : ""%> />
-                    Địa chỉ từ hồ sơ
-                </label>
+            <!-- CÁC Ô NHẬP THÔNG TIN ĐỊA CHỈ / NGƯỜI NHẬN -->
 
-                <label>
-                    <input type="radio" name="addressMode" value="new"
-                           <%= (dsDiaChi == null || dsDiaChi.isEmpty()) ? "checked" : ""%> />
-                    Địa chỉ khác
+            <label>Địa chỉ nhận hàng:</label>
+            <div class="address-group">
+                <label>Tỉnh/Thành phố:</label>
+                <input list="dsTinh" id="tinh" name="tinh" placeholder="Nhập hoặc chọn Tỉnh/Thành phố" required>
+                <datalist id="dsTinh"></datalist>
+                <label>Huyện/Quận:</label>
+                <input list="dsHuyen" id="huyen" name="huyen" placeholder="Nhập hoặc chọn Quận/Huyện" required>
+                <datalist id="dsHuyen"></datalist>
+                <label>Xã/Phường:</label>
+                <input list="dsXa" id="xa" name="xa" placeholder="Nhập hoặc chọn Phường/Xã" required>
+                <datalist id="dsXa"></datalist>
+                <label>Tên đường , số nhà:</label>
+                <input type="text" name="duong" id="duong" placeholder="Tên đường, Số nhà" required>
+            </div>
+            <div  class ="dc-macdinh" style="margin:10px 0 15px;">
+                <span style="font-weight:bold;">Mặc định</span>
+
+                <label class="switch" style="margin-left:10px;">
+                    <input type="checkbox"
+                           id="toggleAddressMode"
+                           <%= (dsDiaChi != null && !dsDiaChi.isEmpty()) ? "checked" : ""%> >
+                    <span class="slider"></span>
                 </label>
             </div>
+
+            <!-- CHẾ ĐỘ ĐỊA CHỈ -->
 
             <% if (dsDiaChi != null && !dsDiaChi.isEmpty()) { %>
             <div id="savedAddressBox" style="margin-bottom:10px;">
@@ -169,25 +232,11 @@
                 </select>
             </div>
             <% } else { %>
-            <p style="font-size:13px; color:#777;">Bạn chưa có địa chỉ nào trong hồ sơ. Vui lòng nhập địa chỉ mới.</p>
-            <% } %>
-
-            <!-- CÁC Ô NHẬP THÔNG TIN ĐỊA CHỈ / NGƯỜI NHẬN -->
-
-            <label>Địa chỉ nhận hàng chi tiết:</label>
-            <div class="address-group">
-                <input list="dsTinh" id="tinh" name="tinh" placeholder="Nhập hoặc chọn Tỉnh/Thành phố" required>
-                <datalist id="dsTinh"></datalist>
-
-                <input list="dsHuyen" id="huyen" name="huyen" placeholder="Nhập hoặc chọn Quận/Huyện" required>
-                <datalist id="dsHuyen"></datalist>
-
-                <input list="dsXa" id="xa" name="xa" placeholder="Nhập hoặc chọn Phường/Xã" required>
-                <datalist id="dsXa"></datalist>
-
-                <input type="text" name="duong" id="duong" placeholder="Tên đường, Số nhà" required>
-            </div>
-
+            <p style="font-size:13px; color:#777;">Bạn chưa có địa chỉ nào trong hồ sơ. Vui lòng nhập địa chỉ mới.
+                <a href="<%= request.getContextPath()%>/nguoidung?hanhDong=hoso&tab=address">
+                        Bấm vào đây để thêm.
+                    </a></p>
+            <% }%>
 
             <label>Tìm địa chỉ trên Google Maps (tùy chọn):</label>
             <input type="text" id="diaChiMap" placeholder="Nhập địa chỉ để hiển thị bản đồ...">
@@ -204,7 +253,7 @@
             </select>
 
             <div id="taiKhoanNganHang" style="display:none;">
-                <label>Tài khoản ngân hàng (từ hồ sơ của tôi):</label>
+                <label>Tài khoản ngân hàng:</label>
 
                 <%
                     // Lấy danh sách tài khoản ngân hàng đã được servlet truyền xuống
@@ -546,6 +595,35 @@
                     cb.addEventListener('change', capNhatChonSP);
                 })
                         ;
+// =================== SWITCH ĐỊA CHỈ ===================
+                document.getElementById("toggleAddressMode").addEventListener("change", function () {
+                    let isUseSaved = this.checked;
+
+                    if (isUseSaved) {
+                        // Nếu bật → dùng địa chỉ hồ sơ
+                        let savedBox = document.getElementById("savedAddressBox");
+                        if (savedBox)
+                            savedBox.style.display = "block";
+
+                        fillAddressFromSaved(); // Tự động đổ dữ liệu vào
+                        setAddressInputsReadonly(true);
+
+                    } else {
+                        // Tắt → Nhập địa chỉ mới
+                        let savedBox = document.getElementById("savedAddressBox");
+                        if (savedBox)
+                            savedBox.style.display = "none";
+
+                        setAddressInputsReadonly(false);
+
+                        // Xóa các trường địa chỉ cũ
+                        ["tenNguoiNhan", "soDienThoai", "tinh", "huyen", "xa", "duong"].forEach(id => {
+                            let el = document.getElementById(id);
+                            if (el)
+                                el.value = "";
+                        });
+                    }
+                });
 
         </script>
         <jsp:include page="footer.jsp" />

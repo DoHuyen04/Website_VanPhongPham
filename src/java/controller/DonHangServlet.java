@@ -2,24 +2,17 @@ package controller;
 
 import dao.DonHangDAO;
 import dao.SanPhamDAO;
+import dao.DanhGiaDAO;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import java.util.stream.Collectors;
+import jakarta.servlet.http.*;
 import model.DonHang;
 import model.DonHangChiTiet;
 import model.NguoiDung;
 import model.SanPham;
-import dao.DanhGiaDAO;
-import java.util.Set;
-import java.util.Collections;
 
 @WebServlet(name = "DonHangServlet", urlPatterns = {"/DonHangServlet"})
 public class DonHangServlet extends HttpServlet {
@@ -27,8 +20,9 @@ public class DonHangServlet extends HttpServlet {
     private DonHangDAO donHangDAO = new DonHangDAO();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // KHÔNG tạo session mới
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("nguoiDung") == null) {
             resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
@@ -37,29 +31,36 @@ public class DonHangServlet extends HttpServlet {
         NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
 
         String hanhDong = req.getParameter("hanhDong");
-        String action = req.getParameter("action");
-
         if ("lichsu".equals(hanhDong)) {
+
             String tab = req.getParameter("tab");
-            String filter = ("dadat".equals(tab) || "dahuy".equals(tab) || "hoantien".equals(tab)) ? tab : null;
+
+            Set<String> validTabs = Set.of("dadat", "dagiao", "danggiao", "dahuy", "hoantien");
+
+            // Nếu tab null hoặc không hợp lệ → filter = null (ALL)
+            String filter = (tab != null && validTabs.contains(tab)) ? tab : null;
+
+            // Tab active
+            String activeTab = (filter == null) ? "all" : filter;
 
             List<DonHang> ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
-            req.setAttribute("activeTab", filter == null ? "all" : filter); // để tô active tab
+            req.setAttribute("activeTab", activeTab);
             req.setAttribute("dsDonHang", ds);
-            
-//            // ========== NEW: lấy danh sách sản phẩm mà người dùng này đã đánh giá ==========
-//            DanhGiaDAO dgDAO = new DanhGiaDAO();
-//            Set<Integer> spDaDanhGia = dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
-//            req.setAttribute("spDaDanhGia", spDaDanhGia);
-            DanhGiaDAO dgDao = new DanhGiaDAO();
-Map<Integer, Integer> mapDonHangDanhGia =
-        dgDao.laySanPhamDaDanhGiaTheoDonHang(nd.getId());
 
-req.setAttribute("mapDonHangDanhGia", mapDonHangDanhGia);
+            // ========== Lấy thông tin đánh giá ==========
+            DanhGiaDAO dgDAO = new DanhGiaDAO();
 
+            // 1) Map đơn hàng đã đánh giá (theo id đơn hàng / sản phẩm tùy bạn định nghĩa)
+            Map<Integer, Integer> mapDonHangDanhGia =
+                    dgDAO.laySanPhamDaDanhGiaTheoDonHang(nd.getId());
+            req.setAttribute("mapDonHangDanhGia", mapDonHangDanhGia);
 
-            
-            // --------------- LẤY TÊN SẢN PHẨM ĐỂ HIỂN THỊ ---------------
+            // 2) Set các id sản phẩm mà user đã đánh giá
+            Set<Integer> spDaDanhGia =
+                    dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
+            req.setAttribute("spDaDanhGia", spDaDanhGia);
+
+            // ---------- Lấy map sản phẩm để hiển thị ----------
             SanPhamDAO spDAO = new SanPhamDAO();
             List<SanPham> dsSP = spDAO.layTatCa();   // Lấy tất cả sản phẩm 1 lần
             Map<Integer, SanPham> mapFullSP = dsSP.stream()
@@ -67,72 +68,61 @@ req.setAttribute("mapDonHangDanhGia", mapDonHangDanhGia);
                             SanPham::getId_sanpham,
                             sp -> sp
                     ));
-
             req.setAttribute("mapSP", mapFullSP);
 
             req.getRequestDispatcher("don_hang.jsp").forward(req, resp);
             return;
         }
-        resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=all");
 
+        resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=all");
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        HttpSession session = req.getSession(false); // KHÔNG tạo session mới
+        HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("nguoiDung") == null) {
             resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
             return;
         }
-
         NguoiDung nd = (NguoiDung) session.getAttribute("nguoiDung");
-        String action = req.getParameter("action"); // "luuDonHang" | "cancel" | "refund" | null
+        String action = req.getParameter("action");
 
-        // 1️⃣ HỦY / HOÀN TIỀN
+        // HỦY / HOÀN TIỀN
         if ("cancel".equals(action) || "refund".equals(action)) {
             try {
                 int idDonHang = Integer.parseInt(req.getParameter("id"));
                 String tt = "cancel".equals(action) ? "dahuy" : "hoantien";
-                boolean ok = donHangDAO.capNhatTrangThai(idDonHang, nd.getId(), tt);
+                donHangDAO.capNhatTrangThai(idDonHang, nd.getId(), tt);
 
                 String tab = "cancel".equals(action) ? "dahuy" : "hoantien";
-                resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=" + tab);
-                return;
+                resp.sendRedirect(req.getContextPath()
+                        + "/DonHangServlet?hanhDong=lichsu&tab=" + tab);
             } catch (NumberFormatException ex) {
                 resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu");
-                return;
             }
+            return;
         }
 
-        // 2️⃣ LƯU ĐƠN HÀNG
+        // LƯU ĐƠN HÀNG
         if ("luuDonHang".equals(action)) {
-
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+            List<Map<String, Object>> gioHang =
+                    (List<Map<String, Object>>) session.getAttribute("gioHang");
             if (gioHang == null || gioHang.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/gio_hang.jsp");
                 return;
             }
-            String diaChi = req.getParameter("diaChi"); // lấy địa chỉ đầy đủ đã ghép ở JSP
 
-            if (diaChi == null || diaChi.trim().isEmpty()) {
-                // fallback nếu cần thiết
-                diaChi = (String) session.getAttribute("diaChi");
-            }
+            String diaChi = nonEmpty(req.getParameter("diaChi"),
+                    (String) session.getAttribute("diaChi"));
+            String sdt = nonEmpty(req.getParameter("soDienThoai"),
+                    (String) session.getAttribute("soDienThoai"));
+            String phuongThuc = nonEmpty(req.getParameter("phuongThuc"),
+                    (String) session.getAttribute("phuongThuc"));
+            if (phuongThuc == null || phuongThuc.isEmpty()) phuongThuc = "COD";
 
-            // --- LẤY SỐ ĐIỆN THOẠI & PHƯƠNG THỨC THANH TOÁN ---
-            String sdt = nonEmpty(req.getParameter("soDienThoai"), (String) session.getAttribute("soDienThoai"));
-            String phuongThuc = nonEmpty(req.getParameter("phuongThuc"), (String) session.getAttribute("phuongThuc"));
-            if (phuongThuc == null || phuongThuc.trim().isEmpty()) {
-                phuongThuc = "COD"; // mặc định
-            }
-            String soDienThoai = req.getParameter("soDienThoai");
-            if (soDienThoai == null || soDienThoai.trim().isEmpty()) {
-                soDienThoai = (String) session.getAttribute("soDienThoai");
-            }
-            // --- TẠO ĐƠN HÀNG ---
             DonHang dh = new DonHang();
             dh.setIdNguoiDung(nd.getId());
             dh.setDiaChi(diaChi);
@@ -149,70 +139,34 @@ req.setAttribute("mapDonHangDanhGia", mapDonHangDanhGia);
                 ct.setSoLuong(sl);
                 ct.setGia(sp.getGia());
 
-                // Lưu chi tiết vào đơn hàng
                 dh.getChiTiet().add(ct);
                 tong += sp.getGia() * sl;
-                // Lấy toàn bộ sản phẩm 1 lần
             }
             double phiShip = 15000;
             dh.setTongTien(tong + phiShip);
 
-            // --- LƯU ĐƠN HÀNG QUA DAO ---
             int id_donhang = donHangDAO.themDonHang(dh);
             if (id_donhang > 0) {
-                // XÓA GIỎ HÀNG & LƯU ĐƠN HÀNG HIỆN TẠI TRONG SESSION
                 session.removeAttribute("gioHang");
                 session.setAttribute("donHangHienTai", dh);
-
-                // Lưu lại địa chỉ để hiển thị
                 session.setAttribute("diaChi", diaChi);
                 session.setAttribute("phuongThuc", phuongThuc);
-                session.setAttribute("soDienThoai", soDienThoai);
+                session.setAttribute("soDienThoai", sdt);
 
                 resp.sendRedirect(req.getContextPath() + "/don_hang.jsp");
             } else {
                 req.setAttribute("loi", "Tạo đơn hàng thất bại");
                 req.getRequestDispatcher("thanh_toan.jsp").forward(req, resp);
             }
-
             return;
         }
 
-        // Nếu không phải action nào trên → về trang chủ
         resp.sendRedirect(req.getContextPath() + "/trang_chu.jsp");
     }
 
-// --- HỖ TRỢ ---
     private static String nonEmpty(String val, String fallback) {
-        return (val != null && !val.trim().isEmpty()) ? val.trim() : (fallback != null ? fallback.trim() : "");
+        return (val != null && !val.trim().isEmpty())
+                ? val.trim()
+                : (fallback != null ? fallback.trim() : "");
     }
-
-    private static String joinNonBlank(String... parts) {
-        StringBuilder sb = new StringBuilder();
-        for (String p : parts) {
-            if (p != null && !p.trim().isEmpty()) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                sb.append(p.trim());
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String normalizeAddr(String s) {
-        if (s == null) {
-            return "";
-        }
-        s = s.replaceAll("(?i),\\s*việt\\s*nam$", "");
-        s = s.replaceAll("(\\s*,\\s*)+", ", ");
-        s = s.replaceAll("^,\\s*|,\\s*$", "");
-        return s.trim();
-    }
-
-    private static String ensureSuffixVN(String base) {
-        base = normalizeAddr(base);
-        return base.isEmpty() ? "Việt Nam" : base + ", Việt Nam";
-    }
-
 }
