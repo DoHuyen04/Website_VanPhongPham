@@ -76,6 +76,49 @@ public class ChiTietSanPhamServlet extends HttpServlet {
                 // NEW: Lấy danh sách đánh giá cho sản phẩm này
                 DanhGiaDAO dgDAO = new DanhGiaDAO();
                 List<DanhGia> dsDanhGia = dgDAO.layDanhGiaTheoSanPham(id);
+                // --- TÍNH THỐNG KÊ ĐÁNH GIÁ (ĐIỂM TB, SỐ LƯỢNG SAO, CMT, ẢNH) ---
+                double tongSao = 0;
+                int tongDanhGia = 0;
+                int[] countStar = new int[6]; // dùng 1..5
+                int coBinhLuan = 0;
+                int coHinhAnh = 0;
+
+                if (dsDanhGia != null) {
+                    for (DanhGia dg : dsDanhGia) {
+                        int sao = dg.getSao();
+                        if (sao >= 1 && sao <= 5) {
+                            tongSao += sao;
+                            tongDanhGia++;
+                            countStar[sao]++;
+                        }
+
+                        if (dg.getBinhLuan() != null && !dg.getBinhLuan().trim().isEmpty()) {
+                            coBinhLuan++;
+                        }
+
+                        if (dg.getHinhAnh() != null && !dg.getHinhAnh().trim().isEmpty()) {
+                            coHinhAnh++;
+                        }
+                    }
+                }
+
+                double diemTrungBinh = 0;
+                if (tongDanhGia > 0) {
+                    diemTrungBinh = tongSao / tongDanhGia;
+                    // làm tròn 1 chữ số sau dấu phẩy, ví dụ 4.87 -> 4.9
+                    diemTrungBinh = Math.round(diemTrungBinh * 10) / 10.0;
+                }
+
+                // Đẩy thống kê ra JSP
+                request.setAttribute("avgRating", diemTrungBinh);
+                request.setAttribute("totalRating", tongDanhGia);
+                request.setAttribute("count5", countStar[5]);
+                request.setAttribute("count4", countStar[4]);
+                request.setAttribute("count3", countStar[3]);
+                request.setAttribute("count2", countStar[2]);
+                request.setAttribute("count1", countStar[1]);
+                request.setAttribute("countComment", coBinhLuan);
+                request.setAttribute("countImage", coHinhAnh);
 
                 if (sanpham != null) {
                     request.setAttribute("sanpham", sanpham);

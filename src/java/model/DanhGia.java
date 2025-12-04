@@ -7,10 +7,11 @@ public class DanhGia {
     private int idDanhGia;
     private int idNguoiDung;
     private int idSanPham;
+    private int idDonHang;
     private int sao;
     private String binhLuan;
     private Date ngay;
-    private String tenDangNhap;
+    private String hinhAnh;
 
     public DanhGia() {
     }
@@ -64,4 +65,18 @@ public class DanhGia {
         this.ngay = ngay;
     }
 
+    public String getHinhAnh() {
+        return hinhAnh;
+    }
+
+    public void setHinhAnh(String hinhAnh) {
+        this.hinhAnh = hinhAnh;
+    }
+    public int getIdDonHang() {
+        return idDonHang;
+    }
+
+    public void setIdDonHang(int idDonHang) {
+        this.idDonHang = idDonHang;
+    }
 }

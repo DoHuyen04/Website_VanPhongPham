@@ -20,7 +20,9 @@ public class DonHangServlet extends HttpServlet {
     private DonHangDAO donHangDAO = new DonHangDAO();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("nguoiDung") == null) {
             resp.sendRedirect(req.getContextPath() + "/dang_nhap.jsp");
@@ -30,34 +32,48 @@ public class DonHangServlet extends HttpServlet {
 
         String hanhDong = req.getParameter("hanhDong");
         if ("lichsu".equals(hanhDong)) {
-          String tab = req.getParameter("tab");
 
-Set<String> validTabs = Set.of("dadat", "dagiao", "danggiao", "dahuy", "hoantien");
+            String tab = req.getParameter("tab");
 
-// 🔹 Nếu tab null hoặc không hợp lệ → filter = null (nghĩa là ALL)
-String filter = (tab != null && validTabs.contains(tab)) ? tab : null;
+            Set<String> validTabs = Set.of("dadat", "dagiao", "danggiao", "dahuy", "hoantien");
 
-// 🔹 Tab nào được active?
-String activeTab = (filter == null) ? "all" : filter;
+            // Nếu tab null hoặc không hợp lệ → filter = null (ALL)
+            String filter = (tab != null && validTabs.contains(tab)) ? tab : null;
+
+            // Tab active
+            String activeTab = (filter == null) ? "all" : filter;
+
             List<DonHang> ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
             req.setAttribute("activeTab", activeTab);
             req.setAttribute("dsDonHang", ds);
 
-            // Lấy danh sách sản phẩm đã đánh giá
+            // ========== Lấy thông tin đánh giá ==========
             DanhGiaDAO dgDAO = new DanhGiaDAO();
-            Set<Integer> spDaDanhGia = dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
+
+            // 1) Map đơn hàng đã đánh giá (theo id đơn hàng / sản phẩm tùy bạn định nghĩa)
+            Map<Integer, Integer> mapDonHangDanhGia =
+                    dgDAO.laySanPhamDaDanhGiaTheoDonHang(nd.getId());
+            req.setAttribute("mapDonHangDanhGia", mapDonHangDanhGia);
+
+            // 2) Set các id sản phẩm mà user đã đánh giá
+            Set<Integer> spDaDanhGia =
+                    dgDAO.laySanPhamDaDanhGiaTheoNguoiDung(nd.getId());
             req.setAttribute("spDaDanhGia", spDaDanhGia);
 
-            // Lấy map sản phẩm để hiển thị
+            // ---------- Lấy map sản phẩm để hiển thị ----------
             SanPhamDAO spDAO = new SanPhamDAO();
-            List<SanPham> dsSP = spDAO.layTatCa();
+            List<SanPham> dsSP = spDAO.layTatCa();   // Lấy tất cả sản phẩm 1 lần
             Map<Integer, SanPham> mapFullSP = dsSP.stream()
-                    .collect(Collectors.toMap(SanPham::getId_sanpham, sp -> sp));
+                    .collect(Collectors.toMap(
+                            SanPham::getId_sanpham,
+                            sp -> sp
+                    ));
             req.setAttribute("mapSP", mapFullSP);
 
             req.getRequestDispatcher("don_hang.jsp").forward(req, resp);
             return;
         }
+
         resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=all");
     }
 
@@ -81,7 +97,8 @@ String activeTab = (filter == null) ? "all" : filter;
                 donHangDAO.capNhatTrangThai(idDonHang, nd.getId(), tt);
 
                 String tab = "cancel".equals(action) ? "dahuy" : "hoantien";
-                resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu&tab=" + tab);
+                resp.sendRedirect(req.getContextPath()
+                        + "/DonHangServlet?hanhDong=lichsu&tab=" + tab);
             } catch (NumberFormatException ex) {
                 resp.sendRedirect(req.getContextPath() + "/DonHangServlet?hanhDong=lichsu");
             }
@@ -91,15 +108,19 @@ String activeTab = (filter == null) ? "all" : filter;
         // LƯU ĐƠN HÀNG
         if ("luuDonHang".equals(action)) {
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> gioHang = (List<Map<String, Object>>) session.getAttribute("gioHang");
+            List<Map<String, Object>> gioHang =
+                    (List<Map<String, Object>>) session.getAttribute("gioHang");
             if (gioHang == null || gioHang.isEmpty()) {
                 resp.sendRedirect(req.getContextPath() + "/gio_hang.jsp");
                 return;
             }
 
-            String diaChi = nonEmpty(req.getParameter("diaChi"), (String) session.getAttribute("diaChi"));
-            String sdt = nonEmpty(req.getParameter("soDienThoai"), (String) session.getAttribute("soDienThoai"));
-            String phuongThuc = nonEmpty(req.getParameter("phuongThuc"), (String) session.getAttribute("phuongThuc"));
+            String diaChi = nonEmpty(req.getParameter("diaChi"),
+                    (String) session.getAttribute("diaChi"));
+            String sdt = nonEmpty(req.getParameter("soDienThoai"),
+                    (String) session.getAttribute("soDienThoai"));
+            String phuongThuc = nonEmpty(req.getParameter("phuongThuc"),
+                    (String) session.getAttribute("phuongThuc"));
             if (phuongThuc == null || phuongThuc.isEmpty()) phuongThuc = "COD";
 
             DonHang dh = new DonHang();
@@ -144,6 +165,8 @@ String activeTab = (filter == null) ? "all" : filter;
     }
 
     private static String nonEmpty(String val, String fallback) {
-        return (val != null && !val.trim().isEmpty()) ? val.trim() : (fallback != null ? fallback.trim() : "");
+        return (val != null && !val.trim().isEmpty())
+                ? val.trim()
+                : (fallback != null ? fallback.trim() : "");
     }
 }
