@@ -83,7 +83,6 @@
                 margin: 4px 0;
                 font-size: 14px;
             }
-
             /* Responsive cho màn hình nhỏ */
             @media (max-width: 768px) {
                 .footer-grid {
