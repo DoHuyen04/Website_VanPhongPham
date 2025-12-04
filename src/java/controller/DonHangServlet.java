@@ -30,12 +30,17 @@ public class DonHangServlet extends HttpServlet {
 
         String hanhDong = req.getParameter("hanhDong");
         if ("lichsu".equals(hanhDong)) {
-            String tab = req.getParameter("tab");
-            Set<String> validTabs = Set.of("dadat", "dagiao", "danggiao", "dahuy", "hoantien");
-            String filter = ("dadat".equals(tab) || "dahuy".equals(tab) || "hoantien".equals(tab)) ? tab : null;
+          String tab = req.getParameter("tab");
 
+Set<String> validTabs = Set.of("dadat", "dagiao", "danggiao", "dahuy", "hoantien");
+
+// 🔹 Nếu tab null hoặc không hợp lệ → filter = null (nghĩa là ALL)
+String filter = (tab != null && validTabs.contains(tab)) ? tab : null;
+
+// 🔹 Tab nào được active?
+String activeTab = (filter == null) ? "all" : filter;
             List<DonHang> ds = donHangDAO.layDonHangTheoNguoiDung(nd.getId(), filter);
-            req.setAttribute("activeTab", filter == null ? "all" : filter);
+            req.setAttribute("activeTab", activeTab);
             req.setAttribute("dsDonHang", ds);
 
             // Lấy danh sách sản phẩm đã đánh giá

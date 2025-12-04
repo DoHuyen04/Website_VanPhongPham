@@ -232,7 +232,10 @@
                 </select>
             </div>
             <% } else { %>
-            <p style="font-size:13px; color:#777;">Bạn chưa có địa chỉ nào trong hồ sơ. Vui lòng nhập địa chỉ mới.</p>
+            <p style="font-size:13px; color:#777;">Bạn chưa có địa chỉ nào trong hồ sơ. Vui lòng nhập địa chỉ mới.
+                <a href="<%= request.getContextPath()%>/nguoidung?hanhDong=hoso&tab=address">
+                        Bấm vào đây để thêm.
+                    </a></p>
             <% }%>
 
             <label>Tìm địa chỉ trên Google Maps (tùy chọn):</label>

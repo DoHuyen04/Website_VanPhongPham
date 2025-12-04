@@ -177,11 +177,14 @@
                 for (DonHang don : lichSu) {
                     final List<DonHangChiTiet> chiTiet = Optional.ofNullable(don.getChiTiet()).orElse(Collections.emptyList());
                     final Set<Integer> danhGia = spDaDanhGia;
-                    boolean daDanhGiaDonNay = chiTiet.stream().anyMatch(ct -> danhGia.contains(ct.getId_sanpham()));
-                    Integer idSpDaDanhGia = chiTiet.stream()
-                            .filter(ct -> danhGia.contains(ct.getId_sanpham()))
-                            .map(DonHangChiTiet::getId_sanpham)
-                            .findFirst().orElse(null);
+                   List<Integer> spChuaDanhGia = new ArrayList<>();
+for (DonHangChiTiet ct : chiTiet) {
+    if (!spDaDanhGia.contains(ct.getId_sanpham())) {
+        spChuaDanhGia.add(ct.getId_sanpham());
+    }
+}
+
+boolean daDanhGiaHet = spChuaDanhGia.isEmpty();
 
                     String tt = don.getTrangthai();
                     String badgeClass = "dadat"; // default
@@ -236,22 +239,36 @@
                         <input type="hidden" name="id" value="<%= don.getIdDonHang()%>"/>
                         <button type="button" class="btn cancel" onclick="openCancelModal(<%= don.getIdDonHang()%>)">Huỷ đơn hàng</button>
                     </form>
-                <% } else if ("dagiao".equalsIgnoreCase(tt)) { %>
-                    <% if (!daDanhGiaDonNay) { %>
-                        <button type="button" class="btn review" onclick="openReviewModal(<%= don.getIdDonHang()%>)">Đánh giá</button>
-                    <% } else if (idSpDaDanhGia != null) { %>
-                        <a class="btn review" href="<%= request.getContextPath() %>/ChiTietSanPhamServlet?id=<%= idSpDaDanhGia %>">Đã đánh giá</a>
-                    <% } %>
-                <% } %>
+                <% } else if ("dagiao".equalsIgnoreCase(tt)) {
+    if (!daDanhGiaHet) { 
+        %>
+        <button type="button" class="btn review" onclick="openReviewModal(<%= don.getIdDonHang()%>)">
+            Đánh giá (<%= spChuaDanhGia.size() %>)
+        </button>
+        <%
+    } else {
+        %>
+        <button class="btn review" disabled>Đã đánh giá</button>
+        <%
+    }
+}
+%>
             </div>
 
             <select id="products-order-<%= don.getIdDonHang()%>" style="display:none;">
                 <%
                     for (DonHangChiTiet ctHidden : chiTiet) {
-                        SanPham spHidden = mapSP.get(ctHidden.getId_sanpham());
-                %>
-                <option value="<%= ctHidden.getId_sanpham()%>"><%= spHidden != null ? spHidden.getTen() : ("SP #" + ctHidden.getId_sanpham()) %></option>
-                <% } %>
+    if (!spDaDanhGia.contains(ctHidden.getId_sanpham())) {
+        SanPham spHidden = mapSP.get(ctHidden.getId_sanpham());
+%>
+<option value="<%= ctHidden.getId_sanpham()%>">
+    <%= spHidden != null ? spHidden.getTen() : ("SP #" + ctHidden.getId_sanpham()) %>
+</option>
+<%
+    }
+}
+%>
+
             </select>
         </div>
         <% }} else { %>
